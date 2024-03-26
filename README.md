@@ -3,7 +3,7 @@
 For the latest updates and detailed information on how to interact with the NaviSDK contract, please refer to the [Navi Protocol Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs/how-to-interact-with-the-contract/navi-sdk).
 ## Introduction
 
-The NaviSDK Client provides a set of tools for interacting with sui blockchain networks, specifically designed for handling transactions, accounts, and smart contracts in a streamlined and efficient manner. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
+The NaviSDK Client provides a set of tools for interacting with ***Sui*** blockchain networks, specifically designed for handling transactions, accounts, and smart contracts in a streamlined and efficient manner. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
 
 ## Getting Started
 
@@ -40,7 +40,7 @@ client.mnemonic;
 ### Return All Accounts under the Client
 ```javascript
 client.getAllAccounts()
-//Return Sample
+//Sample Return
 index:0, address: 0xa814b8c01b111f5e440e5d4785925a033961915c2f44d22ca71619ac73534ee7
 index:1, address: 0xd8be370139dd297924e31f6a507ba3a1d5f52f98f04f144bb75100d179698f84
 index:2, address: 0xca29dbf32047fba966fa5aca7e378ba11171b3817f53ad324489a138288cc02d
@@ -56,7 +56,7 @@ account1.address
 ```
 
 ## Get Objs and Coin Info
-We have prepare a token type for Sui/NAVX/vSui/USDT/USDC/WETH/CETUS/haSui
+We have prepared a token type for Sui/NAVX/vSui/USDT/USDC/WETH/CETUS/haSui
 ```javascript
 import {Sui, NAVX, vSui, USDT, USDC, WETH, CETUS, haSui} from 'navi-sdk/dist/address';
 account.getAllCoins() //Return all Objects that account has
@@ -225,7 +225,7 @@ const e_coin = txb.moveCall({
     typeArguments: [USDC_Pool.type],
 });
 
-//Transfer left_money after repay to teh account
+//Transfer left_money after repay to the account
 txb.transferObjects([e_coin], sender);
 const result = SignAndSubmitTXB(txb, account.client, account.keypair);
 console.log("result: ", result);
