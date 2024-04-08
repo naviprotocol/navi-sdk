@@ -134,6 +134,16 @@ import { USDC } from 'navi-sdk/dist/address'
 client.getPoolInfo(USDC)
 //Leave it empty to get all poolinfo
 ```
+### Get Address Available Rewards to Claim
+1. OptionSupply = 1
+2. OptionWithdraw = 2
+3. OptionBorrow = 3
+4. OptionRepay = 4
+* Option default is 1, you may leave it empty
+```javascript
+account.getAvailableRewards() //Return this account's available rewards
+client.checkAddressAvailableRewards(address); //You may check any address
+```
 
 ### Get Current Health Factor
 ```javascript
@@ -147,7 +157,7 @@ client.getDynamicHealthFactor(address, coinType = 'USDC', supplyBalanceChange:10
 //supplyBalanceChange and borrowBalanceChange needs to be an integer with token decimals
 //Change is_increase to false if it's decrease
 ```
-### Supply/Withdraw/Borrow/Repay
+### Supply/Withdraw/Borrow/Repay/Liquidate/ClaimRewards
 You may Simply input 'NAVX' as a string or NAVX as a type imported from address.ts. 
 
 Current These Pools are supported: **Sui | NAVX | vSui | USDC | USDT | WETH | CETUS | haSui**
@@ -161,6 +171,23 @@ account.withdrawWithAccountCap(coinType = NAVX, amount, accountCap_Address_that_
 
 account.borrow(coinType = NAVX, amount)
 account.repay(coinType = NAVX, amount)
+
+
+//  OptionSupply = 1
+//  OptionWithdraw = 2
+//  OptionBorrow = 3
+//  OptionRepay = 4
+account.claimAllRewards(1);
+account.claimAllRewards(2);
+
+
+//Set UP Zone
+const to_pay_coin: CoinInfo = USDC; //If the paycoin is Sui, please make sure you have at least 0.5 Sui as Gas
+const to_liquidate_address = 'address_to_liquidate';
+const collateral_coin: CoinInfo = Sui; //collateral_coin cannot be the same as to_pay_coin
+//End of Set UP Zone
+
+account.liquidate(to_pay_coin, to_liquidate_address, collateral_coin);
 ```
 
 ## Customized PTB

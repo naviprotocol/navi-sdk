@@ -40,3 +40,10 @@ export interface DeriveParas {
   change?: boolean;
   addressIndex?: number;
 }
+
+export enum OptionType {
+  OptionSupply = 1,
+  OptionWithdraw = 2,
+  OptionBorrow = 3,
+  OptionRepay = 4,
+}

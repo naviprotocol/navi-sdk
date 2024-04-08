@@ -1,10 +1,10 @@
 import { AccountManager } from "./libs/AccountManager";
-import { initializeParas, CoinInfo, Pool, PoolConfig } from "./types";
+import { initializeParas, CoinInfo, Pool, PoolConfig, OptionType } from "./types";
 import { getPoolInfo } from './libs/PoolInfo'
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { pool } from "./address";
-
+import { tryUpdateProtocolPackageId } from './libs/PoolInfo/index'
 
 export class NAVISDKClient {
 
@@ -39,6 +39,7 @@ export class NAVISDKClient {
         }
 
         console.log("Network Type: ", networkType || "mainnet");
+        tryUpdateProtocolPackageId();
     }
 
     /**
@@ -135,7 +136,7 @@ export class NAVISDKClient {
      */
     async getAllNaviPortfolios() {
 
-        const results = await Promise.all(this.accounts.map(account => account.getNAVIPortfolio(false)));
+        const results = await Promise.all(this.accounts.map(account => account.getNAVIPortfolio(account.address, false)));
 
         const balanceMap = new Map<string, { borrowBalance: number, supplyBalance: number }>();
         results.forEach((result) => {
@@ -172,6 +173,15 @@ export class NAVISDKClient {
             });
         });
         return coinBalances;
+    }
 
+    /**
+     * Checks the available rewards for a given address.
+     * @param address - The address to check rewards for.
+     * @param option - The option type for rewards.
+     * @returns A promise that resolves with the available rewards.
+     */
+    async checkAddressAvailableRewards(address: string = this.accounts[0].address, option: OptionType = 1) {
+        await this.accounts[0].getAvailableRewards(address, option, true);
     }
 }
