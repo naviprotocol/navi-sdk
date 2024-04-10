@@ -22,6 +22,7 @@ import { config } from "../../address";
 import { moveInspect } from "../CallFunctions";
 import { AddressMap } from '../../address';
 import { bcs } from '@mysten/sui.js/bcs';
+import assert from 'assert';
 
 
 
@@ -516,7 +517,7 @@ export class AccountManager {
     return result;
   }
 
-  async liquidate(payCoinType: CoinInfo, to_liquidate_address: string, collateralCoinType: CoinInfo) {
+  async liquidate(payCoinType: CoinInfo, to_liquidate_address: string, collateralCoinType: CoinInfo, to_liquidate_amount: number = 0) {
 
     let txb = new TransactionBlock();
     txb.setSender(this.address);
@@ -526,6 +527,35 @@ export class AccountManager {
     );
     let allBalance = await this.client.getBalance({ owner: this.address, coinType: payCoinType.address });
     let { totalBalance } = allBalance;
+    if (to_liquidate_amount != 0) {
+      assert(to_liquidate_amount * Math.pow(10, payCoinType.decimal) <= Number(totalBalance), "Insufficient balance for this Coin, please don't apply decimals to to_liquidate_amount");
+      totalBalance = (to_liquidate_amount * Math.pow(10, payCoinType.decimal)).toString();
+    }
+
+    if (payCoinType.symbol == "Sui") {
+      totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
+
+      let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
+      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+
+    }
+    else {
+
+      if (getCoinInfo.data.length >= 2) {
+        const txbMerge = new TransactionBlock();
+        txbMerge.setSender(this.address);
+        let baseObj = getCoinInfo.data[0].coinObjectId;
+        let i = 1;
+        while (i < getCoinInfo.data.length) {
+          txbMerge.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
+          i++;
+        }
+        SignAndSubmitTXB(txbMerge, this.client, this.keypair);
+      }
+
+      let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
+      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+    }
 
     if (payCoinType.symbol == "Sui") {
       totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas

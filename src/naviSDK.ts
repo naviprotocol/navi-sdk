@@ -181,7 +181,7 @@ export class NAVISDKClient {
      * @param option - The option type for rewards.
      * @returns A promise that resolves with the available rewards.
      */
-    async checkAddressAvailableRewards(address: string = this.accounts[0].address, option: OptionType = 1) {
+    async getAvailableRewards(address: string = this.accounts[0].address, option: OptionType = 1) {
         await this.accounts[0].getAvailableRewards(address, option, true);
     }
 }

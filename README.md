@@ -187,7 +187,8 @@ const to_liquidate_address = 'address_to_liquidate';
 const collateral_coin: CoinInfo = Sui; //collateral_coin cannot be the same as to_pay_coin
 //End of Set UP Zone
 
-account.liquidate(to_pay_coin, to_liquidate_address, collateral_coin);
+account.liquidate(to_pay_coin, to_liquidate_address, collateral_coin, to_liquidate_amount=0);
+//In this sample, Leave to_liquidate_amount = 0 to all use USDC, otherwise, to_liquidate_amount = 10 will only use 10 USDC for this liquidation
 ```
 
 ## Customized PTB

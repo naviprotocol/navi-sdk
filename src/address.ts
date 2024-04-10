@@ -12,7 +12,7 @@ export const AddressMap: Record<string, string> = {
 };
 
 export const config = {
-    ProtocolPackage: '0x7c9b90b3fda0fa4aa8ee88ae6c4a0b83c773f74936b5354448cb94662e94442d',
+    ProtocolPackage: '0x2c256d2ae030db12c7015aa1617ad928e60cc99d460b279fe76bbb9f82fa7063',
     StorageId: '0xbb4e2f4b6205c2e2a2db47aeb4f830796ec7c005f88537ee775986639bc442fe',
     Incentive: '0xaaf735bf83ff564e1b219a0d644de894ef5bdc4b2250b126b2a46dd002331821',
     IncentiveV2: '0xf87a8acb8b81d14307894d12595541a73f19933f88e1326d5be349c7a6f7559c', // The new incentive version: V2
