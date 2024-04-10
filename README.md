@@ -172,23 +172,22 @@ account.withdrawWithAccountCap(coinType = NAVX, amount, accountCap_Address_that_
 account.borrow(coinType = NAVX, amount)
 account.repay(coinType = NAVX, amount)
 
-
-//  OptionSupply = 1
-//  OptionWithdraw = 2
-//  OptionBorrow = 3
-//  OptionRepay = 4
-account.claimAllRewards(1);
-account.claimAllRewards(2);
+account.claimAllRewards(); //Claim both Supply and Borrow rewards
 
 
-//Set UP Zone
-const to_pay_coin: CoinInfo = USDC; //If the paycoin is Sui, please make sure you have at least 0.5 Sui as Gas
-const to_liquidate_address = 'address_to_liquidate';
-const collateral_coin: CoinInfo = Sui; //collateral_coin cannot be the same as to_pay_coin
-//End of Set UP Zone
 
-account.liquidate(to_pay_coin, to_liquidate_address, collateral_coin, to_liquidate_amount=0);
-//In this sample, Leave to_liquidate_amount = 0 to all use USDC, otherwise, to_liquidate_amount = 10 will only use 10 USDC for this liquidation
+// Initialization Zone
+const debt_coin: CoinInfo = USDC; // Assigns USDC as the payment coin. Ensure you maintain a minimum of 0.5 Sui for gas fees if Sui is used.
+const to_liquidate_address = 'address_to_liquidate'; // Specifies the blockchain address of the account to be liquidated.
+const collateral_coin: CoinInfo = Sui; // Designates Sui as the collateral coin. Note: 'collateral_coin' should not be the same as 'to_pay_coin'.
+// End of Initialization Zone
+
+//Option1 - Liquidate with all debt_coin, will return the rest
+account.liquidate(debt_coin, to_liquidate_address, collateral_coin);
+
+//Option2 - Liquidate with specific amount
+let to_liquidate_amount = 10; //Number of coin that can be used for liquidation, no decimals required.
+account.liquidate(debt_coin, to_liquidate_address, collateral_coin, to_liquidate_amount); //Liquidate with 10 USDC.
 ```
 
 ## Customized PTB

@@ -810,16 +810,20 @@ export class AccountManager {
 
   /**
    * Claims all available rewards for the specified account.
-   * @param option - The reward option to use (default: 1).
    * @returns A promise that resolves to the result of the reward claim operation.
    */
-  async claimAllRewards(option: OptionType = 1) {
+  async claimAllRewards() {
     let txb = new TransactionBlock();
     txb.setSender(this.address);
 
-    const rewards = await this.getAvailableRewards(this.address, option, false);
-    for (const reward of rewards) {
-      claimRewardFunction(txb, reward.funds, reward.asset_id, option);
+    const rewardsSupply = await this.getAvailableRewards(this.address, 1, false);
+    for (const reward of rewardsSupply) {
+      claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
+    }
+
+    const rewardsBorrow = await this.getAvailableRewards(this.address, 3, false);
+    for (const reward of rewardsBorrow) {
+      claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
     }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
