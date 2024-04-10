@@ -790,7 +790,13 @@ export class AccountManager {
         };
         console.log(toCheckAddress, ' available rewards:');
         Object.keys(summedRewards).forEach(key => {
-          console.log(`${coinDictionary[key]}: ${summedRewards[key].available}`);
+          if (key == '5' || key == '7') {
+            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
+
+          }
+          else {
+            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
+          }
         });
       }
 
