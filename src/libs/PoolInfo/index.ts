@@ -28,7 +28,7 @@ export async function getPoolInfo(coinSymbol: string = "") {
 }
 
 export async function tryUpdateProtocolPackageId() {
-    const apiUrl = 'https://navi-open-api.vercel.app/api/package';
+    const apiUrl = 'https://open-api.naviprotocol.io/api/package';
 
     try {
         const response = await fetch(apiUrl);
