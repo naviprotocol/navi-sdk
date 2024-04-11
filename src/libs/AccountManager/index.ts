@@ -699,12 +699,18 @@ export class AccountManager {
     }
     await Promise.all(Object.keys(pool).map(async (poolKey) => {
       const reserve: PoolConfig = pool[poolKey as keyof Pool];
-      const decimal = await getCoinDecimal(this.client, reserve.type);
       const borrowBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: address } });
       const supplyBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.supplyBalanceParentId, name: { type: 'address', value: address } });
+      
+      const borrowIndexData: any = await this.getReservesDetail(reserve.assetId);
+      const borrowIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_borrow_index / Math.pow(10, 27);
+      const supplyIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_supply_index / Math.pow(10, 27);
 
-      const borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value / Math.pow(10, decimal) : 0;
-      const supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value / Math.pow(10, decimal) : 0;
+      let borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
+      let supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
+      borrowValue *= borrowIndex;
+      supplyValue *= supplyIndex;
+
       if (ifPrettyPrint) {
         console.log(`| ${reserve.name} | ${borrowValue} | ${supplyValue} |`);
       }
