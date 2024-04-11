@@ -229,9 +229,9 @@ const this_coin = txb.moveCall({
 //Merge Coin to the wallet balance
 txb.mergeCoins(txb.object("{source_USDC_obj}"), [this_coin]);
 
-const amount = = 1*1e6; //Borrow 1 USDC
-//Deposit 1USDC to NAVI Protocol
-depositCoin(txb, USDC_Pool, txb.obj("{source_USDC_obj}"), amount);
+const amount = = 1*1e6; //Deposit 1 USDC
+//Deposit 1 USDC to NAVI Protocol
+depositCoin(txb, USDC_Pool, txb.object("{source_USDC_obj}"), amount);
 
 //Withdraw 1 USDC from NAVI Protocol
 withdrawCoin(txb, USDC_Pool, amount);
