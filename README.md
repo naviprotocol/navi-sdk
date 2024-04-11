@@ -134,6 +134,16 @@ import { USDC } from 'navi-sdk/dist/address'
 client.getPoolInfo(USDC)
 //Leave it empty to get all poolinfo
 ```
+### Get Address Available Rewards to Claim
+1. OptionSupply = 1
+2. OptionWithdraw = 2
+3. OptionBorrow = 3
+4. OptionRepay = 4
+* Option default is 1, you may leave it empty
+```javascript
+account.getAvailableRewards() //Return this account's available rewards
+client.checkAddressAvailableRewards(address); //You may check any address
+```
 
 ### Get Current Health Factor
 ```javascript
@@ -147,7 +157,7 @@ client.getDynamicHealthFactor(address, coinType = 'USDC', supplyBalanceChange:10
 //supplyBalanceChange and borrowBalanceChange needs to be an integer with token decimals
 //Change is_increase to false if it's decrease
 ```
-### Supply/Withdraw/Borrow/Repay
+### Supply/Withdraw/Borrow/Repay/Liquidate/ClaimRewards
 You may Simply input 'NAVX' as a string or NAVX as a type imported from address.ts. 
 
 Current These Pools are supported: **Sui | NAVX | vSui | USDC | USDT | WETH | CETUS | haSui**
@@ -161,6 +171,23 @@ account.withdrawWithAccountCap(coinType = NAVX, amount, accountCap_Address_that_
 
 account.borrow(coinType = NAVX, amount)
 account.repay(coinType = NAVX, amount)
+
+account.claimAllRewards(); //Claim both Supply and Borrow rewards
+
+
+
+// Initialization Zone
+const debt_coin: CoinInfo = USDC; // Assigns USDC as the payment coin. Ensure you maintain a minimum of 0.5 Sui for gas fees if Sui is used.
+const to_liquidate_address = 'address_to_liquidate'; // Specifies the blockchain address of the account to be liquidated.
+const collateral_coin: CoinInfo = Sui; // Designates Sui as the collateral coin. Note: 'collateral_coin' should not be the same as 'to_pay_coin'.
+// End of Initialization Zone
+
+//Option1 - Liquidate with all debt_coin, will return the rest
+account.liquidate(debt_coin, to_liquidate_address, collateral_coin);
+
+//Option2 - Liquidate with specific amount
+let to_liquidate_amount = 10; //Number of coin that can be used for liquidation, no decimals required.
+account.liquidate(debt_coin, to_liquidate_address, collateral_coin, to_liquidate_amount); //Liquidate with 10 USDC.
 ```
 
 ## Customized PTB

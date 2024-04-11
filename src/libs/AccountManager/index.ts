@@ -4,7 +4,7 @@ import { initializeParas, NetworkType } from "../../types";
 import { getCoinAmount, getCoinDecimal } from "../Coins";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { pool } from "../../address";
-import { Pool, PoolConfig, CoinInfo } from "../../types";
+import { Pool, PoolConfig, CoinInfo, OptionType } from "../../types";
 import {
   depositCoin,
   depositCoinWithAccountCap,
@@ -14,11 +14,16 @@ import {
   withdrawCoinWithAccountCap,
   borrowCoin,
   repayDebt,
+  liquidateFunction,
+  claimRewardFunction,
   SignAndSubmitTXB,
 } from "../PTB";
 import { config } from "../../address";
 import { moveInspect } from "../CallFunctions";
-import { AddressMap } from '../../address'
+import { AddressMap } from '../../address';
+import { bcs } from '@mysten/sui.js/bcs';
+import assert from 'assert';
+
 
 
 export class AccountManager {
@@ -36,6 +41,68 @@ export class AccountManager {
       url: getFullnodeUrl(networkType as NetworkType),
     });
     this.address = this.keypair.getPublicKey().toSuiAddress();
+    this.structRegistry();
+  }
+
+  structRegistry() {
+    bcs.registerStructType('IncentiveAPYInfo', {
+      asset_id: 'u8',
+      apy: 'u256',
+      coin_types: 'vector<string>',
+    });
+
+    bcs.registerStructType('IncentivePoolInfo', {
+      pool_id: 'address',
+      funds: 'address',
+      phase: 'u64',
+      start_at: 'u64',
+      end_at: 'u64',
+      closed_at: 'u64',
+      total_supply: 'u64',
+      asset_id: 'u8',
+      option: 'u8',
+      factor: 'u256',
+      distributed: 'u64',
+      available: 'u256',
+      total: 'u256',
+    });
+
+    bcs.registerStructType('IncentivePoolInfoByPhase', {
+      phase: 'u64',
+      pools: 'vector<IncentivePoolInfo>',
+    });
+
+    bcs.registerStructType('UserStateInfo', {
+      asset_id: 'u8',
+      borrow_balance: 'u256',
+      supply_balance: 'u256',
+    });
+
+    bcs.registerStructType('ReserveDataInfo', {
+      id: 'u8',
+      oracle_id: 'u8',
+      coin_type: 'string',
+      supply_cap: 'u256',
+      borrow_cap: 'u256',
+      supply_rate: 'u256',
+      borrow_rate: 'u256',
+      supply_index: 'u256',
+      borrow_index: 'u256',
+      total_supply: 'u256',
+      total_borrow: 'u256',
+      last_update_at: 'u64',
+      ltv: 'u256',
+      treasury_factor: 'u256',
+      treasury_balance: 'u256',
+      base_rate: 'u256',
+      multiplier: 'u256',
+      jump_rate_multiplier: 'u256',
+      reserve_factor: 'u256',
+      optimal_utilization: 'u256',
+      liquidation_ratio: 'u256',
+      liquidation_bonus: 'u256',
+      liquidation_threshold: 'u256',
+    });
   }
 
   /**
@@ -450,6 +517,78 @@ export class AccountManager {
     return result;
   }
 
+  async liquidate(payCoinType: CoinInfo, to_liquidate_address: string, collateralCoinType: CoinInfo, to_liquidate_amount: number = 0) {
+
+    let txb = new TransactionBlock();
+    txb.setSender(this.address);
+
+    let getCoinInfo = await this.getCoins(
+      payCoinType.address
+    );
+    let allBalance = await this.client.getBalance({ owner: this.address, coinType: payCoinType.address });
+    let { totalBalance } = allBalance;
+    if (to_liquidate_amount != 0) {
+      assert(to_liquidate_amount * Math.pow(10, payCoinType.decimal) <= Number(totalBalance), "Insufficient balance for this Coin, please don't apply decimals to to_liquidate_amount");
+      totalBalance = (to_liquidate_amount * Math.pow(10, payCoinType.decimal)).toString();
+    }
+
+    if (payCoinType.symbol == "Sui") {
+      totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
+
+      let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
+      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+
+    }
+    else {
+
+      if (getCoinInfo.data.length >= 2) {
+        const txbMerge = new TransactionBlock();
+        txbMerge.setSender(this.address);
+        let baseObj = getCoinInfo.data[0].coinObjectId;
+        let i = 1;
+        while (i < getCoinInfo.data.length) {
+          txbMerge.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
+          i++;
+        }
+        SignAndSubmitTXB(txbMerge, this.client, this.keypair);
+      }
+
+      let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
+      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+    }
+
+    if (payCoinType.symbol == "Sui") {
+      totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
+
+      let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
+      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+
+    }
+    else {
+
+      if (getCoinInfo.data.length >= 2) {
+        const txbMerge = new TransactionBlock();
+        txbMerge.setSender(this.address);
+        let baseObj = getCoinInfo.data[0].coinObjectId;
+        let i = 1;
+        while (i < getCoinInfo.data.length) {
+          txbMerge.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
+          i++;
+        }
+        SignAndSubmitTXB(txbMerge, this.client, this.keypair);
+      }
+
+      let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
+      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+    }
+
+    const result = SignAndSubmitTXB(txb, this.client, this.keypair);
+    return result;
+  }
+
+
+
+
   /**
    * Retrieves the health factor for a given address.
    * @param address - The address for which to retrieve the health factor. Defaults to the instance's address.
@@ -552,7 +691,7 @@ export class AccountManager {
    * @param ifPrettyPrint - A boolean indicating whether to print the portfolio in a pretty format. Default is true.
    * @returns A Promise that resolves to a Map containing the borrow and supply balances for each reserve.
    */
-  async getNAVIPortfolio(ifPrettyPrint: boolean = true): Promise<Map<string, { borrowBalance: number, supplyBalance: number }>> {
+  async getNAVIPortfolio(address: string = this.address, ifPrettyPrint: boolean = true): Promise<Map<string, { borrowBalance: number, supplyBalance: number }>> {
     const balanceMap = new Map<string, { borrowBalance: number, supplyBalance: number }>();
     if (ifPrettyPrint) {
       console.log("| Reserve Name | Borrow Balance | Supply Balance |");
@@ -561,8 +700,8 @@ export class AccountManager {
     await Promise.all(Object.keys(pool).map(async (poolKey) => {
       const reserve: PoolConfig = pool[poolKey as keyof Pool];
       const decimal = await getCoinDecimal(this.client, reserve.type);
-      const borrowBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: this.getPublicKey() } });
-      const supplyBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.supplyBalanceParentId, name: { type: 'address', value: this.getPublicKey() } });
+      const borrowBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: address } });
+      const supplyBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.supplyBalanceParentId, name: { type: 'address', value: address } });
 
       const borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value / Math.pow(10, decimal) : 0;
       const supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value / Math.pow(10, decimal) : 0;
@@ -575,4 +714,122 @@ export class AccountManager {
     return balanceMap;
   }
 
+  /**
+   * Retrieves the incentive pools for a given asset and option.
+   * @param asset_id - The ID of the asset.
+   * @param option - The option type.
+   * @param user - (Optional) The user's address. If provided, the rewards claimed by the user and the total rewards will be returned.
+   * @returns The incentive pools information.
+   */
+  async getIncentivePools(asset_id: number, option: OptionType, user?: string) {
+    const result: any = await moveInspect(
+      this.client,
+      this.address,
+      `${config.uiGetter}::incentive_getter::get_incentive_pools`,
+      [
+        '0x06', // clock object id
+        config.IncentiveV2, // the incentive object v2
+        config.StorageId, // object id of storage
+        asset_id,
+        option,
+        user ? user : '0x0000000000000000000000000000000000000000000000000000000000000000', // If you provide your address, the rewards that have been claimed by your address and the total rewards will be returned.
+      ],
+      [], // type arguments is null
+      'vector<IncentivePoolInfo>' // parse type
+    );
+    return result[0];
+  }
+
+  /**
+   * Retrieves the available rewards for a given address.
+   * 
+   * @param toCheckAddress - The address to check for rewards. Defaults to the current address.
+   * @param option - The option type. Defaults to 1.
+   * @param ifPrettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
+   * @returns An object containing the summed rewards for each asset.
+   * @throws If there is an error retrieving the available rewards.
+   */
+  async getAvailableRewards(toCheckAddress: string = this.address, option: OptionType = 1, ifPrettyPrint = true) {
+    const assetIds = Array.from({ length: 8 }, (_, i) => i); // Generates an array [0, 1, 2, ..., 7]
+    try {
+      const allResults = await Promise.all(
+        assetIds.map(assetId => this.getIncentivePools(assetId, option, toCheckAddress))
+      );
+
+      const allPools = allResults.flat();
+
+      const activePools = allPools.filter(pool => pool.available.trim() != '0');
+
+      const summedRewards = activePools.reduce((acc, pool) => {
+        const assetId = pool.asset_id.toString();
+
+        // Convert 'available' to a decimal number with 5 decimal places
+        const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
+        const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
+
+        if (!acc[assetId]) {
+          acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
+        } else {
+          // Sum available while preserving 5 decimal places
+          acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
+        }
+
+        return acc;
+      }, {} as { [key: string]: { asset_id: string, funds: string, available: string } });
+
+      if (ifPrettyPrint) {
+        const coinDictionary: { [key: string]: string } = {
+          '0': 'Sui',
+          '1': 'USDC',
+          '2': 'USDT',
+          '3': 'WETH',
+          '4': 'CETUS',
+          '5': 'vSui',
+          '6': 'haSui',
+          '7': 'NAVX',
+        };
+        console.log(toCheckAddress, ' available rewards:');
+        Object.keys(summedRewards).forEach(key => {
+          if (key == '5' || key == '7') {
+            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
+
+          }
+          else {
+            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
+          }
+        });
+      }
+
+      return summedRewards;
+    } catch (error) {
+      console.error('Failed to get available rewards:', error);
+      throw error;
+    }
+  }
+
+
+  /**
+   * Claims all available rewards for the specified account.
+   * @returns A promise that resolves to the result of the reward claim operation.
+   */
+  async claimAllRewards() {
+    let txb = new TransactionBlock();
+    txb.setSender(this.address);
+
+    const rewardsSupply = await this.getAvailableRewards(this.address, 1, false);
+    for (const reward of rewardsSupply) {
+      claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
+    }
+
+    const rewardsBorrow = await this.getAvailableRewards(this.address, 3, false);
+    for (const reward of rewardsBorrow) {
+      claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
+    }
+
+    const result = SignAndSubmitTXB(txb, this.client, this.keypair);
+    return result;
+  }
+
 }
+
+
