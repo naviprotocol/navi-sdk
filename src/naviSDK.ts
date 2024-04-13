@@ -4,7 +4,6 @@ import { getPoolInfo } from './libs/PoolInfo'
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { pool } from "./address";
-import { tryUpdateProtocolPackageId } from './libs/PoolInfo/index'
 
 export class NAVISDKClient {
 
@@ -39,7 +38,6 @@ export class NAVISDKClient {
         }
 
         console.log("Network Type: ", networkType || "mainnet");
-        tryUpdateProtocolPackageId();
     }
 
     /**

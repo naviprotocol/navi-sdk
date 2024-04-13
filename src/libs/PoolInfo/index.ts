@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { pool } from '../../address';
 import { Pool, PoolConfig } from "../../types";
-import { config } from '../../address';
 
 /**
  * Retrieves pool information for a given coin symbol.
@@ -27,7 +26,7 @@ export async function getPoolInfo(coinSymbol: string = "") {
     }
 }
 
-export async function tryUpdateProtocolPackageId() {
+export async function getLatestProtocolPackageId() {
     const apiUrl = 'https://open-api.naviprotocol.io/api/package';
 
     try {
@@ -37,15 +36,7 @@ export async function tryUpdateProtocolPackageId() {
         }
 
         const data = await response.json();
-        const newPackageId = data.packageId;
-
-        // Assuming config is importable and mutable, otherwise you'll need a different approach
-        if (newPackageId != config.ProtocolPackage) {
-            config.ProtocolPackage = newPackageId;
-            console.log('Updated ProtocolPackage:', config.ProtocolPackage);
-        }
-        // Here you would typically either return the new config, 
-        // save it to a file (in Node.js), or update the frontend state
+        return data.packageId;
     } catch (error) {
         console.error('Failed to update ProtocolPackage:');
     }

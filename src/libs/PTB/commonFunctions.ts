@@ -1,8 +1,6 @@
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { config, flashloanConfig } from '../../address'
+import { getConfig, flashloanConfig, pool } from '../../address'
 import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
-import { pool } from '../../address';
-
 
 /**
  * Deposits a specified amount of a coin into a pool.
@@ -12,7 +10,9 @@ import { pool } from '../../address';
  * @param amount - The amount of the coin to deposit.
  * @returns The updated transaction block object.
  */
-export function depositCoin(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, amount: number) {
+export async function depositCoin(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, amount: number) {
+    const config = await getConfig();
+
     txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::entry_deposit`,
         arguments: [
@@ -38,7 +38,9 @@ export function depositCoin(txb: TransactionBlock, _pool: PoolConfig, coinObject
  * @param account - The account to deposit the coin into.
  * @returns The updated transaction block object.
  */
-export function depositCoinWithAccountCap(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, account: string) {
+export async function depositCoinWithAccountCap(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, account: string) {
+    const config = await getConfig();
+
     txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::deposit_with_account_cap`,
         arguments: [
@@ -64,7 +66,8 @@ export function depositCoinWithAccountCap(txb: TransactionBlock, _pool: PoolConf
  * @param amount - The amount of coins to withdraw.
  * @returns The updated transaction block object.
  */
-export function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amount: number) {
+export async function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amount: number) {
+    const config = await getConfig();
 
     txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::entry_withdraw`,
@@ -92,7 +95,8 @@ export function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amount: n
  * @param withdrawAmount - The amount of coins to withdraw.
  * @param sender - The sender of the transaction.
  */
-export function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: PoolConfig, account: string, withdrawAmount: number, sender: string) {
+export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: PoolConfig, account: string, withdrawAmount: number, sender: string) {
+    const config = await getConfig();
 
     const [ret] = txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::withdraw_with_account_cap`,
@@ -125,7 +129,9 @@ export function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: PoolCon
  * @param borrowAmount - The amount of coins to borrow.
  * @returns The updated transaction block object.
  */
-export function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borrowAmount: number) {
+export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borrowAmount: number) {
+    const config = await getConfig();
+
     txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::entry_borrow`,
         arguments: [
@@ -151,7 +157,9 @@ export function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borrowAmoun
  * @param repayAmount - The amount you want to repay.
  * @returns The updated transaction block object.
  */
-export function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, repayAmount: number) {
+export async function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, repayAmount: number) {
+    const config = await getConfig();
+
     txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::entry_repay`,
         arguments: [
@@ -176,7 +184,9 @@ export function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinObject: 
  * @param address - The address for which to retrieve the health factor.
  * @returns The health factor balance.
  */
-export function getHealthFactor(txb: TransactionBlock, address: string) {
+export async function getHealthFactor(txb: TransactionBlock, address: string) {
+    const config = await getConfig();
+
     const balance = txb.moveCall({
         target: `${config.ProtocolPackage}::logic::user_health_factor`,
         arguments: [
@@ -220,7 +230,9 @@ export function mergeCoins(txb: TransactionBlock, coinInfo: any) {
  * @param amount - The amount of the flash loan.
  * @returns An array containing the balance and receipt of the flash loan transaction.
  */
-export function flashloan(txb: TransactionBlock, _pool: PoolConfig, amount: number) {
+export async function flashloan(txb: TransactionBlock, _pool: PoolConfig, amount: number) {
+    const config = await getConfig();
+
     const [balance, receipt] = txb.moveCall({
         target: `${config.ProtocolPackage}::lending::flash_loan_with_ctx`,
         arguments: [
@@ -242,7 +254,9 @@ export function flashloan(txb: TransactionBlock, _pool: PoolConfig, amount: numb
  * @param repayCoin - The asset ID of the asset to be repaid.
  * @returns The balance after the flash loan is repaid.
  */
-export function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, receipt: any, repayCoin: any) {
+export async function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, receipt: any, repayCoin: any) {
+    const config = await getConfig();
+
     const [balance] = txb.moveCall({
         target: `${config.ProtocolPackage}::lending::flash_repay_with_ctx`,
         arguments: [
@@ -266,9 +280,10 @@ export function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, receipt
  * @param to_liquidate_address - The address to which the liquidated amount will be sent.
  * @param to_liquidate_amount - The amount to be liquidated.
  */
-export function liquidateFunction(txb: TransactionBlock, payCoinType: CoinInfo, payCoinObj: any, collateralCoinType: CoinInfo, to_liquidate_address: string, to_liquidate_amount: string) {
+export async function liquidateFunction(txb: TransactionBlock, payCoinType: CoinInfo, payCoinObj: any, collateralCoinType: CoinInfo, to_liquidate_address: string, to_liquidate_amount: string) {
     const pool_to_pay: PoolConfig = pool[payCoinType.symbol as keyof Pool];
     const collateral_pool: PoolConfig = pool[collateralCoinType.symbol as keyof Pool];
+    const config = await getConfig();
 
     txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::entry_liquidation`,
@@ -297,7 +312,8 @@ export function liquidateFunction(txb: TransactionBlock, payCoinType: CoinInfo, 
  * @param assetId - The asset ID.
  * @param option - The option type.
  */
-export function claimRewardFunction(txb: TransactionBlock, incentiveFundsPool: string, assetId: string, option: OptionType) {
+export async function claimRewardFunction(txb: TransactionBlock, incentiveFundsPool: string, assetId: string, option: OptionType) {
+    const config = await getConfig();
 
     const ProFundsPoolInfo: any = {
         'f975bc2d4cca10e3ace8887e20afd77b46c383b4465eac694c4688344955dea4': {

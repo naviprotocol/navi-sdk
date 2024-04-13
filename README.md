@@ -142,7 +142,7 @@ client.getPoolInfo(USDC)
 * Option default is 1, you may leave it empty
 ```javascript
 account.getAvailableRewards() //Return this account's available rewards
-client.checkAddressAvailableRewards(address); //You may check any address
+client.getAvailableRewards(address); //You may check any address
 ```
 
 ### Get Current Health Factor
@@ -174,8 +174,6 @@ account.repay(coinType = NAVX, amount)
 
 account.claimAllRewards(); //Claim both Supply and Borrow rewards
 
-
-
 // Initialization Zone
 const debt_coin: CoinInfo = USDC; // Assigns USDC as the payment coin. Ensure you maintain a minimum of 0.5 Sui for gas fees if Sui is used.
 const to_liquidate_address = 'address_to_liquidate'; // Specifies the blockchain address of the account to be liquidated.
@@ -199,11 +197,9 @@ import { NAVISDKClient } from 'navi-sdk'
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import {depositCoin,withdrawCoin, borrowCoin, flashloan,repayFlashLoan, SignAndSubmitTXB, mergeCoins} from 'navi-sdk/dist/libs/PTB'
 import { Pool, PoolConfig } from "navi-sdk/dist/types";
-import { pool } from 'navi-sdk/dist/address'
-import { USDC } from 'navi-sdk/dist/address'
+import { pool, USDC } from 'navi-sdk/dist/address'
 
-
-const mnemonic = "";
+const mnemonic = "test mnemonic";
 const client = new NAVISDKClient({mnemonic: mnemonic, networkType: "mainnet", numberOfAccounts: 1});
 
 // Initialize the TransactionBlock
@@ -217,7 +213,7 @@ const amount_to_borrow = 1*1e6; //Borrow 1 USDC
 
 // Supported: Sui/NAVX/vSui/USDC/USDT/WETH/CETUS/HAsui, import from address file
 const USDC_Pool: PoolConfig = pool[USDC.symbol as keyof Pool];
-const [balance, receipt] = flashloan(txb, USDC_Pool, amount_to_borrow); // Flashloan 1 usdc
+const [balance, receipt] = await flashloan(txb, USDC_Pool, amount_to_borrow); // Flashloan 1 usdc
 
 //Transfer the flashloan money to the account
 const this_coin = txb.moveCall({
@@ -231,10 +227,10 @@ txb.mergeCoins(txb.object("{source_USDC_obj}"), [this_coin]);
 
 const amount = 1*1e6; //Deposit 1 USDC
 //Deposit 1USDC to NAVI Protocol
-depositCoin(txb, USDC_Pool, txb.object("{source_USDC_obj}"), amount);
+await depositCoin(txb, USDC_Pool, txb.object("{source_USDC_obj}"), amount);
 
 //Withdraw 1 USDC from NAVI Protocol
-withdrawCoin(txb, USDC_Pool, amount);
+await withdrawCoin(txb, USDC_Pool, amount);
 
 //Get the repayment object
 const repayBalance = txb.moveCall({
@@ -243,7 +239,7 @@ const repayBalance = txb.moveCall({
     typeArguments: [USDC_Pool.type],
 });
 
-const [e_balance] = repayFlashLoan(txb, USDC_Pool, receipt, repayBalance); // Repay with USDC
+const [e_balance] = await repayFlashLoan(txb, USDC_Pool, receipt, repayBalance); // Repay with USDC
 
 //Extra token after repay
 const e_coin = txb.moveCall({

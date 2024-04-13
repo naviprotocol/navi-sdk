@@ -3,7 +3,7 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
 import { initializeParas, NetworkType } from "../../types";
 import { getCoinAmount, getCoinDecimal } from "../Coins";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { pool } from "../../address";
+import { getConfig, pool, AddressMap } from "../../address";
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../../types";
 import {
   depositCoin,
@@ -18,9 +18,7 @@ import {
   claimRewardFunction,
   SignAndSubmitTXB,
 } from "../PTB";
-import { config } from "../../address";
 import { moveInspect } from "../CallFunctions";
-import { AddressMap } from '../../address';
 import { bcs } from '@mysten/sui.js/bcs';
 import assert from 'assert';
 
@@ -205,6 +203,8 @@ export class AccountManager {
     let sender = this.getPublicKey();
     txb.setSender(sender);
 
+    const config = await getConfig();
+
     const [ret] = txb.moveCall({
       target: `${config.ProtocolPackage}::lending::create_account`,
     });
@@ -351,7 +351,6 @@ export class AccountManager {
     let txb = new TransactionBlock();
     let sender = this.getPublicKey();
     txb.setSender(sender);
-    console.log(coinSymbol)
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
 
     let getCoinInfo = await this.getCoins(coinType.address);
@@ -360,11 +359,11 @@ export class AccountManager {
     }
     if (coinSymbol == "Sui") {
       const [to_deposit] = txb.splitCoins(txb.gas, [amount]);
-      depositCoin(txb, pool_real, to_deposit, amount);
+      await depositCoin(txb, pool_real, to_deposit, amount);
     } else {
       //Try to merge all the tokens to one object
       const mergedCoinObject = mergeCoins(txb, getCoinInfo);
-      depositCoin(txb, pool_real, mergedCoinObject, amount);
+      await depositCoin(txb, pool_real, mergedCoinObject, amount);
     }
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
@@ -396,11 +395,11 @@ export class AccountManager {
     }
     if (coinSymbol == "Sui") {
       const [to_deposit] = txb.splitCoins(txb.gas, [amount]);
-      depositCoinWithAccountCap(txb, pool_real, to_deposit, accountCapAddress);
+      await depositCoinWithAccountCap(txb, pool_real, to_deposit, accountCapAddress);
     } else {
       //Try to merge all the tokens to one object
       const mergedCoinObject = mergeCoins(txb, getCoinInfo);
-      depositCoinWithAccountCap(
+      await depositCoinWithAccountCap(
         txb,
         pool_real,
         mergedCoinObject,
@@ -424,8 +423,8 @@ export class AccountManager {
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
-    console.log(pool_real)
-    withdrawCoin(txb, pool_real, amount);
+
+    await withdrawCoin(txb, pool_real, amount);
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
   }
@@ -449,7 +448,7 @@ export class AccountManager {
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
-    withdrawCoinWithAccountCap(
+    await withdrawCoinWithAccountCap(
       txb,
       pool_real,
       accountCapAddress,
@@ -478,7 +477,7 @@ export class AccountManager {
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
-    borrowCoin(txb, pool_real, borrowAmount);
+    await borrowCoin(txb, pool_real, borrowAmount);
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
   }
@@ -506,11 +505,11 @@ export class AccountManager {
     if (coinSymbol == "Sui") {
       const [to_deposit] = txb.splitCoins(txb.gas, [repayAmount]);
 
-      repayDebt(txb, pool_real, to_deposit, repayAmount);
+      await repayDebt(txb, pool_real, to_deposit, repayAmount);
     } else {
       //Try to merge all the tokens to one object
       const mergedCoinObject = mergeCoins(txb, getCoinInfo);
-      repayDebt(txb, pool_real, mergedCoinObject, repayAmount);
+      await repayDebt(txb, pool_real, mergedCoinObject, repayAmount);
     }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -536,7 +535,7 @@ export class AccountManager {
       totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
 
       let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
-      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
 
     }
     else {
@@ -554,14 +553,14 @@ export class AccountManager {
       }
 
       let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
-      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
     }
 
     if (payCoinType.symbol == "Sui") {
       totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
 
       let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
-      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
 
     }
     else {
@@ -579,7 +578,7 @@ export class AccountManager {
       }
 
       let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
-      liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
     }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -595,6 +594,7 @@ export class AccountManager {
    * @returns The health factor as a number.
    */
   async getHealthFactor(address: string = this.address) {
+    const config = await getConfig();
     const result: any = await moveInspect(this.client, this.getPublicKey(), `${config.ProtocolPackage}::logic::user_health_factor`, [
       '0x06', // clock object id
       config.StorageId, // object id of storage
@@ -621,6 +621,7 @@ export class AccountManager {
     if (!_pool) {
       throw new Error("Pool does not exist");
     }
+    const config = await getConfig();
 
     const result: any = await moveInspect(this.client, this.getPublicKey(), `${config.ProtocolPackage}::dynamic_calculator::dynamic_health_factor`, [
       '0x06', // clock object id
@@ -672,6 +673,8 @@ export class AccountManager {
    * Parses the result using the `parseResult` method.
    */
   async getReserves() {
+    const config = await getConfig();
+
     const result = await this.client.getDynamicFields({ parentId: config.ReserveParentId });
     return result;
   }
@@ -682,6 +685,8 @@ export class AccountManager {
    * @returns A Promise that resolves to the parsed result of the reserve details.
    */
   async getReservesDetail(assetId: number) {
+    const config = await getConfig();
+
     const result = await this.client.getDynamicFieldObject({ parentId: config.ReserveParentId, name: { type: 'u8', value: assetId } });
     return result;
   }
@@ -693,10 +698,7 @@ export class AccountManager {
    */
   async getNAVIPortfolio(address: string = this.address, ifPrettyPrint: boolean = true): Promise<Map<string, { borrowBalance: number, supplyBalance: number }>> {
     const balanceMap = new Map<string, { borrowBalance: number, supplyBalance: number }>();
-    if (ifPrettyPrint) {
-      console.log("| Reserve Name | Borrow Balance | Supply Balance |");
-      console.log("|--------------|----------------|----------------|");
-    }
+
     await Promise.all(Object.keys(pool).map(async (poolKey) => {
       const reserve: PoolConfig = pool[poolKey as keyof Pool];
       const borrowBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: address } });
@@ -728,6 +730,8 @@ export class AccountManager {
    * @returns The incentive pools information.
    */
   async getIncentivePools(asset_id: number, option: OptionType, user?: string) {
+    const config = await getConfig();
+
     const result: any = await moveInspect(
       this.client,
       this.address,
@@ -823,13 +827,14 @@ export class AccountManager {
     txb.setSender(this.address);
 
     const rewardsSupply = await this.getAvailableRewards(this.address, 1, false);
+    
     for (const reward of rewardsSupply) {
-      claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
+      await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
     }
 
     const rewardsBorrow = await this.getAvailableRewards(this.address, 3, false);
     for (const reward of rewardsBorrow) {
-      claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
+      await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
     }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
