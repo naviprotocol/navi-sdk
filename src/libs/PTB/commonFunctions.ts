@@ -119,7 +119,13 @@ export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: P
     });
 
     // const [ret] = txb.moveCall({ target: `${config.ProtocolPackage}::lending::create_account` });
-    txb.transferObjects([ret], sender);
+    const [coin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [txb.object(ret)],
+        typeArguments: [_pool.type]
+    });
+
+    txb.transferObjects([coin], sender);
 }
 
 /**
