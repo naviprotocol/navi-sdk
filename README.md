@@ -196,12 +196,19 @@ account.liquidate(debt_coin, to_liquidate_address, collateral_coin, to_liquidate
 import { NAVISDKClient } from 'navi-sdk'
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import {depositCoin,withdrawCoin, borrowCoin, flashloan,repayFlashLoan, SignAndSubmitTXB, mergeCoins} from 'navi-sdk/dist/libs/PTB'
-import { Pool, PoolConfig } from "navi-sdk/dist/types";
+import { CoinInfo, Pool, PoolConfig } from "navi-sdk/dist/types";
 import { pool, USDC } from 'navi-sdk/dist/address'
 
-const mnemonic = "test mnemonic";
+const mnemonic = "Test Mnemonic"; //Replace with your mnemonic
 const client = new NAVISDKClient({mnemonic: mnemonic, networkType: "mainnet", numberOfAccounts: 1});
 
+//Set Up Zone
+const toBorrowCoin: CoinInfo = USDC;
+const amount_to_borrow = 1 * 10**toBorrowCoin.decimal; //Borrow 1 USDC
+//End of Set Up Zone
+
+
+//For the following code, you can directly copy and paste it to your project
 // Initialize the TransactionBlock
 let txb = new TransactionBlock();
 const account = client.accounts[0];
@@ -209,48 +216,130 @@ let sender = account.address;
 console.log(sender)
 txb.setSender(sender);
 
-const amount_to_borrow = 1*1e6; //Borrow 1 USDC
+//Get the object of the coin
+const sourceTokenObjAddress = await account.getCoins(toBorrowCoin);
+const sourceTokenObj = txb.object(sourceTokenObjAddress.data[0].coinObjectId);
 
 // Supported: Sui/NAVX/vSui/USDC/USDT/WETH/CETUS/HAsui, import from address file
-const USDC_Pool: PoolConfig = pool[USDC.symbol as keyof Pool];
-const [balance, receipt] = await flashloan(txb, USDC_Pool, amount_to_borrow); // Flashloan 1 usdc
+const Coin_Pool: PoolConfig = pool[toBorrowCoin.symbol as keyof Pool];
+const [balance, receipt] = await flashloan(txb, Coin_Pool, amount_to_borrow); // Flashloan 1 USDC
 
 //Transfer the flashloan money to the account
 const this_coin = txb.moveCall({
     target: '0x2::coin::from_balance',
     arguments: [balance],
-    typeArguments: [USDC_Pool.type],
+    typeArguments: [Coin_Pool.type],
 });
 
 //Merge Coin to the wallet balance
-txb.mergeCoins(txb.object("{source_USDC_obj}"), [this_coin]);
-
-const amount = 1*1e6; //Deposit 1 USDC
-//Deposit 1USDC to NAVI Protocol
-await depositCoin(txb, USDC_Pool, txb.object("{source_USDC_obj}"), amount);
-
-//Withdraw 1 USDC from NAVI Protocol
-await withdrawCoin(txb, USDC_Pool, amount);
+txb.mergeCoins(sourceTokenObj, [this_coin]);
 
 //Get the repayment object
 const repayBalance = txb.moveCall({
     target: '0x2::coin::into_balance',
-    arguments: [txb.object('{your_repay_coin_object_id}')],
-    typeArguments: [USDC_Pool.type],
+    arguments: [sourceTokenObj],
+    typeArguments: [Coin_Pool.type],
 });
 
-const [e_balance] = await repayFlashLoan(txb, USDC_Pool, receipt, repayBalance); // Repay with USDC
+const [e_balance] = await repayFlashLoan(txb, Coin_Pool, receipt, repayBalance); // Repay with the balance
 
 //Extra token after repay
-const e_coin = txb.moveCall({
+const extra_coin = txb.moveCall({
     target: '0x2::coin::from_balance',
     arguments: [e_balance],
-    typeArguments: [USDC_Pool.type],
+    typeArguments: [Coin_Pool.type],
 });
 
 //Transfer left_money after repay to the account
-txb.transferObjects([e_coin], sender);
+txb.transferObjects([extra_coin], sender);
 const result = SignAndSubmitTXB(txb, account.client, account.keypair);
 console.log("result: ", result);
+
+```
+
+
+## Liquidation Sample
+```javascript
+
+import { NAVISDKClient } from "navi-sdk";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { SignAndSubmitTXB } from 'navi-sdk/dist/libs/PTB'
+import dotenv from 'dotenv';
+import { CETUS, getConfig, pool, Sui, USDC, USDT, vSui } from 'navi-sdk/dist/address';
+import { PoolConfig, Pool, CoinInfo } from 'navi-sdk/dist/types';
+import { AccountManager } from "navi-sdk/dist/libs/AccountManager";
+dotenv.config();
+
+const accountKey = process.env.liquidAddress;
+const client = new NAVISDKClient({ mnemonic: accountKey });
+const account = client.accounts[0];
+const sender = account.address;
+console.log(`use address: `, account.address)
+
+//Set UP Zone
+const to_pay_coin: CoinInfo = USDT;
+const to_liquidate_address = '0x111';
+const collectral_coin: CoinInfo = Sui;
+//End of Set UP Zone
+
+console.log(`\n\nTo Liquidate address: `, to_liquidate_address)
+let [coinObj, to_liquidate_amount] = await getCoinObj(account, to_pay_coin);
+
+//Initialize the TransactionBlock
+let txb:any = new TransactionBlock();
+txb.setSender(sender);
+
+const pool_to_pay: PoolConfig = pool[to_pay_coin.symbol as keyof Pool];
+const collectral_pool: PoolConfig = pool[collectral_coin.symbol as keyof Pool];
+const config = await getConfig();
+
+//Add the liquidation function to the ptb
+txb.moveCall({
+    target: `${config.ProtocolPackage}::incentive_v2::entry_liquidation`,
+    arguments: [
+        txb.object('0x06'),
+        txb.object(config.PriceOracle),
+        txb.object(config.StorageId),
+        txb.pure(pool_to_pay.assetId),
+        txb.object(pool_to_pay.poolId),
+        txb.object(coinObj),
+        txb.pure(collectral_pool.assetId),
+        txb.object(collectral_pool.poolId),
+        txb.pure(to_liquidate_address),
+        txb.pure(to_liquidate_amount),
+        txb.object(config.Incentive),
+        txb.object(config.IncentiveV2),
+    ],
+    typeArguments: [pool_to_pay.type, collectral_pool.type],
+})
+
+//Submit the Tx
+const result = await SignAndSubmitTXB(txb, account.client, account.keypair);
+console.log('Success: ', result.confirmedLocalExecution);
+
+//Get the object of the coin, if there are several coins, merge them
+async function getCoinObj(account: AccountManager, realCoin: CoinInfo) {
+
+    let getCoinInfo = await account.getCoins(
+        realCoin.address
+    );
+    let allBalance = await account.client.getBalance({owner: account.address, coinType: realCoin.address});
+    
+    if (getCoinInfo.data.length >= 2) {
+        const txb:any = new TransactionBlock();
+        txb.setSender(account.address);
+        let baseObj = getCoinInfo.data[0].coinObjectId;
+        let i = 1;
+        while (i < getCoinInfo.data.length) {
+            txb.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
+            i++;
+        }
+        SignAndSubmitTXB(txb, account.client, account.keypair);
+    }
+
+    let mergedCoin = getCoinInfo.data[0].coinObjectId;
+    let { totalBalance } = allBalance;
+    return [mergedCoin, totalBalance];
+}
 
 ```
