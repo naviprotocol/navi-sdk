@@ -138,8 +138,8 @@ export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: P
 export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borrowAmount: number) {
     const config = await getConfig();
 
-    txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::entry_borrow`,
+    const [balance] = txb.moveCall({
+        target: `${config.ProtocolPackage}::incentive_v2::borrow`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -151,8 +151,8 @@ export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borro
         ],
         typeArguments: [_pool.type]
     })
-    return txb;
 
+    return balance;
 }
 
 /**
@@ -166,8 +166,8 @@ export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borro
 export async function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, repayAmount: number) {
     const config = await getConfig();
 
-    txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::entry_repay`,
+    const [balance] = txb.moveCall({
+        target: `${config.ProtocolPackage}::incentive_v2::repay`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -180,8 +180,8 @@ export async function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinOb
         ],
         typeArguments: [_pool.type]
     })
-    return txb;
 
+    return balance;
 }
 
 /**
