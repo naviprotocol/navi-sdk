@@ -229,6 +229,12 @@ export class AccountManager {
   ) {
     const coinAddress = coinType.address ? coinType.address : coinType;
 
+    if(recipient.include("")){
+      throw new Error(
+        "transferSuiToMany: recipient address can't be empty"
+      );  
+    }
+    
     if (recipient.length !== amounts.length) {
       throw new Error(
         "transferSuiToMany: recipients.length !== amounts.length"
