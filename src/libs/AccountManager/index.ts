@@ -229,6 +229,11 @@ export class AccountManager {
   ) {
     const coinAddress = coinType.address ? coinType.address : coinType;
 
+    // Check if any recipient address is an empty string
+    if (recipient.some(address => address.trim() === "")) {
+      throw new Error("Recipient list contains an empty address string.");
+    }
+
     if (recipient.length !== amounts.length) {
       throw new Error(
         "transferSuiToMany: recipients.length !== amounts.length"
@@ -424,7 +429,10 @@ export class AccountManager {
     txb.setSender(sender);
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
 
-    await withdrawCoin(txb, pool_real, amount);
+    const [returnCoin] = await withdrawCoin(txb, pool_real, amount);
+    
+    txb.transferObjects([returnCoin], sender);
+
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
   }
@@ -448,13 +456,15 @@ export class AccountManager {
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
-    await withdrawCoinWithAccountCap(
+    const [returnCoin] = await withdrawCoinWithAccountCap(
       txb,
       pool_real,
       accountCapAddress,
       withdrawAmount,
       sender
     );
+
+    txb.transferObjects([returnCoin], sender);
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
@@ -477,7 +487,9 @@ export class AccountManager {
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
-    await borrowCoin(txb, pool_real, borrowAmount);
+    const [returnCoin] = await borrowCoin(txb, pool_real, borrowAmount);
+    txb.transferObjects([returnCoin], sender);
+
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
   }
@@ -703,7 +715,7 @@ export class AccountManager {
       const reserve: PoolConfig = pool[poolKey as keyof Pool];
       const borrowBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: address } });
       const supplyBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.supplyBalanceParentId, name: { type: 'address', value: address } });
-      
+
       const borrowIndexData: any = await this.getReservesDetail(reserve.assetId);
       const borrowIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_borrow_index / Math.pow(10, 27);
       const supplyIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_supply_index / Math.pow(10, 27);
@@ -827,7 +839,7 @@ export class AccountManager {
     txb.setSender(this.address);
 
     const rewardsSupply = await this.getAvailableRewards(this.address, 1, false);
-    
+
     for (const reward of rewardsSupply) {
       await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
     }

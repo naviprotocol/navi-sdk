@@ -69,8 +69,8 @@ export async function depositCoinWithAccountCap(txb: TransactionBlock, _pool: Po
 export async function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amount: number) {
     const config = await getConfig();
 
-    txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::entry_withdraw`,
+    const [ret] = txb.moveCall({
+        target: `${config.ProtocolPackage}::incentive_v2::withdraw`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -83,8 +83,15 @@ export async function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amo
         ],
         typeArguments: [_pool.type]
     })
-    return txb;
 
+    //Transfer withdraw
+    const [coin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [ret],
+        typeArguments: [_pool.type]
+    });
+
+    return [coin];
 }
 
 /**
@@ -125,7 +132,7 @@ export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: P
         typeArguments: [_pool.type]
     });
 
-    txb.transferObjects([coin], sender);
+    return [coin];
 }
 
 /**
@@ -138,8 +145,8 @@ export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: P
 export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borrowAmount: number) {
     const config = await getConfig();
 
-    txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::entry_borrow`,
+    const [ret] = txb.moveCall({
+        target: `${config.ProtocolPackage}::incentive_v2::borrow`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -151,7 +158,14 @@ export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borro
         ],
         typeArguments: [_pool.type]
     })
-    return txb;
+
+    const [coin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [txb.object(ret)],
+        typeArguments: [_pool.type]
+    });
+
+    return [coin];
 
 }
 
