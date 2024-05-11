@@ -288,7 +288,14 @@ export async function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, r
         ],
         typeArguments: [_pool.type]
     })
-    return [balance];
+
+    const [coin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [balance],
+        typeArguments: [_pool.type]
+    });
+
+    return [coin];
 }
 
 /**

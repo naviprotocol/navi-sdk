@@ -137,7 +137,7 @@ export const USDC: CoinInfo = {
 export const WETH: CoinInfo = {
     symbol: 'WETH',
     address: '0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN',
-    decimal: 18
+    decimal: 8
 }
 
 export const CETUS: CoinInfo = {
