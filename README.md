@@ -3,7 +3,7 @@
 For the latest updates and detailed information on how to interact with the NaviSDK contract, please refer to the [Navi Protocol Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs/how-to-interact-with-the-contract/navi-sdk).
 ## Introduction
 
-The NaviSDK Client provides a set of tools for interacting with ***Sui*** blockchain networks, specifically designed for handling transactions, accounts, and smart contracts in a streamlined and efficient manner. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
+The NaviSDK Client provides a set of tools for interacting with the ***Sui*** blockchain networks, specifically designed for handling transactions, accounts, and smart contracts in a streamlined and efficient manner. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
 
 ## SDK sample & tools
 ### [flash-loan demo](https://github.com/naviprotocol/navi-sdk/samples/flashloan-demo)
@@ -37,11 +37,12 @@ When you initialize client, you will need a mnemonic phrase or we will generate 
 Again, we advise you to use Dotenv package to import mnemonic**
 
 ```javascript
-const mnemonic = process.env.mnemonic; // Use an existing mnemonic or leave empty to generate a new one
-const client = new NAVISDKClient({mnemonic, networkType: "mainnet" || "your_rpc", numberOfAccounts: 5}); 
-//networkType: supports mainnet|testnet|devnet|customizedRPC
-//wordLength: if you want generate a new mnemonic, you may specify the words length
-//numberOfAccounts - How many accounts you want to derive from the mnemonic
+const mnemonic = process.env.mnemonic; // Use an existing mnemonic or leave it empty to generate a new one
+const client = new NAVISDKClient({ mnemonic, networkType: "mainnet" || "your_rpc", numberOfAccounts: 5 }); 
+// networkType: supports mainnet|testnet|devnet|customizedRPC
+// wordLength: if you want to generate a new mnemonic, you may specify the word length
+// numberOfAccounts: How many accounts you want to derive from the mnemonic
+
 ```
 ### Get the specific account
 All generated accounts are stored in a `list` and you can retrive any account by input the account index from the list.
