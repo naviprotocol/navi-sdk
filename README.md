@@ -121,11 +121,8 @@ balances.then((res) => {
 })
 ```
 Sample output:
-```json
-{
-  '0x2::sui::SUI': 0.795350528,
-  '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 1.3
-}
+```
+{ '0x2::sui::SUI': 0.795350528, '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 1.3 }
 ```
 ## Navi Interaction
 ### Get Current Supply/Borrow from Navi
@@ -173,7 +170,7 @@ client.getReserves() //Get All reserve info
 ```
 Sample output:
 ```
-data: {
+{
     objectId: '0xab644b5fd11aa11e930d1c7bc903ef609a9feaf9ffe1b23532ad8441854fbfaf',
     version: '160270114',
     digest: 'AqrCj2mh3xPggoS3jFoveLpF7oJodbzm1uYuPB7jxus6',
@@ -197,7 +194,7 @@ client.getPoolInfo(Sui)
 //Leave it empty to get all poolinfo
 ```
 This will return a json-like map like the following:
-``` json
+```
 {
   coin_type: '0x2::sui::SUI',
   total_supply: '76518112.90791546', //Supplied Sui Amount
