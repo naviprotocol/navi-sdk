@@ -2,7 +2,9 @@ import { NAVISDKClient } from 'navi-sdk'
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { depositCoin, withdrawCoin, borrowCoin, flashloan, repayFlashLoan, SignAndSubmitTXB, mergeCoins } from 'navi-sdk/dist/libs/PTB'
 import { CoinInfo, Pool, PoolConfig } from "navi-sdk/dist/types";
-import { pool, USDC } from 'navi-sdk/dist/address'
+import { pool, USDC } from 'navi-sdk/dist/address';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const mnemonic = process.env.mnemonic;
 const client = new NAVISDKClient({ mnemonic: mnemonic, networkType: "mainnet", numberOfAccounts: 1 });
