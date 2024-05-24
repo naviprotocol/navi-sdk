@@ -299,15 +299,7 @@ export async function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, r
     return [balance];
 }
 
-/**
- * Liquidates a transaction block by calling the entry_liquidation function.
- * @param txb - The transaction block to be liquidated.
- * @param payCoinType - The coin type used for payment.
- * @param payCoinObj - The payment coin object.
- * @param collateralCoinType - The coin type used for collateral.
- * @param to_liquidate_address - The address to which the liquidated amount will be sent.
- * @param to_liquidate_amount - The amount to be liquidated.
- */
+
 /**
  * Liquidates a transaction block.
  * @param txb - The transaction block to be liquidated.
