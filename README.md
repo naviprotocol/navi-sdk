@@ -21,7 +21,7 @@ Before you can use the NaviSDK Client, you need to set up your project environme
 
 `npm i navi-sdk`
 
-*We Highly Suggestes you use env to import mnemonic all the time *
+*We highly suggest you use env to import mnemonic all the time *
 
 `npm i dotenv` 
 
