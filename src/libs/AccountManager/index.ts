@@ -3,12 +3,12 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
 import { initializeParas, NetworkType } from "../../types";
 import { getCoinAmount, getCoinDecimal } from "../Coins";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { getConfig, pool, AddressMap } from "../../address";
+import { getConfig, pool, AddressMap, vSui } from "../../address";
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../../types";
 import {
   depositCoin,
   depositCoinWithAccountCap,
-  mergeCoins,
+  returnMergedCoins,
   getHealthFactor,
   withdrawCoin,
   withdrawCoinWithAccountCap,
@@ -17,6 +17,8 @@ import {
   liquidateFunction,
   claimRewardFunction,
   SignAndSubmitTXB,
+  stakeTovSui,
+  unstakeTovSui
 } from "../PTB";
 import { moveInspect } from "../CallFunctions";
 import { bcs } from '@mysten/sui.js/bcs';
@@ -26,18 +28,30 @@ import assert from 'assert';
 
 export class AccountManager {
   public keypair: Ed25519Keypair;
-  public client: SuiClient;
+  public client: SuiClient = new SuiClient({ url: getFullnodeUrl("mainnet") });
   public address: string = "";
 
   /**
    * AccountManager class for managing user accounts.
    */
-  constructor({ mnemonic = "", networkType, accountIndex = 0 }: initializeParas = {}) {
+  constructor({ mnemonic = "", networkType = "mainnet", accountIndex = 0 } = {}) {
 
     this.keypair = Ed25519Keypair.deriveKeypair(mnemonic, this.getDerivePath(accountIndex));
-    this.client = new SuiClient({
-      url: getFullnodeUrl(networkType as NetworkType),
-    });
+
+    const validNetworkTypes = ["mainnet", "testnet", "devnet", "localnet"];
+    try {
+      if (validNetworkTypes.includes(networkType)) {
+        this.client = new SuiClient({
+          url: getFullnodeUrl(networkType as NetworkType),
+        });
+      } else {
+        this.client = new SuiClient({ url: networkType });
+      }
+    }
+    catch (e) {
+      console.log("Invalid network type or RPC", e);
+    }
+
     this.address = this.keypair.getPublicKey().toSuiAddress();
     this.structRegistry();
   }
@@ -103,22 +117,25 @@ export class AccountManager {
     });
   }
 
+
   /**
    * Returns the derivation path for a given address index.
+   * 
    * @param addressIndex - The index of the address.
-   * @returns The derivation path.
+   * @returns The derivation path as a string.
    */
   getDerivePath(addressIndex: number) {
 
-    return `m/44'/784'/0'/0'/${addressIndex}'`;
+    return `m/44'/784'/0'/0'/${addressIndex}'` as string;
   };
+
 
   /**
    * Retrieves the public key associated with the account.
-   * @returns The public key as a SuiAddress.
+   * @returns The public key as a Sui address string.
    */
   getPublicKey() {
-    return this.keypair.getPublicKey().toSuiAddress();
+    return this.keypair.getPublicKey().toSuiAddress() as string;
   }
 
   /**
@@ -145,7 +162,7 @@ export class AccountManager {
    * getWalletBalance is an asynchronous function that retrieves the balance of all coins in the wallet.
    * 
    * @param ifPrettyPrint - A boolean indicating whether to print the data in a pretty format. Default is false.
-   * @returns A Promise that resolves to an object containing the balance of each coin in the wallet.
+   * @returns A Promise that resolves to an object containing the balance of each coin in the wallet. Record<string, number>
    */
   async getWalletBalance(ifPrettyPrint: boolean = true): Promise<Record<string, number>> {
     const allData = await this.getAllCoins(false);
@@ -186,11 +203,11 @@ export class AccountManager {
   async getCoins(coinType: any = "0x2::sui::SUI") {
     const coinAddress = coinType.address ? coinType.address : coinType;
 
-    const coininfo = await this.client.getCoins({
+    const coinDeatil = await this.client.getCoins({
       owner: this.address,
       coinType: coinAddress
     })
-    return coininfo;
+    return coinDeatil;
   }
 
 
@@ -213,6 +230,7 @@ export class AccountManager {
     return result;
   }
 
+
   /**
    * Sends coins to multiple recipients.
    * 
@@ -220,7 +238,7 @@ export class AccountManager {
    * @param recipient - An array of recipient addresses.
    * @param amounts - An array of amounts to send to each recipient.
    * @returns A promise that resolves to the result of the transaction.
-   * @throws An error if the number of recipients does not match the number of amounts, or if the sender has insufficient balance.
+   * @throws An error if the recipient list contains an empty address string, or if the length of the recipient array is not equal to the length of the amounts array, or if there is insufficient balance for the coin.
    */
   async sendCoinToMany(
     coinType: any,
@@ -260,13 +278,20 @@ export class AccountManager {
         coins = txb.splitCoins(txb.gas, amounts);
       } else {
         //Merge other coins to one obj if there are multiple
+        // depreacted
+        // if (getCoinInfo.data.length >= 2) {
+        //   let baseObj = getCoinInfo.data[0].coinObjectId;
+        //   let i = 1;
+        //   while (i < getCoinInfo.data.length) {
+        //     txb.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
+        //     i++;
+        //   }
+        // }
         if (getCoinInfo.data.length >= 2) {
           let baseObj = getCoinInfo.data[0].coinObjectId;
-          let i = 1;
-          while (i < getCoinInfo.data.length) {
-            txb.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
-            i++;
-          }
+          let all_list = getCoinInfo.data.slice(1).map(coin => coin.coinObjectId);
+
+          txb.mergeCoins(baseObj, all_list);
         }
         let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
 
@@ -367,7 +392,7 @@ export class AccountManager {
       await depositCoin(txb, pool_real, to_deposit, amount);
     } else {
       //Try to merge all the tokens to one object
-      const mergedCoinObject = mergeCoins(txb, getCoinInfo);
+      const mergedCoinObject = returnMergedCoins(txb, getCoinInfo);
       await depositCoin(txb, pool_real, mergedCoinObject, amount);
     }
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -403,7 +428,7 @@ export class AccountManager {
       await depositCoinWithAccountCap(txb, pool_real, to_deposit, accountCapAddress);
     } else {
       //Try to merge all the tokens to one object
-      const mergedCoinObject = mergeCoins(txb, getCoinInfo);
+      const mergedCoinObject = returnMergedCoins(txb, getCoinInfo);
       await depositCoinWithAccountCap(
         txb,
         pool_real,
@@ -430,7 +455,7 @@ export class AccountManager {
     const pool_real: PoolConfig = pool[coinSymbol as keyof Pool];
 
     const [returnCoin] = await withdrawCoin(txb, pool_real, amount);
-    
+
     txb.transferObjects([returnCoin], sender);
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -520,7 +545,7 @@ export class AccountManager {
       await repayDebt(txb, pool_real, to_deposit, repayAmount);
     } else {
       //Try to merge all the tokens to one object
-      const mergedCoinObject = mergeCoins(txb, getCoinInfo);
+      const mergedCoinObject = returnMergedCoins(txb, getCoinInfo);
       await repayDebt(txb, pool_real, mergedCoinObject, repayAmount);
     }
 
@@ -528,6 +553,15 @@ export class AccountManager {
     return result;
   }
 
+  /**
+   * Liquidates a specified amount of coins.
+   * 
+   * @param payCoinType - The coin type to be paid for liquidation.
+   * @param to_liquidate_address - The address to which the liquidated coins will be transferred.
+   * @param collateralCoinType - The coin type to be used as collateral for liquidation.
+   * @param to_liquidate_amount - The amount of coins to be liquidated (optional, default is 0).
+   * @returns PtbResult - The result of the liquidation transaction.
+   */
   async liquidate(payCoinType: CoinInfo, to_liquidate_address: string, collateralCoinType: CoinInfo, to_liquidate_amount: number = 0) {
 
     let txb = new TransactionBlock();
@@ -547,8 +581,22 @@ export class AccountManager {
       totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
 
       let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
-      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+      const [collateralBalance, remainDebtBalance] = await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
 
+      const [collateralCoin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [collateralBalance],
+        typeArguments: [collateralCoinType.address],
+      });
+
+
+      const [leftDebtCoin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [remainDebtBalance],
+        typeArguments: [payCoinType.address],
+      });
+
+      txb.transferObjects([collateralCoin, leftDebtCoin], to_liquidate_address);
     }
     else {
 
@@ -556,49 +604,42 @@ export class AccountManager {
         const txbMerge = new TransactionBlock();
         txbMerge.setSender(this.address);
         let baseObj = getCoinInfo.data[0].coinObjectId;
-        let i = 1;
-        while (i < getCoinInfo.data.length) {
-          txbMerge.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
-          i++;
-        }
+        //depreacted
+        // let i = 1;
+        // while (i < getCoinInfo.data.length) {
+        //   txbMerge.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
+        //   i++;
+        // }
+
+        let all_list = getCoinInfo.data.slice(1).map(coin => coin.coinObjectId);
+
+        txb.mergeCoins(baseObj, all_list);
+
         SignAndSubmitTXB(txbMerge, this.client, this.keypair);
       }
 
       let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
-      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
-    }
+      const [collateralBalance, remainDebtBalance] = await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
 
-    if (payCoinType.symbol == "Sui") {
-      totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
+      const [collateralCoin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [collateralBalance],
+        typeArguments: [collateralCoinType.address],
+      });
 
-      let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
-      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
 
-    }
-    else {
+      const [leftDebtCoin] = txb.moveCall({
+        target: `0x2::coin::from_balance`,
+        arguments: [remainDebtBalance],
+        typeArguments: [payCoinType.address],
+      });
 
-      if (getCoinInfo.data.length >= 2) {
-        const txbMerge = new TransactionBlock();
-        txbMerge.setSender(this.address);
-        let baseObj = getCoinInfo.data[0].coinObjectId;
-        let i = 1;
-        while (i < getCoinInfo.data.length) {
-          txbMerge.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
-          i++;
-        }
-        SignAndSubmitTXB(txbMerge, this.client, this.keypair);
-      }
-
-      let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
-      await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, to_liquidate_address, totalBalance);
+      txb.transferObjects([collateralCoin, leftDebtCoin], to_liquidate_address);
     }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
   }
-
-
-
 
   /**
    * Retrieves the health factor for a given address.
@@ -832,7 +873,7 @@ export class AccountManager {
 
   /**
    * Claims all available rewards for the specified account.
-   * @returns A promise that resolves to the result of the reward claim operation.
+   * @returns PTB result
    */
   async claimAllRewards() {
     let txb = new TransactionBlock();
@@ -853,6 +894,71 @@ export class AccountManager {
     return result;
   }
 
+  /**
+   * Stakes a specified amount of SuitoVoloSui.
+   * @param stakeAmount The amount of SuitoVoloSui to stake. Must be greater than 1Sui.
+   * @returns PTb result
+   */
+  async stakeSuitoVoloSui(stakeAmount: number) {
+    let txb = new TransactionBlock();
+    txb.setSender(this.address);
+
+    assert(stakeAmount >= 1e9, "Stake amount should be greater than 1Sui");
+    const [toSwapSui] = txb.splitCoins(txb.gas, [stakeAmount]);
+
+    const vSuiCoin = await stakeTovSui(txb, toSwapSui)
+
+    txb.transferObjects([vSuiCoin], this.address);
+
+    const result = SignAndSubmitTXB(txb, this.client, this.keypair);
+    return result;
+  }
+
+  /**
+   * Unstakes a specified amount of SUI from VOLO SUI.
+   * If no amount is provided, unstakes all available vSUI. Must be greater than 1vSui.
+   * 
+   * @param unstakeAmount - The amount of SUI to unstake. If not provided, all available vSUI will be unstaked.
+   * @returns PTb result
+   */
+  async unstakeSuiFromVoloSui(unstakeAmount: number = -1) {
+    let txb = new TransactionBlock();
+    txb.setSender(this.address);
+
+    let getCoinInfo = await this.getCoins(
+      vSui.address
+    );
+
+    if (getCoinInfo.data.length >= 2) {
+      const txbMerge = new TransactionBlock();
+      txbMerge.setSender(this.address);
+      let baseObj = getCoinInfo.data[0].coinObjectId;
+
+      let all_list = getCoinInfo.data.slice(1).map(coin => coin.coinObjectId);
+
+      txb.mergeCoins(baseObj, all_list);
+
+      SignAndSubmitTXB(txbMerge, this.client, this.keypair);
+    }
+
+    getCoinInfo = await this.getCoins(
+      vSui.address
+    );
+    //unstake all vSui
+    if (unstakeAmount == -1) {
+      unstakeAmount = Number(getCoinInfo.data[0].balance);
+    }
+    assert(unstakeAmount >= 1e9, "Unstake amount should >= 1vSui");
+
+    let mergedCoin = txb.object(getCoinInfo.data[0].coinObjectId);
+    const [splittedCoin] = txb.splitCoins(mergedCoin, [unstakeAmount]);
+    await unstakeTovSui(txb, splittedCoin)
+
+    const result = SignAndSubmitTXB(txb, this.client, this.keypair);
+    return result;
+  }
 }
+
+
 
 

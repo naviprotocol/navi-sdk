@@ -137,7 +137,7 @@ export const USDC: CoinInfo = {
 export const WETH: CoinInfo = {
     symbol: 'WETH',
     address: '0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN',
-    decimal: 18
+    decimal: 8
 }
 
 export const CETUS: CoinInfo = {
@@ -150,4 +150,11 @@ export const haSui: CoinInfo = {
     symbol: 'haSui',
     address: '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI',
     decimal: 9
+}
+
+export const vSuiConfig = {
+    ProtocolPackage: "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",
+    pool: "0x7fa2faa111b8c65bea48a23049bfd81ca8f971a262d981dcd9a17c3825cb5baf",
+    metadata: "0x680cd26af32b2bde8d3361e804c53ec1d1cfe24c7f039eb7f549e8dfde389a60",
+    wrapper: "0x05"
 }

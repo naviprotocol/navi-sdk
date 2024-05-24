@@ -33,7 +33,7 @@ export class NAVISDKClient {
         }
         this.networkType = networkType || "mainnet";
         for (let i = 0; i < numberOfAccounts; i++) {
-            this.account = new AccountManager({ mnemonic: this.mnemonic || "", networkType: this.networkType || "mainnet", wordLength: wordLength || 12, accountIndex: i });
+            this.account = new AccountManager({ mnemonic: this.mnemonic || "", networkType: this.networkType || "mainnet", accountIndex: i });
             this.accounts.push(this.account);
         }
 

@@ -5,6 +5,15 @@ For the latest updates and detailed information on how to interact with the Navi
 
 The NaviSDK Client provides a set of tools for interacting with ***Sui*** blockchain networks, specifically designed for handling transactions, accounts, and smart contracts in a streamlined and efficient manner. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
 
+## SDK sample & tools
+### [flash-loan demo](https://github.com/naviprotocol/navi-sdk/samples/flashloan-demo)
+
+
+### [Liquidation demo](https://github.com/naviprotocol/navi-sdk/samples/liquidation-bot)
+
+
+### [Send Batch Coins Demo](https://github.com/naviprotocol/navi-sdk/samples/batchSendCoin-demo)
+
 ## Getting Started
 
 ### Installation
@@ -12,32 +21,42 @@ Before you can use the NaviSDK Client, you need to set up your project environme
 
 `npm i navi-sdk`
 
+*We Highly Suggestes you use env to import mnemonic all the time *
+
+`npm i dotenv` 
+
+[Check how to use dotenv](https://github.com/motdotla/dotenv)
+
 ## Creating and Managing Accounts
 ### Creating a Default Account
 When you initialize client, you will need a mnemonic phrase or we will generate a new one for you. 
 
 1 mnemonic for 1 client
 
-**We will never save user's mnemonic phrase**
+**We will never save user's mnemonic phrase.
+Again, we advise you to use Dotenv package to import mnemonic**
 
 ```javascript
-const mnemonic = ''; // Use an existing mnemonic or leave empty to generate a new one
-const client = new NAVISDKClient({mnemonic, networkType: "mainnet", numberOfAccounts: 5}); 
-//networkType: supports mainnet|testnet|devnet
+const mnemonic = process.env.mnemonic; // Use an existing mnemonic or leave empty to generate a new one
+const client = new NAVISDKClient({mnemonic, networkType: "mainnet" || "your_rpc", numberOfAccounts: 5}); 
+//networkType: supports mainnet|testnet|devnet|customizedRPC
 //wordLength: if you want generate a new mnemonic, you may specify the words length
 //numberOfAccounts - How many accounts you want to derive from the mnemonic
 ```
 ### Get the specific account
+All generated accounts are stored in a `list` and you can retrive any account by input the account index from the list.
 ```javascript
 const account = client.accounts[0];
 const account1 = client.accounts[1];
 ```
 ### Check mnemonic for this client
+You may print out your private mnemonic at any time
 ```javascript
 console.log(client.getMnemonic());
 client.mnemonic;
 ```
 ### Return All Accounts under the Client
+Print out all the accounts from NAVI SDK Client
 ```javascript
 client.getAllAccounts()
 //Sample Return
@@ -67,6 +86,7 @@ account.getCoins(coinType = "0x2::sui::SUI")
 account.getCoins(coinType = Sui)
 ```
 ### Send Coin or Objects
+Please keep in mind that PTB has 1024 operation limit, we suggest that recipients list not exceed 500
 ```javascript
 account1.sendCoin(coinType = NAVX, your_recipient_address, amount)
 account2.sendCoinToMany(coinType = NAVX, [addr1, addr2, .. addrN], [amount1, amount2, .. amountN])
@@ -99,6 +119,13 @@ balances.then((res) => {
     console.log(res);
 })
 ```
+Sample output:
+```json
+{
+  '0x2::sui::SUI': 0.795350528,
+  '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 1.3
+}
+```
 ## Navi Interaction
 ### Get Current Supply/Borrow from Navi
 ```javascript
@@ -117,35 +144,85 @@ This will return a table like the following:
 | VoloSui | 0 | 0 |
 | HaedalSui | 0 | 0 |
 ### Get All accounts portfolio info from Navi
+This function returns a overall balance map from all accounts 
 ```javascript
 const allPortfolio = client.getAllNaviPortfolios();
 allPortfolio.then((res) => {
     console.log(res);
 })
 ```
+Sample output:
+```
+Map(8) {
+  'SUI' => { borrowBalance: 11100, supplyBalance: 0 },
+  'CETUS' => { borrowBalance: 0, supplyBalance: 0 },
+  'WETH' => { borrowBalance: 0, supplyBalance: 1 },
+  'USDT' => { borrowBalance: 0, supplyBalance: 0 },
+  'NAVX' => { borrowBalance: 5600.65, supplyBalance: 0 },
+  'USDC' => { borrowBalance: 0, supplyBalance: 0 },
+  'HaedalSui' => { borrowBalance: 0, supplyBalance: 0 },
+  'VoloSui' => { borrowBalance: 0, supplyBalance: 0 }
+}
+```
+
 ### Get Reserve
+This is will return specific Reserve pool info
 ```javascript
 client.getReserves() //Get All reserve info
 ```
-
-### Get PoolInfo
+Sample output:
+```
+data: {
+    objectId: '0xab644b5fd11aa11e930d1c7bc903ef609a9feaf9ffe1b23532ad8441854fbfaf',
+    version: '160270114',
+    digest: 'AqrCj2mh3xPggoS3jFoveLpF7oJodbzm1uYuPB7jxus6',
+    type: '0x2::dynamic_field::Field<u8, 0xd899cf7d2b5db716bd2cf55599fb0d5ee38a3061e7b6bb6eebf73fa5bc4c81ca::storage::ReserveData>',
+    owner: {
+      ObjectOwner: '0xe6d4c6610b86ce7735ea754596d71d72d10c7980b5052fc3c8cdf8d09fea9b4b'
+    },
+    previousTransaction: 'AN5Een128HSW2uFb9KAgTgoXMEieXJXDZDwUPww8R9Vb',
+    storageRebate: '8367600',
+    content: {
+      dataType: 'moveObject',
+      type: '0x2::dynamic_field::Field<u8, 0xd899cf7d2b5db716bd2cf55599fb0d5ee38a3061e7b6bb6eebf73fa5bc4c81ca::storage::ReserveData>',
+      hasPublicTransfer: false,
+      fields: [Object]
+    }
+  }
+```
+### Get PoolInfo - Supply/Borrow APR, total Supply/Borrow
 ```javascript
-import { USDC } from 'navi-sdk/dist/address'
-client.getPoolInfo(USDC)
+client.getPoolInfo(Sui)
 //Leave it empty to get all poolinfo
 ```
+This will return a json-like map like the following:
+``` json
+{
+  coin_type: '0x2::sui::SUI',
+  total_supply: '76518112.90791546', //Supplied Sui Amount
+  total_borrow: '28588286.47388038', //Borrowed Sui Amount
+  price: '1.08203381', //Pool Coin Price
+  supply_rate: '3.81169716', //This indicate the Vault APR or Basic APR
+  borrow_rate: '12.13370524', //This indicate the Vault APR or Basic APR for borrow
+  boosted: '15.60003632', //This indicate the Boosted APR or incentive APR
+  pool: 'SUI-Sui',
+  symbol: 'SUI',
+  rewardTokens: [
+    '549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT' //Reward token will be released in vSui
+  ],
+  borrow_reward_apy: '0.00000000' //This indicate the Boosted APR or incentive APR for borrow
+}
+```
+
 ### Get Address Available Rewards to Claim
-1. OptionSupply = 1
-2. OptionWithdraw = 2
-3. OptionBorrow = 3
-4. OptionRepay = 4
-* Option default is 1, you may leave it empty
+This will print out all available rewards that the account has from NAVI protocol
 ```javascript
 account.getAvailableRewards() //Return this account's available rewards
 client.getAvailableRewards(address); //You may check any address
 ```
 
 ### Get Current Health Factor
+This will return the account of any address's health factor from NAVI protocol
 ```javascript
 account.getHealthFactor() //Return this account's health factor
 client.getHealthFactor(address); //You may check any address
@@ -188,158 +265,3 @@ let to_liquidate_amount = 10; //Number of coin that can be used for liquidation,
 account.liquidate(debt_coin, to_liquidate_address, collateral_coin, to_liquidate_amount); //Liquidate with 10 USDC.
 ```
 
-## Customized PTB
-### Navi Flash Loan Sample
-#### Sample TX: https://suiscan.xyz/mainnet/tx/fCFERvsTk7t6G4SJyuuwXU3HbVqYbQ1RKzTDaeRwM4A
-```javascript
-
-import { NAVISDKClient } from 'navi-sdk'
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import {depositCoin,withdrawCoin, borrowCoin, flashloan,repayFlashLoan, SignAndSubmitTXB, mergeCoins} from 'navi-sdk/dist/libs/PTB'
-import { CoinInfo, Pool, PoolConfig } from "navi-sdk/dist/types";
-import { pool, USDC } from 'navi-sdk/dist/address'
-
-const mnemonic = "Test Mnemonic"; //Replace with your mnemonic
-const client = new NAVISDKClient({mnemonic: mnemonic, networkType: "mainnet", numberOfAccounts: 1});
-
-//Set Up Zone
-const toBorrowCoin: CoinInfo = USDC;
-const amount_to_borrow = 1 * 10**toBorrowCoin.decimal; //Borrow 1 USDC
-//End of Set Up Zone
-
-
-//For the following code, you can directly copy and paste it to your project
-// Initialize the TransactionBlock
-let txb = new TransactionBlock();
-const account = client.accounts[0];
-let sender = account.address;
-console.log(sender)
-txb.setSender(sender);
-
-//Get the object of the coin
-const sourceTokenObjAddress = await account.getCoins(toBorrowCoin);
-const sourceTokenObj = txb.object(sourceTokenObjAddress.data[0].coinObjectId);
-
-// Supported: Sui/NAVX/vSui/USDC/USDT/WETH/CETUS/HAsui, import from address file
-const Coin_Pool: PoolConfig = pool[toBorrowCoin.symbol as keyof Pool];
-const [balance, receipt] = await flashloan(txb, Coin_Pool, amount_to_borrow); // Flashloan 1 USDC
-
-//Transfer the flashloan money to the account
-const this_coin = txb.moveCall({
-    target: '0x2::coin::from_balance',
-    arguments: [balance],
-    typeArguments: [Coin_Pool.type],
-});
-
-//Merge Coin to the wallet balance
-txb.mergeCoins(sourceTokenObj, [this_coin]);
-
-//Get the repayment object
-const repayBalance = txb.moveCall({
-    target: '0x2::coin::into_balance',
-    arguments: [sourceTokenObj],
-    typeArguments: [Coin_Pool.type],
-});
-
-const [e_balance] = await repayFlashLoan(txb, Coin_Pool, receipt, repayBalance); // Repay with the balance
-
-//Extra token after repay
-const extra_coin = txb.moveCall({
-    target: '0x2::coin::from_balance',
-    arguments: [e_balance],
-    typeArguments: [Coin_Pool.type],
-});
-
-//Transfer left_money after repay to the account
-txb.transferObjects([extra_coin], sender);
-const result = SignAndSubmitTXB(txb, account.client, account.keypair);
-console.log("result: ", result);
-
-```
-
-
-## Liquidation Sample
-```javascript
-
-import { NAVISDKClient } from "navi-sdk";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { SignAndSubmitTXB } from 'navi-sdk/dist/libs/PTB'
-import dotenv from 'dotenv';
-import { CETUS, getConfig, pool, Sui, USDC, USDT, vSui } from 'navi-sdk/dist/address';
-import { PoolConfig, Pool, CoinInfo } from 'navi-sdk/dist/types';
-import { AccountManager } from "navi-sdk/dist/libs/AccountManager";
-dotenv.config();
-
-const accountKey = process.env.liquidAddress;
-const client = new NAVISDKClient({ mnemonic: accountKey });
-const account = client.accounts[0];
-const sender = account.address;
-console.log(`use address: `, account.address)
-
-//Set UP Zone
-const to_pay_coin: CoinInfo = USDT;
-const to_liquidate_address = '0x111';
-const collectral_coin: CoinInfo = Sui;
-//End of Set UP Zone
-
-console.log(`\n\nTo Liquidate address: `, to_liquidate_address)
-let [coinObj, to_liquidate_amount] = await getCoinObj(account, to_pay_coin);
-
-//Initialize the TransactionBlock
-let txb:any = new TransactionBlock();
-txb.setSender(sender);
-
-const pool_to_pay: PoolConfig = pool[to_pay_coin.symbol as keyof Pool];
-const collectral_pool: PoolConfig = pool[collectral_coin.symbol as keyof Pool];
-const config = await getConfig();
-
-//Add the liquidation function to the ptb
-txb.moveCall({
-    target: `${config.ProtocolPackage}::incentive_v2::entry_liquidation`,
-    arguments: [
-        txb.object('0x06'),
-        txb.object(config.PriceOracle),
-        txb.object(config.StorageId),
-        txb.pure(pool_to_pay.assetId),
-        txb.object(pool_to_pay.poolId),
-        txb.object(coinObj),
-        txb.pure(collectral_pool.assetId),
-        txb.object(collectral_pool.poolId),
-        txb.pure(to_liquidate_address),
-        txb.pure(to_liquidate_amount),
-        txb.object(config.Incentive),
-        txb.object(config.IncentiveV2),
-    ],
-    typeArguments: [pool_to_pay.type, collectral_pool.type],
-})
-
-//Submit the Tx
-const result = await SignAndSubmitTXB(txb, account.client, account.keypair);
-console.log('Success: ', result.confirmedLocalExecution);
-
-//Get the object of the coin, if there are several coins, merge them
-async function getCoinObj(account: AccountManager, realCoin: CoinInfo) {
-
-    let getCoinInfo = await account.getCoins(
-        realCoin.address
-    );
-    let allBalance = await account.client.getBalance({owner: account.address, coinType: realCoin.address});
-    
-    if (getCoinInfo.data.length >= 2) {
-        const txb:any = new TransactionBlock();
-        txb.setSender(account.address);
-        let baseObj = getCoinInfo.data[0].coinObjectId;
-        let i = 1;
-        while (i < getCoinInfo.data.length) {
-            txb.mergeCoins(baseObj, [getCoinInfo.data[i].coinObjectId]);
-            i++;
-        }
-        SignAndSubmitTXB(txb, account.client, account.keypair);
-    }
-
-    let mergedCoin = getCoinInfo.data[0].coinObjectId;
-    let { totalBalance } = allBalance;
-    return [mergedCoin, totalBalance];
-}
-
-```
