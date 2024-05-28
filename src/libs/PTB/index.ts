@@ -1,1 +1,1 @@
-export {depositCoin, depositCoinWithAccountCap, withdrawCoin, withdrawCoinWithAccountCap, getHealthFactor, borrowCoin, repayDebt, mergeCoins, flashloan,repayFlashLoan, SignAndSubmitTXB, liquidateFunction, claimRewardFunction} from './commonFunctions';
+export {depositCoin, depositCoinWithAccountCap, stakeTovSui, unstakeTovSui, withdrawCoin, withdrawCoinWithAccountCap, getHealthFactor, borrowCoin, repayDebt, returnMergedCoins, flashloan,repayFlashLoan, SignAndSubmitTXB, liquidateFunction, claimRewardFunction} from './commonFunctions';

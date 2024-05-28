@@ -1,5 +1,5 @@
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { getConfig, flashloanConfig, pool } from '../../address'
+import { getConfig, flashloanConfig, pool, vSuiConfig } from '../../address'
 import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
 
 /**
@@ -228,15 +228,23 @@ export async function getHealthFactor(txb: TransactionBlock, address: string) {
  * @param coinInfo - The coin information object.
  * @returns The merged coin object.
  */
-export function mergeCoins(txb: TransactionBlock, coinInfo: any) {
+export function returnMergedCoins(txb: TransactionBlock, coinInfo: any) {
+    //deprecated
+    // if (coinInfo.data.length >= 2) {
+    //     let baseObj = coinInfo.data[0].coinObjectId;
+    //     let i = 1;
+    //     while (i < coinInfo.data.length) {
+    //         txb.mergeCoins(baseObj, [coinInfo.data[i].coinObjectId]);
+    //         i++;
+    //     }
+    // }
+
     if (coinInfo.data.length >= 2) {
-        let baseObj = coinInfo.data[0].coinObjectId;
-        let i = 1;
-        while (i < coinInfo.data.length) {
-            txb.mergeCoins(baseObj, [coinInfo.data[i].coinObjectId]);
-            i++;
+            let baseObj = coinInfo.data[0].coinObjectId;
+            let all_list = coinInfo.data.slice(1).map((coin: any) => coin.coinObjectId);
+
+            txb.mergeCoins(baseObj, all_list);
         }
-    }
     
     let mergedCoinObject = txb.object(coinInfo.data[0].coinObjectId);
     return mergedCoinObject;
@@ -291,22 +299,24 @@ export async function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, r
     return [balance];
 }
 
+
 /**
- * Liquidates a transaction block by calling the entry_liquidation function.
+ * Liquidates a transaction block.
  * @param txb - The transaction block to be liquidated.
- * @param payCoinType - The coin type used for payment.
+ * @param payCoinType - The type of coin to be paid.
  * @param payCoinObj - The payment coin object.
- * @param collateralCoinType - The coin type used for collateral.
+ * @param collateralCoinType - The type of collateral coin.
  * @param to_liquidate_address - The address to which the liquidated amount will be sent.
  * @param to_liquidate_amount - The amount to be liquidated.
+ * @returns An array containing the collateral coin and the remaining debt coin.
  */
 export async function liquidateFunction(txb: TransactionBlock, payCoinType: CoinInfo, payCoinObj: any, collateralCoinType: CoinInfo, to_liquidate_address: string, to_liquidate_amount: string) {
     const pool_to_pay: PoolConfig = pool[payCoinType.symbol as keyof Pool];
     const collateral_pool: PoolConfig = pool[collateralCoinType.symbol as keyof Pool];
     const config = await getConfig();
 
-    txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::entry_liquidation`,
+    const [collateralBalance, remainDebtBalance] = txb.moveCall({
+        target: `${config.ProtocolPackage}::incentive_v2::liquidation`,
         arguments: [
             txb.object('0x06'),
             txb.object(config.PriceOracle),
@@ -317,12 +327,13 @@ export async function liquidateFunction(txb: TransactionBlock, payCoinType: Coin
             txb.pure(collateral_pool.assetId),
             txb.object(collateral_pool.poolId),
             txb.pure(to_liquidate_address),
-            txb.pure(to_liquidate_amount),
             txb.object(config.Incentive),
             txb.object(config.IncentiveV2),
         ],
         typeArguments: [pool_to_pay.type, collateral_pool.type],
     })
+
+    return [collateralBalance, remainDebtBalance];
 }
 
 /**
@@ -384,4 +395,47 @@ export async function SignAndSubmitTXB(txb: TransactionBlock, client: any, keypa
         }
     })
     return result;
+}
+
+
+/**
+ * Stakes a given SUI coin object to the vSUI pool.
+ * @param txb The transaction block object.
+ * @param suiCoinObj The SUI coin object to be staked.
+ * @returns vSui coin object.
+ */
+export async function stakeTovSui(txb: TransactionBlock, suiCoinObj: any) {
+    
+    const [coin] = txb.moveCall({
+        target: `${vSuiConfig.ProtocolPackage}::native_pool::stake_non_entry`,
+        arguments: [
+            txb.object(vSuiConfig.pool),
+            txb.object(vSuiConfig.metadata),
+            txb.object(vSuiConfig.wrapper),
+            suiCoinObj,
+        ],
+        typeArguments: [],
+    })
+    return coin;
+}
+
+/**
+ * Unstakes TOV SUI coins.
+ * @param txb - The transaction block object.
+ * @param vSuiCoinObj - The vSui coin object.
+ * @returns The unstaked Sui coin.
+ */
+export async function unstakeTovSui(txb: TransactionBlock, vSuiCoinObj: any) {
+    
+    const [coin] = txb.moveCall({
+        target: `${vSuiConfig.ProtocolPackage}::native_pool::unstake`,
+        arguments: [
+            txb.object(vSuiConfig.pool),
+            txb.object(vSuiConfig.metadata),
+            txb.object(vSuiConfig.wrapper),
+            vSuiCoinObj,
+        ],
+        typeArguments: [],
+    })
+    return coin;
 }
