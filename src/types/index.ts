@@ -1,6 +1,6 @@
 export type NetworkType = 'testnet' | 'mainnet' | 'devnet' | 'localnet';
 
-export type initializeParas = {
+export type initializeParams = {
   mnemonic?: string;
   networkType?: string;
   wordLength?: 12 | 24;

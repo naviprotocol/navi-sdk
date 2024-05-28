@@ -1,11 +1,11 @@
 # NaviSDK Client Documentation
 
-For the latest updates and detailed information on how to interact with the NaviSDK contract, please refer to the [Navi Protocol Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs/how-to-interact-with-the-contract/navi-sdk).
+For the latest updates and detailed information on interacting with the NaviSDK contract, please refer to the [Navi Protocol Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs/how-to-interact-with-the-contract/navi-sdk).
 ## Introduction
 
-The NaviSDK Client provides a set of tools for interacting with the ***Sui*** blockchain networks, specifically designed for handling transactions, accounts, and smart contracts in a streamlined and efficient manner. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
+The NaviSDK Client provides tools for interacting with the ***Sui*** blockchain networks, designed for handling transactions, accounts, and smart contracts efficiently. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
 
-## SDK sample & tools
+## SDK Sample & Tools
 ### [flash-loan demo](https://github.com/naviprotocol/navi-sdk/samples/flashloan-demo)
 
 
@@ -31,7 +31,6 @@ Before you can use the NaviSDK Client, you need to set up your project environme
 ### Creating a Default Account
 When you initialize client, you will need a mnemonic phrase or we will generate a new one for you. 
 
-1 mnemonic for 1 client
 
 **We will never save user's mnemonic phrase.
 Again, we advise you to use Dotenv package to import mnemonic**
@@ -163,31 +162,6 @@ Map(8) {
 }
 ```
 
-### Get Reserve
-This is will return specific Reserve pool info
-```javascript
-client.getReserves() //Get All reserve info
-```
-Sample output:
-```
-{
-    objectId: '0xab644b5fd11aa11e930d1c7bc903ef609a9feaf9ffe1b23532ad8441854fbfaf',
-    version: '160270114',
-    digest: 'AqrCj2mh3xPggoS3jFoveLpF7oJodbzm1uYuPB7jxus6',
-    type: '0x2::dynamic_field::Field<u8, 0xd899cf7d2b5db716bd2cf55599fb0d5ee38a3061e7b6bb6eebf73fa5bc4c81ca::storage::ReserveData>',
-    owner: {
-      ObjectOwner: '0xe6d4c6610b86ce7735ea754596d71d72d10c7980b5052fc3c8cdf8d09fea9b4b'
-    },
-    previousTransaction: 'AN5Een128HSW2uFb9KAgTgoXMEieXJXDZDwUPww8R9Vb',
-    storageRebate: '8367600',
-    content: {
-      dataType: 'moveObject',
-      type: '0x2::dynamic_field::Field<u8, 0xd899cf7d2b5db716bd2cf55599fb0d5ee38a3061e7b6bb6eebf73fa5bc4c81ca::storage::ReserveData>',
-      hasPublicTransfer: false,
-      fields: [Object]
-    }
-  }
-```
 ### Get PoolInfo - Supply/Borrow APR, total Supply/Borrow
 ```javascript
 client.getPoolInfo(Sui)
