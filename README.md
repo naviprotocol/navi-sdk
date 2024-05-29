@@ -34,13 +34,13 @@ account.depositToNavi(Sui, 1e9);
 
 
 ## SDK Sample & Tools
-### [Flashloan Demo](https://github.com/naviprotocol/navi-sdk/samples/flashloan-demo)
+### [Flashloan Demo](https://github.com/naviprotocol/navi-sdk/tree/main/examples/flashloan-demo)
 
 
-### [Liquidation Demo](https://github.com/naviprotocol/navi-sdk/samples/liquidation-bot)
+### [Liquidation Demo](https://github.com/naviprotocol/navi-sdk/tree/main/examples/liquidation-bot)
 
 
-### [Send Batch Coins Demo](https://github.com/naviprotocol/navi-sdk/samples/batchSendCoin-demo)
+### [Send Batch Coins Demo](https://github.com/naviprotocol/navi-sdk/tree/main/examples/batchSendCoin-demo)
 
 
 
