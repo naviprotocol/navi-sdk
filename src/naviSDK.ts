@@ -97,10 +97,10 @@ export class NAVISDKClient {
         if (this.accounts.length === 0) {
             this.account = new AccountManager();
             this.accounts.push(this.account);
-            await this.accounts[0].getDynamicHealthFactor(address, coinType.symbol, estimateSupply, estimateBorrow, isIncrease);
+            await this.accounts[0].getDynamicHealthFactor(address, coinType, estimateSupply, estimateBorrow, isIncrease);
             this.accounts.splice(0, 1);
         }
-        return this.accounts[0].getDynamicHealthFactor(address, coinType.symbol, estimateSupply, estimateBorrow, isIncrease);
+        return this.accounts[0].getDynamicHealthFactor(address, coinType, estimateSupply, estimateBorrow, isIncrease);
     }
 
     /**

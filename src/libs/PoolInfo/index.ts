@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { pool } from '../../address';
 import { CoinInfo, Pool, PoolConfig } from "../../types";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
+import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { getConfig } from "../../address";
 
 

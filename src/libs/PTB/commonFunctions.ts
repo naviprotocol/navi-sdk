@@ -1,7 +1,7 @@
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { getConfig, flashloanConfig, pool, vSuiConfig } from '../../address'
 import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
-
+import { bcs } from "@mysten/sui/bcs";
 /**
  * Deposits a specified amount of a coin into a pool.
  * @param txb - The transaction block object.
@@ -10,18 +10,25 @@ import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
  * @param amount - The amount of the coin to deposit.
  * @returns The updated transaction block object.
  */
-export async function depositCoin(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, amount: number) {
+export async function depositCoin(txb: Transaction, _pool: PoolConfig, coinObject: any, amount: any) {
     const config = await getConfig();
 
+    let amountObj;
+    if (typeof amount === 'number') {
+        amountObj = txb.pure.u64(amount);
+    }
+    else {
+        amountObj = amount;
+    }
     txb.moveCall({
         target: `${config.ProtocolPackage}::incentive_v2::entry_deposit`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.StorageId), // object id of storage
             txb.object(_pool.poolId), // pool id of the asset
-            txb.pure(_pool.assetId), // the id of the asset in the protocol
+            txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
-            txb.pure(amount), // The amount you want to deposit, decimals must be carried, like 1 sui => 1000000000
+            amountObj, // The amount you want to deposit, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.Incentive),
             txb.object(config.IncentiveV2), // The incentive object v2
         ],
@@ -38,7 +45,7 @@ export async function depositCoin(txb: TransactionBlock, _pool: PoolConfig, coin
  * @param account - The account to deposit the coin into.
  * @returns The updated transaction block object.
  */
-export async function depositCoinWithAccountCap(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, account: string) {
+export async function depositCoinWithAccountCap(txb: Transaction, _pool: PoolConfig, coinObject: any, account: string) {
     const config = await getConfig();
 
     txb.moveCall({
@@ -47,7 +54,7 @@ export async function depositCoinWithAccountCap(txb: TransactionBlock, _pool: Po
             txb.object('0x06'), // clock object id
             txb.object(config.StorageId), // object id of storage
             txb.object(_pool.poolId), // pool id of the asset
-            txb.pure(_pool.assetId), // the id of the asset in the protocol
+            txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
             txb.object(config.Incentive),
             txb.object(config.IncentiveV2), // The incentive object v2
@@ -66,7 +73,7 @@ export async function depositCoinWithAccountCap(txb: TransactionBlock, _pool: Po
  * @param amount - The amount of coins to withdraw.
  * @returns The updated transaction block object.
  */
-export async function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amount: number) {
+export async function withdrawCoin(txb: Transaction, _pool: PoolConfig, amount: number) {
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
@@ -76,8 +83,8 @@ export async function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amo
             txb.object(config.PriceOracle), // object id of oracle
             txb.object(config.StorageId), // object id of storage
             txb.object(_pool.poolId), // pool id of the asset
-            txb.pure(_pool.assetId), // the id of the asset in the protocol
-            txb.pure(amount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
+            txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
+            txb.pure.u64(amount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.Incentive),
             txb.object(config.IncentiveV2), // The incentive object v2
         ],
@@ -96,13 +103,13 @@ export async function withdrawCoin(txb: TransactionBlock, _pool: PoolConfig, amo
 
 /**
  * Withdraws a specified amount of coins from an account with an account cap.
- * @param txb - The TransactionBlock object.
+ * @param txb - The Transaction object.
  * @param _pool - The PoolConfig object.
  * @param account - The account from which to withdraw the coins.
  * @param withdrawAmount - The amount of coins to withdraw.
  * @param sender - The sender of the transaction.
  */
-export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: PoolConfig, account: string, withdrawAmount: number, sender: string) {
+export async function withdrawCoinWithAccountCap(txb: Transaction, _pool: PoolConfig, account: string, withdrawAmount: number, sender: string) {
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
@@ -116,8 +123,8 @@ export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: P
             txb.object(config.PriceOracle), // object id of oracle
             txb.object(config.StorageId), // object id of storage
             txb.object(_pool.poolId), // pool id of the asset
-            txb.pure(_pool.assetId), // the id of the asset in the protocol
-            txb.pure(withdrawAmount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
+            txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
+            txb.pure.u64(withdrawAmount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.Incentive),
             txb.object(config.IncentiveV2), // The incentive object v2
             txb.object(account)
@@ -142,7 +149,7 @@ export async function withdrawCoinWithAccountCap(txb: TransactionBlock, _pool: P
  * @param borrowAmount - The amount of coins to borrow.
  * @returns The updated transaction block object.
  */
-export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borrowAmount: number) {
+export async function borrowCoin(txb: Transaction, _pool: PoolConfig, borrowAmount: number) {
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
@@ -152,8 +159,8 @@ export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borro
             txb.object(config.PriceOracle), // object id of oracle
             txb.object(config.StorageId), // object id of storage
             txb.object(_pool.poolId), // pool id of the asset
-            txb.pure(_pool.assetId), // the id of the asset in the protocol
-            txb.pure(borrowAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
+            txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
+            txb.pure.u64(borrowAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2), // The incentive object v2
         ],
         typeArguments: [_pool.type]
@@ -177,7 +184,7 @@ export async function borrowCoin(txb: TransactionBlock, _pool: PoolConfig, borro
  * @param repayAmount - The amount you want to repay.
  * @returns The updated transaction block object.
  */
-export async function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinObject: any, repayAmount: number) {
+export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject: any, repayAmount: number) {
     const config = await getConfig();
 
     txb.moveCall({
@@ -187,9 +194,9 @@ export async function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinOb
             txb.object(config.PriceOracle), // object id of oracle
             txb.object(config.StorageId), // object id of storage
             txb.object(_pool.poolId), // pool id of the asset
-            txb.pure(_pool.assetId), // the id of the asset in the protocol
+            txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
-            txb.pure(repayAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
+            txb.pure.u64(repayAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2), // The incentive object v2
         ],
         typeArguments: [_pool.type]
@@ -200,11 +207,11 @@ export async function repayDebt(txb: TransactionBlock, _pool: PoolConfig, coinOb
 
 /**
  * Retrieves the health factor for a given address.
- * @param txb - The TransactionBlock object.
+ * @param txb - The Transaction object.
  * @param address - The address for which to retrieve the health factor.
  * @returns The health factor balance.
  */
-export async function getHealthFactor(txb: TransactionBlock, address: string) {
+export async function getHealthFactor(txb: Transaction, address: string) {
     const config = await getConfig();
 
     const balance = txb.moveCall({
@@ -213,7 +220,7 @@ export async function getHealthFactor(txb: TransactionBlock, address: string) {
             txb.object('0x06'), // clock object id
             txb.object(config.StorageId), // object id of storage
             txb.object(config.PriceOracle), // Object id of Price Oracle
-            txb.pure(address)
+            txb.pure.address(address)
         ],
         
     })
@@ -228,7 +235,7 @@ export async function getHealthFactor(txb: TransactionBlock, address: string) {
  * @param coinInfo - The coin information object.
  * @returns The merged coin object.
  */
-export function returnMergedCoins(txb: TransactionBlock, coinInfo: any) {
+export function returnMergedCoins(txb: Transaction, coinInfo: any) {
     //deprecated
     // if (coinInfo.data.length >= 2) {
     //     let baseObj = coinInfo.data[0].coinObjectId;
@@ -253,12 +260,12 @@ export function returnMergedCoins(txb: TransactionBlock, coinInfo: any) {
 
 /**
  * Executes a flash loan transaction.
- * @param txb - The TransactionBlock object.
+ * @param txb - The Transaction object.
  * @param _pool - The PoolConfig object representing the pool.
  * @param amount - The amount of the flash loan.
  * @returns An array containing the balance and receipt of the flash loan transaction.
  */
-export async function flashloan(txb: TransactionBlock, _pool: PoolConfig, amount: number) {
+export async function flashloan(txb: Transaction, _pool: PoolConfig, amount: number) {
     const config = await getConfig();
 
     const [balance, receipt] = txb.moveCall({
@@ -266,7 +273,7 @@ export async function flashloan(txb: TransactionBlock, _pool: PoolConfig, amount
         arguments: [
             txb.object(flashloanConfig.id), // clock object id
             txb.object(_pool.poolId), // pool id of the asset
-            txb.pure(amount), // the id of the asset in the protocol
+            txb.pure.u64(amount), // the id of the asset in the protocol
         ],
         typeArguments: [_pool.type]
     })
@@ -276,13 +283,13 @@ export async function flashloan(txb: TransactionBlock, _pool: PoolConfig, amount
 /**
  * Repays a flash loan by calling the flash_repay_with_ctx function in the lending protocol.
  * 
- * @param txb - The TransactionBlock object.
+ * @param txb - The Transaction object.
  * @param _pool - The PoolConfig object representing the pool.
  * @param receipt - The receipt object.
  * @param repayCoin - The asset ID of the asset to be repaid.
  * @returns The balance after the flash loan is repaid.
  */
-export async function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, receipt: any, repayCoin: any) {
+export async function repayFlashLoan(txb: Transaction, _pool: PoolConfig, receipt: any, repayCoin: any) {
     const config = await getConfig();
 
     const [balance] = txb.moveCall({
@@ -310,7 +317,7 @@ export async function repayFlashLoan(txb: TransactionBlock, _pool: PoolConfig, r
  * @param to_liquidate_amount - The amount to be liquidated.
  * @returns An array containing the collateral coin and the remaining debt coin.
  */
-export async function liquidateFunction(txb: TransactionBlock, payCoinType: CoinInfo, payCoinObj: any, collateralCoinType: CoinInfo, to_liquidate_address: string, to_liquidate_amount: string) {
+export async function liquidateFunction(txb: Transaction, payCoinType: CoinInfo, payCoinObj: any, collateralCoinType: CoinInfo, to_liquidate_address: string, to_liquidate_amount: string) {
     const pool_to_pay: PoolConfig = pool[payCoinType.symbol as keyof Pool];
     const collateral_pool: PoolConfig = pool[collateralCoinType.symbol as keyof Pool];
     const config = await getConfig();
@@ -321,12 +328,12 @@ export async function liquidateFunction(txb: TransactionBlock, payCoinType: Coin
             txb.object('0x06'),
             txb.object(config.PriceOracle),
             txb.object(config.StorageId),
-            txb.pure(pool_to_pay.assetId),
+            txb.pure.u8(pool_to_pay.assetId),
             txb.object(pool_to_pay.poolId),
             payCoinObj,
-            txb.pure(collateral_pool.assetId),
+            txb.pure.u8(collateral_pool.assetId),
             txb.object(collateral_pool.poolId),
-            txb.pure(to_liquidate_address),
+            txb.pure.address(to_liquidate_address),
             txb.object(config.Incentive),
             txb.object(config.IncentiveV2),
         ],
@@ -343,7 +350,7 @@ export async function liquidateFunction(txb: TransactionBlock, payCoinType: Coin
  * @param assetId - The asset ID.
  * @param option - The option type.
  */
-export async function claimRewardFunction(txb: TransactionBlock, incentiveFundsPool: string, assetId: string, option: OptionType) {
+export async function claimRewardFunction(txb: Transaction, incentiveFundsPool: string, assetId: string, option: OptionType) {
     const config = await getConfig();
 
     const ProFundsPoolInfo: any = {
@@ -371,8 +378,8 @@ export async function claimRewardFunction(txb: TransactionBlock, incentiveFundsP
             txb.object(config.IncentiveV2),
             txb.object(`0x${incentiveFundsPool}`),
             txb.object(config.StorageId),
-            txb.pure(assetId),
-            txb.pure(option),
+            txb.pure.u8(Number(assetId)),
+            txb.pure.u8(option),
         ],
         typeArguments: [ProFundsPoolInfo[incentiveFundsPool].coinType],
     })
@@ -385,9 +392,9 @@ export async function claimRewardFunction(txb: TransactionBlock, incentiveFundsP
  * @param keypair - The keypair used as the signer for the transaction block.
  * @returns A promise that resolves to the result of signing and executing the transaction block.
  */
-export async function SignAndSubmitTXB(txb: TransactionBlock, client: any, keypair: any) {
-    const result = await client.signAndExecuteTransactionBlock({
-        transactionBlock: txb,
+export async function SignAndSubmitTXB(txb: Transaction, client: any, keypair: any) {
+    const result = await client.signAndExecuteTransaction({
+        transaction: txb,
         signer: keypair,
         requestType: 'WaitForLocalExecution',
         options: {
@@ -404,7 +411,7 @@ export async function SignAndSubmitTXB(txb: TransactionBlock, client: any, keypa
  * @param suiCoinObj The SUI coin object to be staked.
  * @returns vSui coin object.
  */
-export async function stakeTovSui(txb: TransactionBlock, suiCoinObj: any) {
+export async function stakeTovSui(txb: Transaction, suiCoinObj: any) {
     
     const [coin] = txb.moveCall({
         target: `${vSuiConfig.ProtocolPackage}::native_pool::stake_non_entry`,
@@ -425,7 +432,7 @@ export async function stakeTovSui(txb: TransactionBlock, suiCoinObj: any) {
  * @param vSuiCoinObj - The vSui coin object.
  * @returns The unstaked Sui coin.
  */
-export async function unstakeTovSui(txb: TransactionBlock, vSuiCoinObj: any) {
+export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
     
     const [coin] = txb.moveCall({
         target: `${vSuiConfig.ProtocolPackage}::native_pool::unstake`,
