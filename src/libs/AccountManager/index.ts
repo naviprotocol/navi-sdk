@@ -18,17 +18,16 @@ import {
   claimRewardFunction,
   SignAndSubmitTXB,
   stakeTovSui,
-  unstakeTovSui
+  unstakeTovSui,
+  getIncentivePools,
+  getAvailableRewards,
+  claimAllRewardsPTB
 } from "../PTB";
 import { moveInspect } from "../CallFunctions";
 import { bcs } from '@mysten/sui.js/bcs';
 import assert from 'assert';
 
-interface Reward {
-  asset_id: string;
-  funds: string;
-  available: string;
-}
+
 
 export class AccountManager {
   public keypair: Ed25519Keypair;
@@ -741,95 +740,6 @@ export class AccountManager {
     return balanceMap;
   }
 
-  /**
-   * Retrieves the incentive pools for a given asset and option.
-   * @param assetId - The ID of the asset.
-   * @param option - The option type.
-   * @param user - (Optional) The user's address. If provided, the rewards claimed by the user and the total rewards will be returned.
-   * @returns The incentive pools information.
-   */
-  async getIncentivePools(assetId: number, option: OptionType, user?: string) {
-    const config = await getConfig();
-    const tx = new Transaction();
-    const result: any = await moveInspect(
-      tx,
-      this.client,
-      this.address,
-      `${config.uiGetter}::incentive_getter::get_incentive_pools`,
-      [
-        tx.object('0x06'), // clock object id
-        tx.object(config.IncentiveV2), // the incentive object v2
-        tx.object(config.StorageId), // object id of storage
-        tx.pure.u8(assetId),
-        tx.pure.u8(option),
-        tx.pure.address(user ?? '0x0000000000000000000000000000000000000000000000000000000000000000'), // If you provide your address, the rewards that have been claimed by your address and the total rewards will be returned.
-      ],
-      [], // type arguments is null
-      'vector<IncentivePoolInfo>' // parse type
-    );
-    return result[0];
-  }
-
-  /**
-   * Retrieves the available rewards for a given address.
-   * 
-   * @param checkAddress - The address to check for rewards. Defaults to the current address.
-   * @param option - The option type. Defaults to 1.
-   * @param prettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
-   * @returns An object containing the summed rewards for each asset.
-   * @throws If there is an error retrieving the available rewards.
-   */
-  async getAvailableRewards(checkAddress: string = this.address, option: OptionType = 1, prettyPrint = true) {
-    const assetIds = Array.from({ length: 8 }, (_, i) => i); // Generates an array [0, 1, 2, ..., 7]
-    try {
-      const allResults = await Promise.all(
-        assetIds.map(assetId => this.getIncentivePools(assetId, option, checkAddress))
-      );
-
-      const allPools = allResults.flat();
-      const activePools = allPools.filter(pool => pool.available.trim() != '0');
-
-      const summedRewards = activePools.reduce((acc, pool) => {
-        const assetId = pool.asset_id.toString();
-        const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
-        const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
-
-        if (!acc[assetId]) {
-          acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
-        } else {
-          acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
-        }
-
-        return acc;
-      }, {} as { [key: string]: { asset_id: string, funds: string, available: string } });
-
-      if (prettyPrint) {
-        const coinDictionary: { [key: string]: string } = {
-          '0': 'Sui',
-          '1': 'USDC',
-          '2': 'USDT',
-          '3': 'WETH',
-          '4': 'CETUS',
-          '5': 'vSui',
-          '6': 'haSui',
-          '7': 'NAVX',
-        };
-        console.log(checkAddress, ' available rewards:');
-        Object.keys(summedRewards).forEach(key => {
-          if (key == '5' || key == '7') {
-            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
-          } else {
-            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
-          }
-        });
-      }
-
-      return summedRewards;
-    } catch (error) {
-      console.error('Failed to get available rewards:', error);
-      throw error;
-    }
-  }
 
   /**
    * Claims all available rewards for the specified account.
@@ -839,20 +749,7 @@ export class AccountManager {
     let txb = new Transaction();
     txb.setSender(this.address);
 
-    const rewardsSupply: { [key: string]: Reward } = await this.getAvailableRewards(this.address, 1, false);
-    // Convert the rewards object to an array of its values
-    const rewardsArray: Reward[] = Object.values(rewardsSupply);
-    for (const reward of rewardsArray) {
-      await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
-    }
-
-
-    const rewardsBorrow: { [key: string]: Reward } = await this.getAvailableRewards(this.address, 3, false);
-    // Convert the rewards object to an array of its values
-    const rewardsBorrowArray: Reward[] = Object.values(rewardsBorrow);
-    for (const reward of rewardsBorrowArray) {
-      await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
-    }
+    txb = await claimAllRewardsPTB(this.client, this.address);
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;

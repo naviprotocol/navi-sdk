@@ -4,6 +4,7 @@ import { getPoolInfo } from './libs/PoolInfo';
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { pool } from "./address";
+import {getAvailableRewards} from './libs/PTB';
 
 export class NAVISDKClient {
 
@@ -147,7 +148,8 @@ export class NAVISDKClient {
      * @param option - The option type for rewards.
      * @returns A promise that resolves with the available rewards.
      */
-    async getAvailableRewards(address: string = this.accounts[0].address, option: OptionType = 1) {
-        return this.accounts[0].getAvailableRewards(address, option, true);
+    async getAddressAvailableRewards(address: string = this.accounts[0].address, option: OptionType = 1) {
+        const client = this.accounts[0].client;
+        return getAvailableRewards(client, address, option, true);
     }
 }
