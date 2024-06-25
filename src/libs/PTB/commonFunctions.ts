@@ -420,7 +420,7 @@ export async function SignAndSubmitTXB(txb: Transaction, client: any, keypair: a
  * @param suiCoinObj The SUI coin object to be staked.
  * @returns vSui coin object.
  */
-export async function stakeTovSui(txb: Transaction, suiCoinObj: any) {
+export async function stakeTovSuiPTB(txb: Transaction, suiCoinObj: any) {
 
     const [coin] = txb.moveCall({
         target: `${vSuiConfig.ProtocolPackage}::native_pool::stake_non_entry`,
@@ -550,8 +550,8 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
    * Claims all available rewards for the specified account.
    * @returns PTB result
    */
-export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string) {
-    let txb = new Transaction();
+export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string, tx?: Transaction) {
+    let txb = tx || new Transaction();
 
     const rewardsSupply: { [key: string]: Reward } = await getAvailableRewards(client, userToCheck, 1, false);
     // Convert the rewards object to an array of its values
@@ -568,4 +568,4 @@ export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string)
     }
 
     return txb;
-  }
+}

@@ -17,7 +17,7 @@ import {
   liquidateFunction,
   claimRewardFunction,
   SignAndSubmitTXB,
-  stakeTovSui,
+  stakeTovSuiPTB,
   unstakeTovSui,
   getIncentivePools,
   getAvailableRewards,
@@ -746,10 +746,9 @@ export class AccountManager {
    * @returns PTB result
    */
   async claimAllRewards() {
-    let txb = new Transaction();
-    txb.setSender(this.address);
 
-    txb = await claimAllRewardsPTB(this.client, this.address);
+    let txb = await claimAllRewardsPTB(this.client, this.address);
+    txb.setSender(this.address);
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
@@ -767,7 +766,7 @@ export class AccountManager {
     assert(stakeAmount >= 1e9, "Stake amount should be greater than 1Sui");
     const [toSwapSui] = txb.splitCoins(txb.gas, [stakeAmount]);
 
-    const vSuiCoin = await stakeTovSui(txb, toSwapSui);
+    const vSuiCoin = await stakeTovSuiPTB(txb, toSwapSui);
     txb.transferObjects([vSuiCoin], this.address);
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
