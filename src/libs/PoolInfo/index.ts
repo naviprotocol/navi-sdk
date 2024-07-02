@@ -57,6 +57,10 @@ export async function getPoolInfo(coin: CoinInfo) {
     }
 }
 
+/**
+ * Retrieves the latest protocol package ID from the Navi Protocol API.
+ * @returns The latest protocol package ID.
+ */
 export async function getLatestProtocolPackageId() {
     const apiUrl = 'https://open-api.naviprotocol.io/api/package';
 
@@ -70,5 +74,20 @@ export async function getLatestProtocolPackageId() {
         return data.packageId;
     } catch (error) {
         console.error('Failed to update ProtocolPackage:');
+    }
+}
+
+export async function getUserRewardHistory(userAddress: string, page: number = 1, size: number = 400) {
+    const endpoint = `https://navi-open-jrmuvep2r-navi-fd9a1df6.vercel.app/api/navi/user/rewards?userAddress=${userAddress}&page=${page}&pageSize=${size}`;
+
+    try {
+        const response = await axios.get(endpoint);
+        const rewards = response.data?.data?.rewards || [];
+
+        // Process and return the rewards data as needed
+        return rewards;
+    } catch (error) {
+        console.error('Error fetching user reward history:', error);
+        throw error;
     }
 }

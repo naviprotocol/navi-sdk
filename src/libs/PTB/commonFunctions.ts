@@ -1,7 +1,7 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { getConfig, flashloanConfig, pool, vSuiConfig } from '../../address'
 import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
-import { bcs } from "@mysten/sui/bcs";
+import { bcs } from '@mysten/sui.js/bcs';
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { moveInspect } from "../CallFunctions";
 
@@ -9,7 +9,7 @@ interface Reward {
     asset_id: string;
     funds: string;
     available: string;
-  }
+}
 
 /**
  * Deposits a specified amount of a coin into a pool.
@@ -456,14 +456,14 @@ export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
     return coin;
 }
 
-  /**
-   * Retrieves the incentive pools for a given asset and option.
-   * @param assetId - The ID of the asset.
-   * @param option - The option type.
-   * @param user - (Optional) The user's address. If provided, the rewards claimed by the user and the total rewards will be returned.
-   * @returns The incentive pools information.
-   */
-export async function getIncentivePools(client: SuiClient, assetId: number, option: OptionType, user:string) {
+/**
+ * Retrieves the incentive pools for a given asset and option.
+ * @param assetId - The ID of the asset.
+ * @param option - The option type.
+ * @param user - (Optional) The user's address. If provided, the rewards claimed by the user and the total rewards will be returned.
+ * @returns The incentive pools information.
+ */
+export async function getIncentivePools(client: SuiClient, assetId: number, option: OptionType, user: string) {
     const config = await getConfig();
     const tx = new Transaction();
     const result: any = await moveInspect(
@@ -485,66 +485,68 @@ export async function getIncentivePools(client: SuiClient, assetId: number, opti
     return result[0];
 }
 
-  /**
-   * Retrieves the available rewards for a given address.
-   * 
-   * @param checkAddress - The address to check for rewards. Defaults to the current address.
-   * @param option - The option type. Defaults to 1.
-   * @param prettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
-   * @returns An object containing the summed rewards for each asset.
-   * @throws If there is an error retrieving the available rewards.
-   */
+/**
+ * Retrieves the available rewards for a given address.
+ * 
+ * @param checkAddress - The address to check for rewards. Defaults to the current address.
+ * @param option - The option type. Defaults to 1.
+ * @param prettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
+ * @returns An object containing the summed rewards for each asset.
+ * @throws If there is an error retrieving the available rewards.
+ */
 export async function getAvailableRewards(client: SuiClient, checkAddress: string, option: OptionType = 1, prettyPrint = true) {
+    
+    registerStructs();
     const assetIds = Array.from({ length: 8 }, (_, i) => i); // Generates an array [0, 1, 2, ..., 7]
     try {
-      const allResults = await Promise.all(
-        assetIds.map(assetId => getIncentivePools(client, assetId, option, checkAddress))
-      );
+        const allResults = await Promise.all(
+            assetIds.map(assetId => getIncentivePools(client, assetId, option, checkAddress))
+        );
 
-      const allPools = allResults.flat();
-      const activePools = allPools.filter(pool => pool.available.trim() != '0');
+        const allPools = allResults.flat();
+        const activePools = allPools.filter(pool => pool.available.trim() != '0');
 
-      const summedRewards = activePools.reduce((acc, pool) => {
-        const assetId = pool.asset_id.toString();
-        const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
-        const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
+        const summedRewards = activePools.reduce((acc, pool) => {
+            const assetId = pool.asset_id.toString();
+            const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
+            const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
 
-        if (!acc[assetId]) {
-          acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
-        } else {
-          acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
+            if (!acc[assetId]) {
+                acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
+            } else {
+                acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
+            }
+
+            return acc;
+        }, {} as { [key: string]: { asset_id: string, funds: string, available: string } });
+
+        if (prettyPrint) {
+            const coinDictionary: { [key: string]: string } = {
+                '0': 'Sui',
+                '1': 'USDC',
+                '2': 'USDT',
+                '3': 'WETH',
+                '4': 'CETUS',
+                '5': 'vSui',
+                '6': 'haSui',
+                '7': 'NAVX',
+            };
+            console.log(checkAddress, ' available rewards:');
+            Object.keys(summedRewards).forEach(key => {
+                if (key == '5' || key == '7') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
+                } else {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
+                }
+            });
         }
 
-        return acc;
-      }, {} as { [key: string]: { asset_id: string, funds: string, available: string } });
-
-      if (prettyPrint) {
-        const coinDictionary: { [key: string]: string } = {
-          '0': 'Sui',
-          '1': 'USDC',
-          '2': 'USDT',
-          '3': 'WETH',
-          '4': 'CETUS',
-          '5': 'vSui',
-          '6': 'haSui',
-          '7': 'NAVX',
-        };
-        console.log(checkAddress, ' available rewards:');
-        Object.keys(summedRewards).forEach(key => {
-          if (key == '5' || key == '7') {
-            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
-          } else {
-            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
-          }
-        });
-      }
-
-      return summedRewards;
+        return summedRewards;
     } catch (error) {
-      console.error('Failed to get available rewards:', error);
-      throw error;
+        console.error('Failed to get available rewards:', error);
+        throw error;
     }
-  }
+}
 
 /**
    * Claims all available rewards for the specified account.
@@ -557,15 +559,148 @@ export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string,
     // Convert the rewards object to an array of its values
     const rewardsArray: Reward[] = Object.values(rewardsSupply);
     for (const reward of rewardsArray) {
-      await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
+        await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
     }
 
     const rewardsBorrow: { [key: string]: Reward } = await getAvailableRewards(client, userToCheck, 3, false);
     // Convert the rewards object to an array of its values
     const rewardsBorrowArray: Reward[] = Object.values(rewardsBorrow);
     for (const reward of rewardsBorrowArray) {
-      await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
+        await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
     }
 
     return txb;
+}
+
+/**
+ * Registers the required struct types for the PTB common functions.
+ */
+export function registerStructs() {
+    /**
+     * Represents the information about the APY (Annual Percentage Yield) for an incentive.
+     * @typedef {Object} IncentiveAPYInfo
+     * @property {string} asset_id - The ID of the asset.
+     * @property {string} apy - The APY value.
+     * @property {string[]} coin_types - The types of coins.
+     */
+
+    bcs.registerStructType('IncentiveAPYInfo', {
+        asset_id: 'u8',
+        apy: 'u256',
+        coin_types: 'vector<string>',
+    });
+
+    /**
+     * Represents the information about an incentive pool.
+     * @typedef {Object} IncentivePoolInfo
+     * @property {string} pool_id - The ID of the pool.
+     * @property {string} funds - The funds available in the pool.
+     * @property {number} phase - The phase of the pool.
+     * @property {number} start_at - The start time of the pool.
+     * @property {number} end_at - The end time of the pool.
+     * @property {number} closed_at - The time when the pool was closed.
+     * @property {number} total_supply - The total supply of the pool.
+     * @property {string} asset_id - The ID of the asset.
+     * @property {number} option - The option of the pool.
+     * @property {string} factor - The factor of the pool.
+     * @property {number} distributed - The distributed amount from the pool.
+     * @property {string} available - The available amount in the pool.
+     * @property {string} total - The total amount in the pool.
+     */
+
+    bcs.registerStructType('IncentivePoolInfo', {
+        pool_id: 'address',
+        funds: 'address',
+        phase: 'u64',
+        start_at: 'u64',
+        end_at: 'u64',
+        closed_at: 'u64',
+        total_supply: 'u64',
+        asset_id: 'u8',
+        option: 'u8',
+        factor: 'u256',
+        distributed: 'u64',
+        available: 'u256',
+        total: 'u256',
+    });
+
+    /**
+     * Represents the information about an incentive pool by phase.
+     * @typedef {Object} IncentivePoolInfoByPhase
+     * @property {number} phase - The phase of the pool.
+     * @property {IncentivePoolInfo[]} pools - The list of pools in the phase.
+     */
+
+    bcs.registerStructType('IncentivePoolInfoByPhase', {
+        phase: 'u64',
+        pools: 'vector<IncentivePoolInfo>',
+    });
+
+    /**
+     * Represents the information about the user's state.
+     * @typedef {Object} UserStateInfo
+     * @property {string} asset_id - The ID of the asset.
+     * @property {string} borrow_balance - The borrow balance of the user.
+     * @property {string} supply_balance - The supply balance of the user.
+     */
+
+    bcs.registerStructType('UserStateInfo', {
+        asset_id: 'u8',
+        borrow_balance: 'u256',
+        supply_balance: 'u256',
+    });
+
+    /**
+     * Represents the information about the reserve data.
+     * @typedef {Object} ReserveDataInfo
+     * @property {number} id - The ID of the reserve.
+     * @property {number} oracle_id - The ID of the oracle.
+     * @property {string} coin_type - The type of the coin.
+     * @property {string} supply_cap - The supply cap of the reserve.
+     * @property {string} borrow_cap - The borrow cap of the reserve.
+     * @property {string} supply_rate - The supply rate of the reserve.
+     * @property {string} borrow_rate - The borrow rate of the reserve.
+     * @property {string} supply_index - The supply index of the reserve.
+     * @property {string} borrow_index - The borrow index of the reserve.
+     * @property {string} total_supply - The total supply of the reserve.
+     * @property {string} total_borrow - The total borrow of the reserve.
+     * @property {number} last_update_at - The last update time of the reserve.
+     * @property {string} ltv - The loan-to-value ratio of the reserve.
+     * @property {string} treasury_factor - The treasury factor of the reserve.
+     * @property {string} treasury_balance - The treasury balance of the reserve.
+     * @property {string} base_rate - The base rate of the reserve.
+     * @property {string} multiplier - The multiplier of the reserve.
+     * @property {string} jump_rate_multiplier - The jump rate multiplier of the reserve.
+     * @property {string} reserve_factor - The reserve factor of the reserve.
+     * @property {string} optimal_utilization - The optimal utilization of the reserve.
+     * @property {string} liquidation_ratio - The liquidation ratio of the reserve.
+     * @property {string} liquidation_bonus - The liquidation bonus of the reserve.
+     * @property {string} liquidation_threshold - The liquidation threshold of the reserve.
+     */
+
+    bcs.registerStructType('ReserveDataInfo', {
+        id: 'u8',
+        oracle_id: 'u8',
+        coin_type: 'string',
+        supply_cap: 'u256',
+        borrow_cap: 'u256',
+        supply_rate: 'u256',
+        borrow_rate: 'u256',
+        supply_index: 'u256',
+        borrow_index: 'u256',
+        total_supply: 'u256',
+        total_borrow: 'u256',
+        last_update_at: 'u64',
+        ltv: 'u256',
+        treasury_factor: 'u256',
+        treasury_balance: 'u256',
+        base_rate: 'u256',
+        multiplier: 'u256',
+        jump_rate_multiplier: 'u256',
+        reserve_factor: 'u256',
+        optimal_utilization: 'u256',
+        liquidation_ratio: 'u256',
+        liquidation_bonus: 'u256',
+        liquidation_threshold: 'u256',
+    });
 }

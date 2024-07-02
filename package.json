@@ -1,6 +1,6 @@
 {
   "name": "navi-sdk",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -17,7 +17,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@mysten/sui": "^1.1.2",
+    "@mysten/sui": "^1.2.0",
     "@mysten/sui.js": "^0.54.1",
     "axios": "^1.7.2",
     "esrun": "^3.2.26",

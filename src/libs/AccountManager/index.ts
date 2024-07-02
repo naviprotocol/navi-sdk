@@ -24,9 +24,8 @@ import {
   claimAllRewardsPTB
 } from "../PTB";
 import { moveInspect } from "../CallFunctions";
-import { bcs } from '@mysten/sui.js/bcs';
 import assert from 'assert';
-
+import {registerStructs} from '../PTB';
 
 
 export class AccountManager {
@@ -56,69 +55,10 @@ export class AccountManager {
     }
 
     this.address = this.keypair.getPublicKey().toSuiAddress();
-    this.registerStructs();
+    registerStructs();
   }
 
-  registerStructs() {
-    bcs.registerStructType('IncentiveAPYInfo', {
-      asset_id: 'u8',
-      apy: 'u256',
-      coin_types: 'vector<string>',
-    });
-
-    bcs.registerStructType('IncentivePoolInfo', {
-      pool_id: 'address',
-      funds: 'address',
-      phase: 'u64',
-      start_at: 'u64',
-      end_at: 'u64',
-      closed_at: 'u64',
-      total_supply: 'u64',
-      asset_id: 'u8',
-      option: 'u8',
-      factor: 'u256',
-      distributed: 'u64',
-      available: 'u256',
-      total: 'u256',
-    });
-
-    bcs.registerStructType('IncentivePoolInfoByPhase', {
-      phase: 'u64',
-      pools: 'vector<IncentivePoolInfo>',
-    });
-
-    bcs.registerStructType('UserStateInfo', {
-      asset_id: 'u8',
-      borrow_balance: 'u256',
-      supply_balance: 'u256',
-    });
-
-    bcs.registerStructType('ReserveDataInfo', {
-      id: 'u8',
-      oracle_id: 'u8',
-      coin_type: 'string',
-      supply_cap: 'u256',
-      borrow_cap: 'u256',
-      supply_rate: 'u256',
-      borrow_rate: 'u256',
-      supply_index: 'u256',
-      borrow_index: 'u256',
-      total_supply: 'u256',
-      total_borrow: 'u256',
-      last_update_at: 'u64',
-      ltv: 'u256',
-      treasury_factor: 'u256',
-      treasury_balance: 'u256',
-      base_rate: 'u256',
-      multiplier: 'u256',
-      jump_rate_multiplier: 'u256',
-      reserve_factor: 'u256',
-      optimal_utilization: 'u256',
-      liquidation_ratio: 'u256',
-      liquidation_bonus: 'u256',
-      liquidation_threshold: 'u256',
-    });
-  }
+  
 
   /**
    * Returns the derivation path for a given address index.
