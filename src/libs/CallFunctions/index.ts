@@ -1,7 +1,7 @@
 
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { Transaction } from '@mysten/sui/transactions';
 import { bcs } from '@mysten/sui.js/bcs';
-import { DevInspectResults, getFullnodeUrl, SuiClient, SuiObjectResponse, SuiTransactionBlockResponse } from '@mysten/sui.js/client';
+import { DevInspectResults, getFullnodeUrl, SuiClient, SuiObjectResponse, SuiTransactionBlockResponse } from '@mysten/sui/client';
 
 /**
  * Parses and prints the inspection results.
@@ -35,7 +35,7 @@ function inspectResultParseAndPrint(data: DevInspectResults, funName: string, pa
  * @param typeName - Optional. The type name associated with the function.
  * @returns A promise that resolves to the inspection result.
  */
-async function moveInspectImpl(txb: TransactionBlock, client: SuiClient, sender: string, funName: string, typeName?: string) {
+async function moveInspectImpl(txb: Transaction, client: SuiClient, sender: string, funName: string, typeName?: string) {
     const result = await client.devInspectTransactionBlock({
         transactionBlock: txb,
         sender: sender,
@@ -53,25 +53,13 @@ async function moveInspectImpl(txb: TransactionBlock, client: SuiClient, sender:
  * @param typeName - Optional type name for the function call.
  * @returns A Promise that resolves to the result of the move and inspect operation.
  */
-export async function moveInspect(client: SuiClient, sender: string, target: `${string}::${string}::${string}`, args: any[], typeArgs?: string[], typeName?: string) {
-    const tx = new TransactionBlock();
-
-    const args_: {
-        kind: 'Input';
-        index: number;
-        type?: 'object' | 'pure' | undefined;
-        value?: any;
-    }[] = [];
-
-    for (let arg of args) {
-        args_.push(tx.pure(arg));
-    }
+export async function moveInspect(tx: Transaction, client: SuiClient, sender: string, target: `${string}::${string}::${string}`, args: any[], typeArgs?: string[], typeName?: string) {
 
     const funcName = target.split('::');
 
     tx.moveCall({
         target: target,
-        arguments: args_,
+        arguments: args,
         typeArguments: typeArgs,
     });
     return await moveInspectImpl(tx, client, sender, funcName.slice(1, 3).join('::'), typeName);

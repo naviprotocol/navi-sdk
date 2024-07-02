@@ -1,4 +1,4 @@
-import { SuiClient } from "@mysten/sui.js/client";
+import { SuiClient } from "@mysten/sui/client";
 
 /**
  * Retrieves the amount of a specific coin owned by a sender.
