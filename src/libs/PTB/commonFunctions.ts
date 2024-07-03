@@ -564,7 +564,6 @@ export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string,
     let txb = tx || new Transaction();
 
     const rewardsSupply: { [key: string]: Reward } = await getAvailableRewards(client, userToCheck, 1, false);
-    console.log(rewardsSupply)
     // Convert the rewards object to an array of its values
     const rewardsArray: Reward[] = Object.values(rewardsSupply);
     for (const reward of rewardsArray) {
