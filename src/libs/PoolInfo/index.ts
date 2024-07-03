@@ -78,8 +78,8 @@ export async function getLatestProtocolPackageId() {
 }
 
 export async function getUserRewardHistory(userAddress: string, page: number = 1, size: number = 400) {
-    const endpoint = `https://navi-open-jrmuvep2r-navi-fd9a1df6.vercel.app/api/navi/user/rewards?userAddress=${userAddress}&page=${page}&pageSize=${size}`;
-
+    const endpoint = `https://open-api.naviprotocol.io/api/navi/user/rewards?userAddress=${userAddress}&page=${page}&pageSize=${size}`;
+    console.log(endpoint);
     try {
         const response = await axios.get(endpoint);
         const rewards = response.data?.data?.rewards || [];

@@ -507,12 +507,19 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
         const activePools = allPools.filter(pool => pool.available.trim() != '0');
 
         const summedRewards = activePools.reduce((acc, pool) => {
-            const assetId = pool.asset_id.toString();
+            let assetId = pool.asset_id.toString();
+            if (assetId == '5' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
+                assetId = '5extra'
+            }
             const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
             const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
 
             if (!acc[assetId]) {
+                
                 acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
+                if (assetId == '5extra') {
+                    acc[assetId] = { asset_id: '5', funds: pool.funds, available: availableFixed };
+                }
             } else {
                 acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
             }
@@ -528,12 +535,13 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 '3': 'WETH',
                 '4': 'CETUS',
                 '5': 'vSui',
+                '5extra': 'vSui',
                 '6': 'haSui',
                 '7': 'NAVX',
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
-                if (key == '5' || key == '7') {
+                if (key == '5extra' || key == '7') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
                 } else {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
@@ -556,6 +564,7 @@ export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string,
     let txb = tx || new Transaction();
 
     const rewardsSupply: { [key: string]: Reward } = await getAvailableRewards(client, userToCheck, 1, false);
+    console.log(rewardsSupply)
     // Convert the rewards object to an array of its values
     const rewardsArray: Reward[] = Object.values(rewardsSupply);
     for (const reward of rewardsArray) {
