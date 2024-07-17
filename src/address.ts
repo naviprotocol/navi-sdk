@@ -4,6 +4,7 @@ import {getLatestProtocolPackageId} from './libs/PoolInfo/index';
 
 let globalPackageId: string;
 let globalPackageIdExpireAt: number;
+let cacheUpdatePromise: Promise<void> | null = null;
 
 export const AddressMap: Record<string, string> = {
     '0x2::sui::SUI': "Sui",
@@ -29,14 +30,21 @@ export async function setPackageCache(expirationLength: number = 3600): Promise<
     globalPackageIdExpireAt = Date.now() + expirationLength * 1000; // Convert seconds to milliseconds
 }
 
+async function updateCacheIfNeeded() {
+    if (!getPackageCache() && !cacheUpdatePromise) {
+        cacheUpdatePromise = setPackageCache();
+        await cacheUpdatePromise;
+        cacheUpdatePromise = null;
+    } else if (cacheUpdatePromise) {
+        await cacheUpdatePromise;
+    }
+}
+
+
 export const getConfig = async () => {
 
-    let protocolPackage = getPackageCache();
-
-    if (!protocolPackage) {
-        await setPackageCache();
-        protocolPackage = globalPackageId;
-    }
+    await updateCacheIfNeeded();
+    const protocolPackage = getPackageCache();
     return {
         ProtocolPackage: protocolPackage,
         StorageId: '0xbb4e2f4b6205c2e2a2db47aeb4f830796ec7c005f88537ee775986639bc442fe',
