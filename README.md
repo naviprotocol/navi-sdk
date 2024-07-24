@@ -15,6 +15,9 @@ Before you can use the NaviSDK Client, you need to set up your project environme
 
 [Check how to use dotenv](https://github.com/motdotla/dotenv)
 
+### Quick Start
+We have prepared [starter code](https://github.com/naviprotocol/navi-sdk/tree/main/document) for Navi-SDK beginners.
+
 ## Contribute to Navi-SDK
 If you want to contribute to Navi-SDK, you may follow the steps:
 1. Code Standards
