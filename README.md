@@ -21,7 +21,7 @@ We have prepared [starter code](https://github.com/naviprotocol/navi-sdk/tree/ma
 ## Contribute to Navi-SDK
 You may follow the guide from detailed [documentation](./CONTRIBUTION.md)
 
-# More About Navi
+## More About Navi
 Use the following links to learn more about Navi Protocol:
 
 * Learn more about the [largest lending and borrowing protocol documentation](https://naviprotocol.gitbook.io/navi-protocol-docs) on Sui.
