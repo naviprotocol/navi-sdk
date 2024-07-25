@@ -56,8 +56,8 @@ export class NAVISDKClient {
      * @param coinType - The data type of the coin for which to retrieve the pool information.
      * @returns A Promise that resolves to the pool information.
      */
-    async getPoolInfo(coinType: CoinInfo) {
-        return getPoolInfo(coinType);
+    async getPoolInfo(coinType?: CoinInfo) {
+        return getPoolInfo(coinType, this.accounts[0].client);
     }
 
     /**

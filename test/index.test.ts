@@ -55,7 +55,7 @@ describe('NAVI SDK Client', async () => {
     it('should get correct return available rewards for specific address', async () => {
         const address = '0xcb98748e6a6bb10d0250eeaef3aade81003b5ac25034c08a95e090768473144b';
 
-        const res = await client.getAvailableRewards(address);
+        const res = await client.getAddressAvailableRewards(address);
         const reward = res['0'];
         expect(reward.asset_id).toBe('0');
         

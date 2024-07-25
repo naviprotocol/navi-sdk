@@ -1,14 +1,11 @@
-# NaviSDK Client Documentation
+# Welcome to NAVI Protocol
 
-For the latest updates and detailed information on interacting with the NaviSDK contract, please refer to the [Navi Protocol Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs/how-to-interact-with-the-contract/navi-sdk).
-## Introduction
-
-The NaviSDK Client provides tools for interacting with the ***Sui*** blockchain networks, designed for handling transactions, accounts, and smart contracts efficiently. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
+The NAVI SDK Client provides tools for interacting with the Sui blockchain networks, designed for handling transactions, accounts, and smart contracts efficiently. This documentation covers the setup, account management, and transaction handling within the NAVI ecosystem.
 
 ## Getting Started
 
 ### Installation
-Before you can use the NaviSDK Client, you need to set up your project environment.
+Before you can use the NAVI SDK Client, you need to set up your project environment.
 
 `npm i navi-sdk`
 
@@ -18,29 +15,20 @@ Before you can use the NaviSDK Client, you need to set up your project environme
 
 [Check how to use dotenv](https://github.com/motdotla/dotenv)
 
-## Quick Start
-```javascript
-const mnemonic = process.env.mnemonic; // Use an existing mnemonic or leave it empty to generate a new one
-const client = new NAVISDKClient({ mnemonic, networkType: "mainnet" || "your_rpc", numberOfAccounts: 5 }); 
+### Quick Start
+We have prepared [starter code](https://github.com/naviprotocol/navi-sdk/tree/main/document) for NAVI SDK beginners.
 
-const account = client.accounts[0];
-account.depositToNavi(Sui, 1e9);
-```
+## Contribute to NAVI SDK Project
+You may follow the guide from detailed [documentation](./CONTRIBUTION.md)
 
+## More About NAVI
+Use the following links to learn more about NAVI Protocol:
 
-## Detailed SDK Usage
-- [NAVI-SDK Client](./document/client.md)
-- [NAVI-SDK AccountManager](./document/accountManager.md)
+* Learn more about the [largest lending and borrowing protocol documentation](https://naviprotocol.gitbook.io/navi-protocol-docs) on Sui.
+* Join the [NAVI community](https://discord.com/invite/R6Xkbee8Xq) on Discord and [Telegram Channel](https://t.me/navi_protocol).
+* Find out more about the [Bug Bounty Program](https://naviprotocol.gitbook.io/navi-protocol-docs/security/bug-bounty-program)
+* Review information about [NAVI Roadmap](https://naviprotocol.gitbook.io/navi-protocol-docs/dao-and-token/roadmap), [Tokenomics](https://naviprotocol.gitbook.io/navi-protocol-docs/dao-and-token/navx-tokenomics), and [Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs) on the Navi site.
 
-
-## SDK Sample & Tools
-### [Flashloan Demo](https://github.com/naviprotocol/navi-sdk/tree/main/examples/flashloan-demo)
-
-
-### [Liquidation Demo](https://github.com/naviprotocol/navi-sdk/tree/main/examples/liquidation-bot)
-
-
-### [Send Batch Coins Demo](https://github.com/naviprotocol/navi-sdk/tree/main/examples/batchSendCoin-demo)
 
 
 
