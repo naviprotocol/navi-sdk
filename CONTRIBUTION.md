@@ -1,4 +1,4 @@
-# Navi Open Source Contribution Policy
+# NAVI Open Source Contribution Policy
 We welcome and appreciate contributions of quality code from anyone.
 
 ## Contribution Guidelines
@@ -14,7 +14,7 @@ To ensure high quality and maintainability of our codebase, please adhere to the
 ### Code Review Process
 All Pull Requests (PRs) will undergo a thorough review process:
 
-* ***Review***: Navi Protocol officials will review all PRs to ensure they meet our standards and project goals.
+* ***Review***: NAVI Protocol officials will review all PRs to ensure they meet our standards and project goals.
 * ***Feedback***: Reviewers may request changes or seek clarifications on your code.
 
 ### Responsiveness

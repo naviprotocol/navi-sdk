@@ -1,14 +1,14 @@
-# NaviSDK Client Documentation
+# NAVI SDK Client Documentation
 
-For the latest updates and detailed information on interacting with the NaviSDK contract, please refer to the [Navi Protocol Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs/how-to-interact-with-the-contract/navi-sdk).
+For the latest updates and detailed information on interacting with the NAVI contract, please refer to the [NAVI Protocol Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs/how-to-interact-with-the-contract/navi-sdk).
 ## Introduction
 
-The NaviSDK Client provides tools for interacting with the Sui blockchain networks, designed for handling transactions, accounts, and smart contracts efficiently. This documentation covers the setup, account management, and transaction handling within the NaviSDK ecosystem.
+The NAVI SDK Client provides tools for interacting with the Sui blockchain networks, designed for handling transactions, accounts, and smart contracts efficiently. This documentation covers the setup, account management, and transaction handling within the NAVI ecosystem.
 
 ## Getting Started
 
 ### Installation
-Before you can use the NaviSDK Client, you need to set up your project environment.
+Before you can use the NAVI SDK Client, you need to set up your project environment.
 
 `npm i navi-sdk`
 
