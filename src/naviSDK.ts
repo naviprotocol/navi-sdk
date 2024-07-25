@@ -1,9 +1,10 @@
 import { AccountManager } from "./libs/AccountManager";
 import { initializeParams, CoinInfo, Pool, PoolConfig, OptionType } from "./types";
-import { getPoolInfo } from './libs/PoolInfo';
+import { getPoolInfo, getUserRewardHistory} from './libs/PoolInfo';
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { pool } from "./address";
+import {getAvailableRewards} from './libs/PTB';
 
 export class NAVISDKClient {
 
@@ -55,8 +56,8 @@ export class NAVISDKClient {
      * @param coinType - The data type of the coin for which to retrieve the pool information.
      * @returns A Promise that resolves to the pool information.
      */
-    async getPoolInfo(coinType: CoinInfo) {
-        return getPoolInfo(coinType);
+    async getPoolInfo(coinType?: CoinInfo) {
+        return getPoolInfo(coinType, this.accounts[0].client);
     }
 
     /**
@@ -97,10 +98,10 @@ export class NAVISDKClient {
         if (this.accounts.length === 0) {
             this.account = new AccountManager();
             this.accounts.push(this.account);
-            await this.accounts[0].getDynamicHealthFactor(address, coinType.symbol, estimateSupply, estimateBorrow, isIncrease);
+            await this.accounts[0].getDynamicHealthFactor(address, coinType, estimateSupply, estimateBorrow, isIncrease);
             this.accounts.splice(0, 1);
         }
-        return this.accounts[0].getDynamicHealthFactor(address, coinType.symbol, estimateSupply, estimateBorrow, isIncrease);
+        return this.accounts[0].getDynamicHealthFactor(address, coinType, estimateSupply, estimateBorrow, isIncrease);
     }
 
     /**
@@ -147,7 +148,12 @@ export class NAVISDKClient {
      * @param option - The option type for rewards.
      * @returns A promise that resolves with the available rewards.
      */
-    async getAvailableRewards(address: string = this.accounts[0].address, option: OptionType = 1) {
-        return this.accounts[0].getAvailableRewards(address, option, true);
+    async getAddressAvailableRewards(address: string = this.accounts[0].address, option: OptionType = 1) {
+        const client = this.accounts[0].client;
+        return getAvailableRewards(client, address, option, true);
+    }
+
+    async getClaimedRewardsHistory(userAddress: string = this.accounts[0].address, page: number = 1, size: number = 400) {
+        return getUserRewardHistory(userAddress, page, size);
     }
 }

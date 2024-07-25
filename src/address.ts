@@ -1,6 +1,11 @@
 import { Pool, CoinInfo } from './types';
 import {getLatestProtocolPackageId} from './libs/PoolInfo/index';
 
+
+let globalPackageId: string;
+let globalPackageIdExpireAt: number;
+let cacheUpdatePromise: Promise<void> | null = null;
+
 export const AddressMap: Record<string, string> = {
     '0x2::sui::SUI': "Sui",
     '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX': "NAVX",
@@ -12,9 +17,36 @@ export const AddressMap: Record<string, string> = {
     '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI': 'haSui',
 };
 
+
+export function getPackageCache(): string | undefined {
+    if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
+        return globalPackageId;
+    }
+    return undefined;
+}
+
+export async function setPackageCache(expirationLength: number = 3600): Promise<void> {
+    globalPackageId = await getLatestProtocolPackageId();
+    globalPackageIdExpireAt = Date.now() + expirationLength * 1000; // Convert seconds to milliseconds
+}
+
+async function updateCacheIfNeeded() {
+    if (!getPackageCache() && !cacheUpdatePromise) {
+        cacheUpdatePromise = setPackageCache();
+        await cacheUpdatePromise;
+        cacheUpdatePromise = null;
+    } else if (cacheUpdatePromise) {
+        await cacheUpdatePromise;
+    }
+}
+
+
 export const getConfig = async () => {
+
+    await updateCacheIfNeeded();
+    const protocolPackage = getPackageCache();
     return {
-        ProtocolPackage: await getLatestProtocolPackageId(),
+        ProtocolPackage: protocolPackage,
         StorageId: '0xbb4e2f4b6205c2e2a2db47aeb4f830796ec7c005f88537ee775986639bc442fe',
         Incentive: '0xaaf735bf83ff564e1b219a0d644de894ef5bdc4b2250b126b2a46dd002331821',
         IncentiveV2: '0xf87a8acb8b81d14307894d12595541a73f19933f88e1326d5be349c7a6f7559c', // The new incentive version: V2

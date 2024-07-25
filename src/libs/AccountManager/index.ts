@@ -1,8 +1,8 @@
-import { Ed25519Keypair } from "@mysten/sui.js/keypairs/ed25519";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui.js/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { initializeParams, NetworkType } from "../../types";
 import { getCoinAmount, getCoinDecimal } from "../Coins";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { getConfig, pool, AddressMap, vSui } from "../../address";
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../../types";
 import {
@@ -17,12 +17,16 @@ import {
   liquidateFunction,
   claimRewardFunction,
   SignAndSubmitTXB,
-  stakeTovSui,
-  unstakeTovSui
+  stakeTovSuiPTB,
+  unstakeTovSui,
+  getIncentivePools,
+  getAvailableRewards,
+  claimAllRewardsPTB
 } from "../PTB";
 import { moveInspect } from "../CallFunctions";
-import { bcs } from '@mysten/sui.js/bcs';
 import assert from 'assert';
+import {registerStructs} from '../PTB';
+
 
 export class AccountManager {
   public keypair: Ed25519Keypair;
@@ -51,69 +55,10 @@ export class AccountManager {
     }
 
     this.address = this.keypair.getPublicKey().toSuiAddress();
-    this.registerStructs();
+    registerStructs();
   }
 
-  registerStructs() {
-    bcs.registerStructType('IncentiveAPYInfo', {
-      asset_id: 'u8',
-      apy: 'u256',
-      coin_types: 'vector<string>',
-    });
-
-    bcs.registerStructType('IncentivePoolInfo', {
-      pool_id: 'address',
-      funds: 'address',
-      phase: 'u64',
-      start_at: 'u64',
-      end_at: 'u64',
-      closed_at: 'u64',
-      total_supply: 'u64',
-      asset_id: 'u8',
-      option: 'u8',
-      factor: 'u256',
-      distributed: 'u64',
-      available: 'u256',
-      total: 'u256',
-    });
-
-    bcs.registerStructType('IncentivePoolInfoByPhase', {
-      phase: 'u64',
-      pools: 'vector<IncentivePoolInfo>',
-    });
-
-    bcs.registerStructType('UserStateInfo', {
-      asset_id: 'u8',
-      borrow_balance: 'u256',
-      supply_balance: 'u256',
-    });
-
-    bcs.registerStructType('ReserveDataInfo', {
-      id: 'u8',
-      oracle_id: 'u8',
-      coin_type: 'string',
-      supply_cap: 'u256',
-      borrow_cap: 'u256',
-      supply_rate: 'u256',
-      borrow_rate: 'u256',
-      supply_index: 'u256',
-      borrow_index: 'u256',
-      total_supply: 'u256',
-      total_borrow: 'u256',
-      last_update_at: 'u64',
-      ltv: 'u256',
-      treasury_factor: 'u256',
-      treasury_balance: 'u256',
-      base_rate: 'u256',
-      multiplier: 'u256',
-      jump_rate_multiplier: 'u256',
-      reserve_factor: 'u256',
-      optimal_utilization: 'u256',
-      liquidation_ratio: 'u256',
-      liquidation_bonus: 'u256',
-      liquidation_threshold: 'u256',
-    });
-  }
+  
 
   /**
    * Returns the derivation path for a given address index.
@@ -207,7 +152,7 @@ export class AccountManager {
    * @returns A Promise that resolves to the result of the account creation.
    */
   async createAccountCap() {
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     let sender = this.getPublicKey();
     txb.setSender(sender);
 
@@ -258,7 +203,7 @@ export class AccountManager {
       coinBalance > 0 &&
       coinBalance >= amounts.reduce((a, b) => a + b, 0)
     ) {
-      const txb = new TransactionBlock();
+      const txb = new Transaction();
       txb.setSender(sender);
       let coinInfo = await this.getCoins(coinAddress);
       let coins: any;
@@ -321,7 +266,7 @@ export class AccountManager {
       throw new Error("The length of objects and recipients should be the same");
     } else {
       let sender = this.getPublicKey();
-      const txb = new TransactionBlock();
+      const txb = new Transaction();
       txb.setSender(sender);
       objects.forEach((object, index) => {
         txb.transferObjects([txb.object(object)], recipients[index]);
@@ -354,7 +299,7 @@ export class AccountManager {
   ) {
     const coinSymbol = coinType.symbol;
 
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -389,7 +334,7 @@ export class AccountManager {
   ) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -423,7 +368,7 @@ export class AccountManager {
   async withdraw(coinType: CoinInfo, amount: number) {
 
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -450,7 +395,7 @@ export class AccountManager {
   ) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -481,7 +426,7 @@ export class AccountManager {
   ) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -503,7 +448,7 @@ export class AccountManager {
   async repay(coinType: CoinInfo, repayAmount: number) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -536,7 +481,7 @@ export class AccountManager {
    */
   async liquidate(payCoinType: CoinInfo, liquidationAddress: string, collateralCoinType: CoinInfo, liquidationAmount: number = 0) {
 
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     txb.setSender(this.address);
 
     let coinInfo = await this.getCoins(payCoinType.address);
@@ -548,10 +493,18 @@ export class AccountManager {
     }
 
     if (payCoinType.symbol == "Sui") {
-      totalBalance = (Number(totalBalance) - 0.5 * 1e9).toString(); //You need to keep some Sui for gas
 
-      let [mergedCoin] = txb.splitCoins(txb.gas, [totalBalance]);
-      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, liquidationAddress, totalBalance);
+      totalBalance = (Number(totalBalance) - 1 * 1e9).toString(); //You need to keep some Sui for gas
+
+      let [mergedCoin] = txb.splitCoins(txb.gas, [txb.pure.u64(Number(totalBalance))]);
+
+      const [mergedCoinBalance] = txb.moveCall({
+        target: `0x2::coin::into_balance`,
+        arguments: [mergedCoin],
+        typeArguments: [payCoinType.address],
+      });
+
+      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(txb, payCoinType, mergedCoinBalance, collateralCoinType, liquidationAddress, totalBalance);
 
       const [collateralCoin] = txb.moveCall({
         target: `0x2::coin::from_balance`,
@@ -565,11 +518,11 @@ export class AccountManager {
         typeArguments: [payCoinType.address],
       });
 
-      txb.transferObjects([collateralCoin, leftDebtCoin], liquidationAddress);
+      txb.transferObjects([collateralCoin, leftDebtCoin], this.address);
     }
     else {
       if (coinInfo.data.length >= 2) {
-        const txbMerge = new TransactionBlock();
+        const txbMerge = new Transaction();
         txbMerge.setSender(this.address);
         let baseObj = coinInfo.data[0].coinObjectId;
         let allList = coinInfo.data.slice(1).map(coin => coin.coinObjectId);
@@ -580,7 +533,12 @@ export class AccountManager {
       }
 
       let mergedCoin = txb.object(coinInfo.data[0].coinObjectId);
-      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(txb, payCoinType, mergedCoin, collateralCoinType, liquidationAddress, totalBalance);
+      const [collateralCoinBalance] = txb.moveCall({
+        target: `0x2::coin::into_balance`,
+        arguments: [mergedCoin],
+        typeArguments: [payCoinType.address],
+      });
+      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(txb, payCoinType, collateralCoinBalance, collateralCoinType, liquidationAddress, totalBalance);
 
       const [collateralCoin] = txb.moveCall({
         target: `0x2::coin::from_balance`,
@@ -594,7 +552,7 @@ export class AccountManager {
         typeArguments: [payCoinType.address],
       });
 
-      txb.transferObjects([collateralCoin, leftDebtCoin], liquidationAddress);
+      txb.transferObjects([collateralCoin, leftDebtCoin], this.address);
     }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -608,11 +566,12 @@ export class AccountManager {
    */
   async getHealthFactor(address: string = this.address) {
     const config = await getConfig();
-    const result: any = await moveInspect(this.client, this.getPublicKey(), `${config.ProtocolPackage}::logic::user_health_factor`, [
-      '0x06', // clock object id
-      config.StorageId, // object id of storage
-      config.PriceOracle, // object id of price oracle
-      address, // user address
+    const tx = new Transaction();
+    const result: any = await moveInspect(tx, this.client, this.getPublicKey(), `${config.ProtocolPackage}::logic::user_health_factor`, [
+      tx.object('0x06'), // clock object id
+      tx.object(config.StorageId), // object id of storage
+      tx.object(config.PriceOracle), // object id of price oracle
+      tx.pure.address(address), // user address
     ]);
     const healthFactor = Number(result[0]) / Math.pow(10, 27);
 
@@ -629,23 +588,23 @@ export class AccountManager {
    * @returns The health factor for the user in the pool.
    * @throws Error if the pool does not exist.
    */
-  async getDynamicHealthFactor(userAddress: string, poolName: string, estimatedSupply: number = 0, estimatedBorrow: number = 0, isIncrease: boolean = true) {
-    const poolConfig: PoolConfig = pool[poolName as keyof Pool];
+  async getDynamicHealthFactor(userAddress: string, coinType: CoinInfo, estimatedSupply: number = 0, estimatedBorrow: number = 0, isIncrease: boolean = true) {
+    const poolConfig: PoolConfig = pool[coinType.symbol as keyof Pool];
     if (!poolConfig) {
       throw new Error("Pool does not exist");
     }
     const config = await getConfig();
-
-    const result: any = await moveInspect(this.client, this.getPublicKey(), `${config.ProtocolPackage}::dynamic_calculator::dynamic_health_factor`, [
-      '0x06', // clock object id
-      config.StorageId, // object id of storage
-      config.PriceOracle, // object id of price oracle
-      poolConfig.poolId,
-      userAddress, // user address,
-      poolConfig.assetId,
-      estimatedSupply,
-      estimatedBorrow,
-      isIncrease
+    const tx = new Transaction();
+    const result: any = await moveInspect(tx, this.client, this.getPublicKey(), `${config.ProtocolPackage}::dynamic_calculator::dynamic_health_factor`, [
+      tx.object('0x06'), // clock object id
+      tx.object(config.StorageId), // object id of storage
+      tx.object(config.PriceOracle), // object id of price oracle
+      tx.object(poolConfig.poolId),
+      tx.pure.address(userAddress), // user address,
+      tx.pure.u8(poolConfig.assetId),
+      tx.pure.u64(estimatedSupply),
+      tx.pure.u64(estimatedBorrow),
+      tx.pure.bool(isIncrease)
     ], [poolConfig.type]);
 
     const healthFactor = Number(result[0]) / Math.pow(10, 27);
@@ -659,6 +618,7 @@ export class AccountManager {
     else {
       console.log('address: ', `${userAddress}`, ' health factor is: ', healthFactor.toString());
     }
+    return healthFactor.toString();
   }
 
   /**
@@ -720,112 +680,15 @@ export class AccountManager {
     return balanceMap;
   }
 
-  /**
-   * Retrieves the incentive pools for a given asset and option.
-   * @param assetId - The ID of the asset.
-   * @param option - The option type.
-   * @param user - (Optional) The user's address. If provided, the rewards claimed by the user and the total rewards will be returned.
-   * @returns The incentive pools information.
-   */
-  async getIncentivePools(assetId: number, option: OptionType, user?: string) {
-    const config = await getConfig();
-
-    const result: any = await moveInspect(
-      this.client,
-      this.address,
-      `${config.uiGetter}::incentive_getter::get_incentive_pools`,
-      [
-        '0x06', // clock object id
-        config.IncentiveV2, // the incentive object v2
-        config.StorageId, // object id of storage
-        assetId,
-        option,
-        user ? user : '0x0000000000000000000000000000000000000000000000000000000000000000', // If you provide your address, the rewards that have been claimed by your address and the total rewards will be returned.
-      ],
-      [], // type arguments is null
-      'vector<IncentivePoolInfo>' // parse type
-    );
-    return result[0];
-  }
-
-  /**
-   * Retrieves the available rewards for a given address.
-   * 
-   * @param checkAddress - The address to check for rewards. Defaults to the current address.
-   * @param option - The option type. Defaults to 1.
-   * @param prettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
-   * @returns An object containing the summed rewards for each asset.
-   * @throws If there is an error retrieving the available rewards.
-   */
-  async getAvailableRewards(checkAddress: string = this.address, option: OptionType = 1, prettyPrint = true) {
-    const assetIds = Array.from({ length: 8 }, (_, i) => i); // Generates an array [0, 1, 2, ..., 7]
-    try {
-      const allResults = await Promise.all(
-        assetIds.map(assetId => this.getIncentivePools(assetId, option, checkAddress))
-      );
-
-      const allPools = allResults.flat();
-      const activePools = allPools.filter(pool => pool.available.trim() != '0');
-
-      const summedRewards = activePools.reduce((acc, pool) => {
-        const assetId = pool.asset_id.toString();
-        const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
-        const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
-
-        if (!acc[assetId]) {
-          acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
-        } else {
-          acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
-        }
-
-        return acc;
-      }, {} as { [key: string]: { asset_id: string, funds: string, available: string } });
-
-      if (prettyPrint) {
-        const coinDictionary: { [key: string]: string } = {
-          '0': 'Sui',
-          '1': 'USDC',
-          '2': 'USDT',
-          '3': 'WETH',
-          '4': 'CETUS',
-          '5': 'vSui',
-          '6': 'haSui',
-          '7': 'NAVX',
-        };
-        console.log(checkAddress, ' available rewards:');
-        Object.keys(summedRewards).forEach(key => {
-          if (key == '5' || key == '7') {
-            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
-          } else {
-            console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
-          }
-        });
-      }
-
-      return summedRewards;
-    } catch (error) {
-      console.error('Failed to get available rewards:', error);
-      throw error;
-    }
-  }
 
   /**
    * Claims all available rewards for the specified account.
    * @returns PTB result
    */
   async claimAllRewards() {
-    let txb = new TransactionBlock();
+
+    let txb = await claimAllRewardsPTB(this.client, this.address);
     txb.setSender(this.address);
-
-    const rewardsSupply = await this.getAvailableRewards(this.address, 1, false);
-    for (const reward of rewardsSupply) {
-      await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
-    }
-
-    const rewardsBorrow = await this.getAvailableRewards(this.address, 3, false);
-    for (const reward of rewardsBorrow) {
-      await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
-    }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
@@ -837,13 +700,13 @@ export class AccountManager {
    * @returns PTB result
    */
   async stakeSuitoVoloSui(stakeAmount: number) {
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     txb.setSender(this.address);
 
     assert(stakeAmount >= 1e9, "Stake amount should be greater than 1Sui");
     const [toSwapSui] = txb.splitCoins(txb.gas, [stakeAmount]);
 
-    const vSuiCoin = await stakeTovSui(txb, toSwapSui);
+    const vSuiCoin = await stakeTovSuiPTB(txb, toSwapSui);
     txb.transferObjects([vSuiCoin], this.address);
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -858,18 +721,19 @@ export class AccountManager {
    * @returns PTB result
    */
   async unstakeSuiFromVoloSui(unstakeAmount: number = -1) {
-    let txb = new TransactionBlock();
+    let txb = new Transaction();
     txb.setSender(this.address);
 
     let coinInfo = await this.getCoins(vSui.address);
+
     if (coinInfo.data.length >= 2) {
-      const txbMerge = new TransactionBlock();
+      const txbMerge = new Transaction();
       txbMerge.setSender(this.address);
       let baseObj = coinInfo.data[0].coinObjectId;
       let allList = coinInfo.data.slice(1).map(coin => coin.coinObjectId);
 
-      txb.mergeCoins(baseObj, allList);
-      SignAndSubmitTXB(txbMerge, this.client, this.keypair);
+      txbMerge.mergeCoins(baseObj, allList);
+      await SignAndSubmitTXB(txbMerge, this.client, this.keypair);
     }
 
     coinInfo = await this.getCoins(vSui.address);
