@@ -19,19 +19,7 @@ Before you can use the NaviSDK Client, you need to set up your project environme
 We have prepared [starter code](https://github.com/naviprotocol/navi-sdk/tree/main/document) for Navi-SDK beginners.
 
 ## Contribute to Navi-SDK
-If you want to contribute to Navi-SDK, you may follow the steps:
-1. Code Standards
-* Follow the existing coding style of the project.
-* Ensure your code is well-documented.
-* Write unit tests for any new functionality.
-* Run all tests to ensure nothing is broken.
-2. Code Review Process
-* All PRs will undergo a review process by Navi Protocol officials.
-* Reviewers may request changes or clarifications.
-3. Responsiveness
-* Be responsive to feedback and make the necessary changes promptly.
-4. Merging
-* Once the PR is approved, it will be merged by one of the maintainers.
+You may follow the guide from detailed [documentation](./CONTRIBUTION.md)
 
 # More About Navi
 Use the following links to learn more about Navi Protocol:
