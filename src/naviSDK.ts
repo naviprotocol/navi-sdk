@@ -1,10 +1,10 @@
 import { AccountManager } from "./libs/AccountManager";
 import { initializeParams, CoinInfo, Pool, PoolConfig, OptionType } from "./types";
-import { getPoolInfo, getUserRewardHistory} from './libs/PoolInfo';
+import { getPoolInfo, getUserRewardHistory } from './libs/PoolInfo';
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { pool } from "./address";
-import {getAvailableRewards} from './libs/PTB';
+import { getAvailableRewards } from './libs/PTB';
 
 export class NAVISDKClient {
 

@@ -84,17 +84,18 @@ You may Simply input 'NAVX' as a string or NAVX as a type imported from address.
 
 Current These Pools are supported: **Sui | NAVX | vSui | USDC | USDT | WETH | CETUS | haSui**
 ```javascript
-account.depositToNavi(Sui, amount)
-account.depositToNaviWithAccountCap(NAVX, amount， accountCap_Address_that_you_own)
+let updateOracle = true;
+account.depositToNavi(Sui, amount, updateOracle) //UpdateOracle default to true, updateing oracle every time
+account.depositToNaviWithAccountCap(NAVX, amount， accountCap_Address_that_you_own, depositToNavi, updateOracle)
 
 
-account.withdraw(coinType = NAVX, amount)
-account.withdrawWithAccountCap(coinType = NAVX, amount, accountCap_Address_that_you_own)
+account.withdraw(coinType = NAVX, amount, updateOracle)
+account.withdrawWithAccountCap(coinType = NAVX, amount, accountCap_Address_that_you_own, updateOracle)
 
-account.borrow(coinType = NAVX, amount)
-account.repay(coinType = NAVX, amount)
+account.borrow(coinType = NAVX, amount, updateOracle)
+account.repay(coinType = NAVX, amount, updateOracle)
 
-account.claimAllRewards(); //Claim both Supply and Borrow rewards
+account.claimAllRewards(updateOracle); //Claim both Supply and Borrow rewards
 // Initialization Zone
 const debt_coin: CoinInfo = USDC; // Assigns USDC as the payment coin. Ensure you maintain a minimum of 0.5 Sui for gas fees if Sui is used.
 const to_liquidate_address = 'address_to_liquidate'; // Specifies the blockchain address of the account to be liquidated.
@@ -102,9 +103,21 @@ const collateral_coin: CoinInfo = Sui; // Designates Sui as the collateral coin.
 // End of Initialization Zone
 
 //Option1 - Liquidate with all debt_coin, will return the rest
-account.liquidate(debt_coin, to_liquidate_address, collateral_coin);
+account.liquidate(debt_coin, to_liquidate_address, collateral_coin, updateOracle);
 
 //Option2 - Liquidate with specific amount
 let to_liquidate_amount = 10; //Number of coin that can be used for liquidation, no decimals required.
 account.liquidate(debt_coin, to_liquidate_address, collateral_coin, to_liquidate_amount); //Liquidate with 10 USDC.
+```
+
+
+### Update Decentralized Oracle
+Two options to update NAVI's decentralized Oracle
+```javascript
+// For single transaction
+await account.updateOracle();
+
+// For Devevelopers who wants to integrate the Oracle in PTB
+let txb = new Transaction();
+await updateOraclePTB(account.client, account.address, txb); //add updateOracle code to PTB
 ```

@@ -21,11 +21,12 @@ import {
   unstakeTovSui,
   getIncentivePools,
   getAvailableRewards,
-  claimAllRewardsPTB
+  claimAllRewardsPTB,
+  updateOraclePTB
 } from "../PTB";
 import { moveInspect } from "../CallFunctions";
 import assert from 'assert';
-import {registerStructs} from '../PTB';
+import { registerStructs } from '../PTB';
 
 
 export class AccountManager {
@@ -58,7 +59,7 @@ export class AccountManager {
     registerStructs();
   }
 
-  
+
 
   /**
    * Returns the derivation path for a given address index.
@@ -295,11 +296,15 @@ export class AccountManager {
    */
   async depositToNavi(
     coinType: CoinInfo,
-    amount: number
+    amount: number,
+    updateOracle: boolean = true
   ) {
     const coinSymbol = coinType.symbol;
 
     let txb = new Transaction();
+    if (updateOracle) {
+      await updateOraclePTB(this.client, this.address, txb);
+    }
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -330,11 +335,15 @@ export class AccountManager {
   async depositToNaviWithAccountCap(
     coinType: CoinInfo,
     amount: number,
-    accountCapAddress: string
+    accountCapAddress: string,
+    updateOracle: boolean = true
   ) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
     let txb = new Transaction();
+    if (updateOracle) {
+      await updateOraclePTB(this.client, this.address, txb);
+    }
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -365,10 +374,13 @@ export class AccountManager {
    * @param amount - The amount of coins to withdraw.
    * @returns A promise that resolves to the result of the withdrawal.
    */
-  async withdraw(coinType: CoinInfo, amount: number) {
+  async withdraw(coinType: CoinInfo, amount: number, updateOracle: boolean = true) {
 
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
     let txb = new Transaction();
+    if (updateOracle) {
+      await updateOraclePTB(this.client, this.address, txb);
+    }
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -391,11 +403,15 @@ export class AccountManager {
   async withdrawWithAccountCap(
     coinType: CoinInfo,
     withdrawAmount: number,
-    accountCapAddress: string
+    accountCapAddress: string,
+    updateOracle: boolean = true
   ) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
     let txb = new Transaction();
+    if (updateOracle) {
+      await updateOraclePTB(this.client, this.address, txb);
+    }
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -422,11 +438,15 @@ export class AccountManager {
    */
   async borrow(
     coinType: CoinInfo,
-    borrowAmount: number
+    borrowAmount: number,
+    updateOracle: boolean = true
   ) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
     let txb = new Transaction();
+    if (updateOracle) {
+      await updateOraclePTB(this.client, this.address, txb);
+    }
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -445,10 +465,13 @@ export class AccountManager {
    * @returns A promise that resolves to the result of the repayment transaction.
    * @throws An error if there is insufficient balance for the specified coin.
    */
-  async repay(coinType: CoinInfo, repayAmount: number) {
+  async repay(coinType: CoinInfo, repayAmount: number, updateOracle: boolean = true) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
 
     let txb = new Transaction();
+    if (updateOracle) {
+      await updateOraclePTB(this.client, this.address, txb);
+    }
     let sender = this.getPublicKey();
     txb.setSender(sender);
     const poolConfig: PoolConfig = pool[coinSymbol as keyof Pool];
@@ -479,9 +502,12 @@ export class AccountManager {
    * @param liquidationAmount - The amount of coins to be liquidated (optional, default is 0).
    * @returns PtbResult - The result of the liquidation transaction.
    */
-  async liquidate(payCoinType: CoinInfo, liquidationAddress: string, collateralCoinType: CoinInfo, liquidationAmount: number = 0) {
+  async liquidate(payCoinType: CoinInfo, liquidationAddress: string, collateralCoinType: CoinInfo, liquidationAmount: number = 0, updateOracle: boolean = true) {
 
     let txb = new Transaction();
+    if (updateOracle) {
+      await updateOraclePTB(this.client, this.address, txb);
+    }
     txb.setSender(this.address);
 
     let coinInfo = await this.getCoins(payCoinType.address);
@@ -685,7 +711,7 @@ export class AccountManager {
    * Claims all available rewards for the specified account.
    * @returns PTB result
    */
-  async claimAllRewards() {
+  async claimAllRewards(updateOracle: boolean = true) {
 
     let txb = await claimAllRewardsPTB(this.client, this.address);
     txb.setSender(this.address);
@@ -745,6 +771,20 @@ export class AccountManager {
     let mergedCoin = txb.object(coinInfo.data[0].coinObjectId);
     const [splittedCoin] = txb.splitCoins(mergedCoin, [unstakeAmount]);
     await unstakeTovSui(txb, splittedCoin);
+
+    const result = SignAndSubmitTXB(txb, this.client, this.keypair);
+    return result;
+  }
+
+  /**
+   * Updates the Oracle.
+   * 
+   * @returns The result of the transaction submission.
+   */
+  async updateOracle() {
+    let txb = new Transaction();
+    txb.setSender(this.address);
+    await updateOraclePTB(this.client, this.address, txb);
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;

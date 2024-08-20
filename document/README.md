@@ -27,6 +27,16 @@ const account = client.accounts[0];
 account.depositToNavi(Sui, 1e9);
 ```
 
+## Update NAVI Decentralized Oracle
+```javascript
+// For Single Transaction
+await account.updateOracle();
+
+// For Devevelopers who wants to integrate the Oracle in PTB
+let txb = new Transaction();
+await updateOraclePTB(account.client, account.address, txb); //add updateOracle code to PTB
+```
+
 
 ## Detailed SDK Usage
 - [NAVI-SDK Client](./document/client.md)
