@@ -1,5 +1,5 @@
 import { Pool, CoinInfo } from './types';
-import {getLatestProtocolPackageId} from './libs/PoolInfo/index';
+import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
 
 
 let globalPackageId: string;
@@ -189,4 +189,201 @@ export const vSuiConfig = {
     pool: "0x7fa2faa111b8c65bea48a23049bfd81ca8f971a262d981dcd9a17c3825cb5baf",
     metadata: "0x680cd26af32b2bde8d3361e804c53ec1d1cfe24c7f039eb7f549e8dfde389a60",
     wrapper: "0x05"
+}
+
+export interface IPriceFeed {
+    oracleId: number
+    maxTimestampDiff: number
+    priceDiffThreshold1: number
+    priceDiffThreshold2: number
+    maxDurationWithinThresholds: number
+    maximumAllowedSpanPercentage: number
+    maximumEffectivePrice: number
+    minimumEffectivePrice: number
+    historicalPriceTTL: number
+    coinType: string
+    feedId: string
+
+    supraPairId: number
+    pythPriceFeedId: string
+    pythPriceInfoObject: string
+
+    priceDecimal: number
+    expiration: number
+}
+
+export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
+    SUI: {
+        oracleId: 0,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+        priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 3000000000, // 3 = 3 * 1e9 = 3000000000
+        minimumEffectivePrice: 100000000, // 0.1 = 0.1 * 1e9 = 100000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI',
+        feedId: '0x2cab9b151ca1721624b09b421cc57d0bb26a1feb5da1f821492204b098ec35c9', // TODO: value
+        supraPairId: 90, // SUI_USDT -> 90, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Under%20Supervision-,SUI_USDT,-90
+        pythPriceFeedId: '0x23d7315113f5b1d3ba7a83604c44b94d79f4fd69af77f804fc7f920a6dc65744', // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x801dbc2f0053d34734814b2d6df491ce7807a725fe9a01ad74a07e9c51396c37',
+        priceDecimal: 9,
+        expiration: 30,
+    },
+    USDC: {
+        oracleId: 1,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 100000, // 0.1 = 0.1 * 1e6 = 100000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
+        feedId: '0x70a79226dda5c080378b639d1bb540ddea64761629aa4ad7355d79266d55af61', // TODO: value
+        supraPairId: 47, // USDC_USDT -> 47, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Standard-,USDC_USDT,-47
+        pythPriceFeedId: '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a', // **fixed value: Crypto.USDC/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+        priceDecimal: 6,
+        expiration: 30,
+    },
+    USDT: {
+        oracleId: 2,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 100000, // 0.1 = 0.1 * 1e6 = 100000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN',
+        feedId: '0xf72d8933873bb4e5bfa1edbfa9ff6443ec5fac25c1d99ba2ef37f50a125826f3', // TODO: value
+        supraPairId: 48, // USDT_USD -> 48, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,USDT_USD,-48
+        pythPriceFeedId: '0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b', // **fixed value: Crypto.USDT/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x985e3db9f93f76ee8bace7c3dd5cc676a096accd5d9e09e9ae0fb6e492b14572',
+        priceDecimal: 6,
+        expiration: 30,
+    },
+    WETH: {
+        oracleId: 3,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+        priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 600000000000, // 6000 = 6000 * 1e8 = 600000000000
+        minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN',
+        feedId: '0x44d92366eba1f1652ec81f34585406726bef267565a2db1664ffd5ef18e21693', // TODO: value
+        supraPairId: 1, // ETH_USDT -> 1, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,ETH_USDT,-1
+        pythPriceFeedId: '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', // **fixed value: Crypto.ETH/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+        priceDecimal: 8,
+        expiration: 30,
+    },
+    CETUS: {
+        oracleId: 4,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 200, // x1: 2% = 0.02 * 10000 = 200
+        priceDiffThreshold2: 400, // x2: 4% = 0.04 * 10000 = 400
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 1000000000, // 1 = 1 * 1e9 = 1000000000
+        minimumEffectivePrice: 1000000, // 0.001 = 0.001 * 1e9 = 1000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0x6864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS',
+        feedId: '0x5ac98fc1e6723af2a6d9a68a5d771654a6043f9c4d2b836b2d5fb4832a3be4f2', // TODO: value
+        supraPairId: 93, // CETUS_USDT -> 93, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,CETUS_USDT,-93
+        pythPriceFeedId: '0xe5b274b2611143df055d6e7cd8d93fe1961716bcd4dca1cad87a83bc1e78c1ef', // **fixed value: Crypto.CETUS/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x24c0247fb22457a719efac7f670cdc79be321b521460bd6bd2ccfa9f80713b14',
+        priceDecimal: 9,
+        expiration: 30,
+    },
+    CERT: {
+        oracleId: 5,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+        priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 3000000000, // 3 = 3 * 1e9 = 3000000000
+        minimumEffectivePrice: 100000000, // 0.1 = 0.1 * 1e9 = 100000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT',
+        feedId: '0x086bb5540047b3c77ae5e2f9b811c7ef085517a73510f776753c8ee83d19e62c', // TODO: value
+        supraPairId: 90, // SUI_USDT -> 90, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Under%20Supervision-,SUI_USDT,-90
+        pythPriceFeedId: '0x23d7315113f5b1d3ba7a83604c44b94d79f4fd69af77f804fc7f920a6dc65744', // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x801dbc2f0053d34734814b2d6df491ce7807a725fe9a01ad74a07e9c51396c37',
+        priceDecimal: 9,
+        expiration: 30,
+    },
+    HASUI: {
+        oracleId: 6,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+        priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 3000000000, // 3 = 3 * 1e9 = 3000000000
+        minimumEffectivePrice: 100000000, // 0.1 = 0.1 * 1e9 = 100000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI',
+        feedId: '0xac934a2a2d406085e7f73b460221fe1b11935864605ba58cdbb8e21c15f12acd', // TODO: value
+        supraPairId: 90, // SUI_USDT -> 90, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Under%20Supervision-,SUI_USDT,-90
+        pythPriceFeedId: '0x23d7315113f5b1d3ba7a83604c44b94d79f4fd69af77f804fc7f920a6dc65744', // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x801dbc2f0053d34734814b2d6df491ce7807a725fe9a01ad74a07e9c51396c37',
+        priceDecimal: 9,
+        expiration: 30,
+    },
+    NAVX: {
+        oracleId: 7,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 200, // x1: 2% = 0.02 * 10000 = 200
+        priceDiffThreshold2: 400, // x2: 4% = 0.04 * 10000 = 400
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 1000000000, // 1 = 1 * 1e9 = 1000000000
+        minimumEffectivePrice: 1000000, // 0.001 = 0.001 * 1e9 = 1000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX',
+        feedId: '0x4324c797d2f19eff517c24adec8b92aa2d282e44f3a5cafb36d6c4b30d7f2dca', // TODO: value
+        supraPairId: 408, // NAVX_USDT -> 408, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,NAVX_USDT,-408
+        pythPriceFeedId: '0x88250f854c019ef4f88a5c073d52a18bb1c6ac437033f5932cd017d24917ab46', // **fixed value: Crypto.NAVX/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x5b117a6a2de70796bffe36495bad576b788a34c33ca0648bd57852ead3f41e32',
+        priceDecimal: 9,
+        expiration: 30,
+    },
+}
+
+export interface IOracleProConfig {
+    PackageId: string
+    PriceOracle: string
+    OracleAdminCap: string
+
+    OracleConfig: string
+
+    PythStateId: string
+    WormholeStateId: string
+    SupraOracleHolder: string
+    Sender: string
+    GasObject: string
+}
+
+export const OracleProConfig: IOracleProConfig = {
+    PackageId: '0xc2d49bf5e75d2258ee5563efa527feb6155de7ac6f6bf025a23ee88cd12d5a83', // TODO: value
+    PriceOracle: '0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef', // TODO: value
+    OracleAdminCap: '0x7204e37882baf10f31b66cd1ac78ac65b3b8ad29c265d1e474fb4b24ccd6d5b7', // TODO: value
+
+    OracleConfig: '0x1afe1cb83634f581606cc73c4487ddd8cc39a944b951283af23f7d69d5589478', // TODO: value
+
+    PythStateId: '0x1f9310238ee9298fb703c3419030b35b22bb1cc37113e3bb5007c99aec79e5b8', // **fixed value
+    WormholeStateId: '0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c', // **fixed value
+    SupraOracleHolder: '0xaa0315f0748c1f24ddb2b45f7939cff40f7a8104af5ccbc4a1d32f870c0b4105', // **fixed value
+
+    Sender: '0x39c70d4ce3ce769a46f46ad80184a88bc25be9b49545751f5425796ef0c3d9ba', // TODO: value
+    GasObject: '0x1e30410559ed83708ee1bb6b21e3a1dae96f1768ce35ed8233590b130ddc0086', // TODO: value
 }
