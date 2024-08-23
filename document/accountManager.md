@@ -108,3 +108,15 @@ account.liquidate(debt_coin, to_liquidate_address, collateral_coin);
 let to_liquidate_amount = 10; //Number of coin that can be used for liquidation, no decimals required.
 account.liquidate(debt_coin, to_liquidate_address, collateral_coin, to_liquidate_amount); //Liquidate with 10 USDC.
 ```
+
+
+### Update Decentralized Oracle
+Two options to update NAVI's decentralized Oracle
+```javascript
+// For single transaction
+await account.updateOracle();
+
+// For Devevelopers who wants to integrate the Oracle in PTB
+let txb = new Transaction();
+await updateOraclePTB(account.client, account.address, txb); //add updateOracle code to PTB
+```
