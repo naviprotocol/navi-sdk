@@ -2,6 +2,11 @@
 import { describe, it, expect } from 'vitest';
 import { NAVISDKClient } from '../src/index';
 import { NAVX, Sui } from '../src/address';
+import { Transaction } from "@mysten/sui/transactions";
+import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB } from '../src/libs/PTB';
+import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
+import { getConfig, pool, AddressMap, vSui } from "../src/address";
+import { error } from 'console';
 
 describe('NAVI SDK Client', async () => {
     const client = new NAVISDKClient({});
@@ -38,19 +43,19 @@ describe('NAVI SDK Client', async () => {
     it('should get correct return all accounts\' Navi Portfolio', async () => {
 
         const res = await client.getAllNaviPortfolios();
-        const haSui:any = res.get('HaedalSui');
+        const haSui: any = res.get('HaedalSui');
 
         expect(haSui.borrowBalance).toBe(0);
         expect(haSui.supplyBalance).toBe(0);
-        
+
     });
     it('should get correct return all accounts\' wallet balance', async () => {
 
         const res = await client.getAllBalances();
-        const sui:any = res;
+        const sui: any = res;
 
         expect(typeof sui).toBe('object');
-        
+
     });
     it('should get correct return available rewards for specific address', async () => {
         const address = '0xcb98748e6a6bb10d0250eeaef3aade81003b5ac25034c08a95e090768473144b';
@@ -58,8 +63,9 @@ describe('NAVI SDK Client', async () => {
         const res = await client.getAddressAvailableRewards(address);
         const reward = res['0'];
         expect(reward.asset_id).toBe('0');
-        
+
     });
+
 });
 
 describe('NAVI SDK Account Manager', async () => {
@@ -78,6 +84,109 @@ describe('NAVI SDK Account Manager', async () => {
         const path = await account.getCoinDecimal(Sui);
         expect(path).toEqual(9);
     });
+    it('should success deposit Sui to NAVI protocol', async () => {
+        let txb = new Transaction();
+        txb.setSender(account.address);
+        const poolConfig: PoolConfig = pool["Sui" as keyof Pool];
 
-    
+        const [toDeposit] = txb.splitCoins(txb.gas, [1e9]);
+        await depositCoin(txb, poolConfig, toDeposit, 1e9);
+
+        const result = await account.client.devInspectTransactionBlock({
+            transactionBlock: txb,
+            sender: account.address,
+        })
+
+        if (result.effects.status.status === "failure") {
+            throw new Error(result.effects.status.error)
+        }
+        expect(result.effects.status.status).toEqual("success");
+
+    });
+    it('should success withdraw Sui to NAVI protocol', async () => {
+        let txb = new Transaction();
+        txb.setSender(account.address);
+        const poolConfig: PoolConfig = pool["Sui" as keyof Pool];
+        const [toDeposit] = txb.splitCoins(txb.gas, [1e9]);
+        await depositCoin(txb, poolConfig, toDeposit, 1e9);
+        await withdrawCoin(txb, poolConfig, 1e9);
+
+        const result = await account.client.devInspectTransactionBlock({
+            transactionBlock: txb,
+            sender: account.address,
+        })
+        if (result.effects.status.status === "failure") {
+            throw new Error(result.effects.status.error)
+        }
+        expect(result.effects.status.status).toEqual("success");
+
+    });
+    it('should success borrow Sui from NAVI protocol', async () => {
+        let txb = new Transaction();
+        txb.setSender(account.address);
+        const poolConfig: PoolConfig = pool["Sui" as keyof Pool];
+        const [toDeposit] = txb.splitCoins(txb.gas, [1e9]);
+        await depositCoin(txb, poolConfig, toDeposit, 1e9);
+        await borrowCoin(txb, poolConfig, 0.5e9);
+
+        const result = await account.client.devInspectTransactionBlock({
+            transactionBlock: txb,
+            sender: account.address,
+        })
+        if (result.effects.status.status === "failure") {
+            throw new Error(result.effects.status.error)
+        }
+        expect(result.effects.status.status).toEqual("success");
+
+    });
+    it('should success Repay Sui from NAVI protocol - random address might fail', async () => {
+        let txb = new Transaction();
+        txb.setSender('0x010ac247d4b9f8fcc9704b53b4aee5c4b00c3263b17bc39d3898ea802518bac9');
+        const poolConfig: PoolConfig = pool["USDT" as keyof Pool];
+        const [toRepay] = txb.splitCoins("0x7ae2714cb57cad133e62b83c58c59f4332a912256193203e86905571aa420d03", [0.1e6]);
+
+        await repayDebt(txb, poolConfig, toRepay, 0.1e6);
+
+        const result = await account.client.devInspectTransactionBlock({
+            transactionBlock: txb,
+            sender: '0x010ac247d4b9f8fcc9704b53b4aee5c4b00c3263b17bc39d3898ea802518bac9'
+        })
+        if (result.effects.status.status === "failure") {
+            throw new Error(result.effects.status.error)
+        }
+        expect(result.effects.status.status).toEqual("success");
+
+    });
+    it('should success stake Sui to Volo Sui', async () => {
+        let txb = new Transaction();
+
+        const [toStake] = txb.splitCoins(txb.gas, [1e9]);
+
+        await stakeTovSuiPTB(txb, toStake);
+
+        const result = await account.client.devInspectTransactionBlock({
+            transactionBlock: txb,
+            sender: account.address
+        })
+        if (result.effects.status.status === "failure") {
+            throw new Error(result.effects.status.error)
+        }
+        expect(result.effects.status.status).toEqual("success");
+
+    });
+    it('should success update oracle', async () => {
+        let txb = new Transaction();
+        txb.setSender(account.address);
+        await updateOraclePTB(account.client, txb);
+
+        const result = await account.client.devInspectTransactionBlock({
+            transactionBlock: txb,
+            sender: account.address,
+        })
+        if (result.effects.status.status === "failure") {
+            throw new Error(result.effects.status.error)
+        }
+        expect(result.effects.status.status).toEqual("success");
+
+    });
 });
