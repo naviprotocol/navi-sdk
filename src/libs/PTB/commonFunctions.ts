@@ -1,9 +1,10 @@
 import { Transaction } from "@mysten/sui/transactions";
-import { getConfig, flashloanConfig, pool, vSuiConfig } from '../../address'
+import { getConfig, flashloanConfig, pool, vSuiConfig, PriceFeedConfig, OracleProConfig, IPriceFeed } from '../../address'
 import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
 import { bcs } from '@mysten/sui.js/bcs';
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { moveInspect } from "../CallFunctions";
+import { SuiPriceServiceConnection, SuiPythClient } from '@pythnetwork/pyth-sui-js'
 
 interface Reward {
     asset_id: string;
@@ -495,7 +496,7 @@ export async function getIncentivePools(client: SuiClient, assetId: number, opti
  * @throws If there is an error retrieving the available rewards.
  */
 export async function getAvailableRewards(client: SuiClient, checkAddress: string, option: OptionType = 1, prettyPrint = true) {
-    
+
     registerStructs();
     const assetIds = Array.from({ length: 8 }, (_, i) => i); // Generates an array [0, 1, 2, ..., 7]
     try {
@@ -515,7 +516,7 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
 
             if (!acc[assetId]) {
-                
+
                 acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
                 if (assetId == '5extra') {
                     acc[assetId] = { asset_id: '5', funds: pool.funds, available: availableFixed };
@@ -579,6 +580,122 @@ export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string,
 
     return txb;
 }
+
+
+/**
+ * Represents a connection to the SuiPriceService.
+ * 
+ * @remarks
+ * This connection is used to communicate with the SuiPriceService API.
+ * 
+ * @param url - The URL of the SuiPriceService API.
+ * @param options - Optional configuration options for the connection.
+ * @returns A new instance of the SuiPriceServiceConnection.
+ */
+const suiPythConnection = new SuiPriceServiceConnection('https://hermes.pyth.network', { timeout: 20000 })
+
+/**
+ * Retrieves the stale price feed IDs from the given array of price IDs.
+ * 
+ * @param priceIds - An array of price IDs.
+ * @returns A promise that resolves to an array of stale price feed IDs.
+ * @throws If there is an error while retrieving the stale price feed IDs.
+ */
+async function getPythStalePriceFeedId(priceIds: string[]): Promise<string[]> {
+    try {
+        const returnData: string[] = []
+        const latestPriceFeeds = await suiPythConnection.getLatestPriceFeeds(priceIds)
+        if (!latestPriceFeeds) return returnData
+
+        const currentTimestamp = Math.floor(new Date().valueOf() / 1000)
+        for (const priceFeed of latestPriceFeeds) {
+            const uncheckedPrice = priceFeed.getPriceUnchecked()
+            if (uncheckedPrice.publishTime > currentTimestamp) {
+                console.warn(
+                    `pyth price feed is invalid, id: ${priceFeed.id}, publish time: ${uncheckedPrice.publishTime}, current timestamp: ${currentTimestamp}`,
+                )
+                continue
+            }
+
+            // From pyth state is 60, but setting it to 30 makes more sense.
+            if (currentTimestamp - priceFeed.getPriceUnchecked().publishTime > 30) {
+                console.info(
+                    `stale price feed, id: ${priceFeed.id}, publish time: ${uncheckedPrice.publishTime}, current timestamp: ${currentTimestamp}`,
+                )
+                returnData.push(priceFeed.id)
+            }
+        }
+        return returnData
+    } catch (error) {
+        throw new Error(`failed to get pyth stale price feed id, msg: ${(error as Error).message}`)
+    }
+}
+
+/**
+ * Updates the single price in the transaction.
+ * 
+ * @param txb - The transaction object.
+ * @param input - The input object containing the feedId and pythPriceInfoObject.
+ */
+function updateSinglePrice(txb: Transaction, input: Pick<IPriceFeed, 'feedId' | 'pythPriceInfoObject'>) {
+    txb.moveCall({
+        target: `${OracleProConfig.PackageId}::oracle_pro::update_single_price`,
+        arguments: [
+            txb.object('0x6'),
+            txb.object(OracleProConfig.OracleConfig),
+            txb.object(OracleProConfig.PriceOracle),
+            txb.object(OracleProConfig.SupraOracleHolder),
+            txb.object(input.pythPriceInfoObject),
+            txb.pure.address(input.feedId),
+        ],
+    })
+}
+
+/**
+ * Updates the Pyth price feeds.
+ * 
+ * @param client - The SuiClient object.
+ * @param txb - The Transaction object.
+ * @param priceFeedIds - An array of price feed IDs.
+ * @returns A Promise that resolves to the result of updating the price feeds.
+ * @throws If there is an error updating the price feeds.
+ */
+async function updatePythPriceFeeds(client: SuiClient, txb: Transaction, priceFeedIds: string[]) {
+    try {
+        const priceUpdateData = await suiPythConnection.getPriceFeedsUpdateData(priceFeedIds)
+        const suiPythClient = new SuiPythClient(client as any, OracleProConfig.PythStateId, OracleProConfig.WormholeStateId)
+
+        return await suiPythClient.updatePriceFeeds(txb as any, priceUpdateData, priceFeedIds)
+    } catch (error) {
+        throw new Error(`failed to update pyth price feeds, msg: ${(error as Error).message}`)
+    }
+}
+
+/**
+ * Updates the price of the given transaction using the provided client.
+ * 
+ * @param client - The SuiClient used to update the price.
+ * @param txb - The Transaction to update the price for.
+ * @returns A Promise that resolves once the price has been updated.
+ */
+export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
+    const pythPriceFeedIds = Object.keys(PriceFeedConfig).map((key) => PriceFeedConfig[key].pythPriceFeedId)
+    const stalePriceFeedIds = await getPythStalePriceFeedId(pythPriceFeedIds)
+    if (stalePriceFeedIds.length > 0) {
+        await updatePythPriceFeeds(client, txb, stalePriceFeedIds)
+        console.info(`request update pyth price feed, ids: ${stalePriceFeedIds}`)
+    }
+    updateSinglePrice(txb, PriceFeedConfig.SUI)
+    updateSinglePrice(txb, PriceFeedConfig.USDC)
+    updateSinglePrice(txb, PriceFeedConfig.USDT)
+    updateSinglePrice(txb, PriceFeedConfig.WETH)
+    updateSinglePrice(txb, PriceFeedConfig.CETUS)
+    updateSinglePrice(txb, PriceFeedConfig.CERT)
+    updateSinglePrice(txb, PriceFeedConfig.HASUI)
+    updateSinglePrice(txb, PriceFeedConfig.NAVX)
+}
+
+
 
 /**
  * Registers the required struct types for the PTB common functions.
