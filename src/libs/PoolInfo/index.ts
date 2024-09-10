@@ -48,6 +48,7 @@ export async function getPoolInfo(coin?: CoinInfo, client?: SuiClient) {
                 optimal_borrow_utilization: (Number(filedsData.borrow_rate_factors?.fields?.optimal_utilization) / 1e27).toFixed(2),
                 pool: poolData.pool,
                 max_ltv: (Number(filedsData.ltv) / 1e27).toFixed(2),
+                liquidation_threshold: (Number(filedsData.liquidation_factors.fields.threshold) / 1e27).toFixed(2),
                 symbol: poolData.symbol,
                 rewardTokenAddress: poolData.rewardTokens,
             };
