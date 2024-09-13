@@ -15,6 +15,7 @@ export const AddressMap: Record<string, string> = {
     '0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN': 'WETH',
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS': 'CETUS',
     '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI': 'haSui',
+    '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN': 'WBTC',
 };
 
 
@@ -130,6 +131,15 @@ export const pool: Pool = {
         borrowBalanceParentId: '0xa5bf13075aa400cbdd4690a617c5f008e1fae0511dcd4f7121f09817df6c8d8b',
         supplyBalanceParentId: '0x59dedca8dc44e8df50b190f8b5fe673098c1273ac6168c0a4addf3613afcdee5'
     },
+    WBTC: {
+        name: 'WBTC',
+        assetId: 8,
+        poolId: '0xd162cbe40f8829ce71c9b3d3bf3a83859689a79fa220b23d70dc0300b777ae6e',
+        type: '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN',
+        reserveObjectId: '0x8b4d81f004e4e9faf4540951a896b6d96e42598a270e6375f598b99742db767e',
+        borrowBalanceParentId: '0x55e1f3c9e6e5cf9fff563bdd61db07a3826458c56ef72c455e049ab3b1b0e99c',
+        supplyBalanceParentId: '0x821e505a0091b089edba94deaa14c2f2230d026bbaa7b85680554441aad447e0',
+    },
 };
 
 export const flashloanConfig = {
@@ -182,6 +192,12 @@ export const haSui: CoinInfo = {
     symbol: 'haSui',
     address: '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI',
     decimal: 9
+}
+
+export const WBTC: CoinInfo = {
+    symbol: 'WBTC',
+    address: '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN',
+    decimal: 8
 }
 
 export const vSuiConfig = {
@@ -355,6 +371,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         pythPriceFeedId: '0x88250f854c019ef4f88a5c073d52a18bb1c6ac437033f5932cd017d24917ab46', // **fixed value: Crypto.NAVX/USD -> https://pyth.network/developers/price-feed-ids
         pythPriceInfoObject: '0x5b117a6a2de70796bffe36495bad576b788a34c33ca0648bd57852ead3f41e32',
         priceDecimal: 9,
+        expiration: 30,
+    },
+    WBTC: {
+        oracleId: 8,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+        priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 10000000000000, // 100000 = 100000 * 1e8 = 10000000000000
+        minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN',
+        feedId: '0x1bf4727242a61d892feef6616d3e40a3bd24b64b5deb884054e86cb9360556c4', // TODO: value
+        supraPairId: 0, // BTC_USDT -> 0, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Pair%20Category-,BTC_USDT,-0
+        pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43', // Crypto.BTC/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+        priceDecimal: 8,
         expiration: 30,
     },
 }
