@@ -15,16 +15,13 @@ import {
   borrowCoin,
   repayDebt,
   liquidateFunction,
-  claimRewardFunction,
   SignAndSubmitTXB,
   stakeTovSuiPTB,
   unstakeTovSui,
-  getIncentivePools,
-  getAvailableRewards,
   claimAllRewardsPTB,
   updateOraclePTB
 } from "../PTB";
-import { moveInspect } from "../CallFunctions";
+import { getAddressPortfolio, getReservesDetail, moveInspect } from "../CallFunctions";
 import assert from 'assert';
 import { registerStructs } from '../PTB';
 
@@ -662,9 +659,7 @@ export class AccountManager {
    * @returns A Promise that resolves to the parsed result of the reserve details.
    */
   async getReservesDetail(assetId: number) {
-    const config = await getConfig();
-    const result = await this.client.getDynamicFieldObject({ parentId: config.ReserveParentId, name: { type: 'u8', value: assetId } });
-    return result;
+    return getReservesDetail(assetId, this.client)
   }
 
   /**
@@ -673,29 +668,7 @@ export class AccountManager {
    * @returns A Promise that resolves to a Map containing the borrow and supply balances for each reserve.
    */
   async getNAVIPortfolio(address: string = this.address, prettyPrint: boolean = true): Promise<Map<string, { borrowBalance: number, supplyBalance: number }>> {
-    const balanceMap = new Map<string, { borrowBalance: number, supplyBalance: number }>();
-
-    await Promise.all(Object.keys(pool).map(async (poolKey) => {
-      const reserve: PoolConfig = pool[poolKey as keyof Pool];
-      const borrowBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: address } });
-      const supplyBalance: any = await this.client.getDynamicFieldObject({ parentId: reserve.supplyBalanceParentId, name: { type: 'address', value: address } });
-
-      const borrowIndexData: any = await this.getReservesDetail(reserve.assetId);
-      const borrowIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_borrow_index / Math.pow(10, 27);
-      const supplyIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_supply_index / Math.pow(10, 27);
-
-      let borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
-      let supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
-      borrowValue *= borrowIndex;
-      supplyValue *= supplyIndex;
-
-      if (prettyPrint) {
-        console.log(`| ${reserve.name} | ${borrowValue} | ${supplyValue} |`);
-      }
-      balanceMap.set(reserve.name, { borrowBalance: borrowValue, supplyBalance: supplyValue });
-    }));
-
-    return balanceMap;
+    return getAddressPortfolio(address, prettyPrint, this.client)
   }
 
 
