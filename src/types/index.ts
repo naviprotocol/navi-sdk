@@ -17,6 +17,7 @@ export interface Pool {
   vSui: PoolConfig;
   haSui: PoolConfig;
   NAVX: PoolConfig;
+  WBTC: PoolConfig;
 }
 
 export interface PoolConfig {
