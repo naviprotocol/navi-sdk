@@ -659,7 +659,7 @@ export class AccountManager {
    * @returns A Promise that resolves to the parsed result of the reserve details.
    */
   async getReservesDetail(assetId: number) {
-    return getReservesDetail(assetId, this.client)
+    return getReservesDetail(assetId, this.client);
   }
 
   /**
