@@ -668,7 +668,7 @@ export class AccountManager {
    * @returns A Promise that resolves to a Map containing the borrow and supply balances for each reserve.
    */
   async getNAVIPortfolio(address: string = this.address, prettyPrint: boolean = true): Promise<Map<string, { borrowBalance: number, supplyBalance: number }>> {
-    return getAddressPortfolio(address, prettyPrint, this.client)
+    return getAddressPortfolio(address, prettyPrint, this.client);
   }
 
 
