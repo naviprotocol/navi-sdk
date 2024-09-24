@@ -1,7 +1,9 @@
 
 import { Transaction } from '@mysten/sui/transactions';
 import { bcs } from '@mysten/sui.js/bcs';
-import { DevInspectResults, getFullnodeUrl, SuiClient, SuiObjectResponse, SuiTransactionBlockResponse } from '@mysten/sui/client';
+import { DevInspectResults, SuiClient } from '@mysten/sui/client';
+import { getConfig, pool } from '../../address';
+import { Pool, PoolConfig } from '../../types';
 
 /**
  * Parses and prints the inspection results.
@@ -63,4 +65,41 @@ export async function moveInspect(tx: Transaction, client: SuiClient, sender: st
         typeArguments: typeArgs,
     });
     return await moveInspectImpl(tx, client, sender, funcName.slice(1, 3).join('::'), typeName);
+}
+
+/**
+ * Retrieves the detailed information of a reserve based on the provided asset ID.
+ * @param assetId - The ID of the asset for which to retrieve the reserve details.
+ * @returns A Promise that resolves to the parsed result of the reserve details.
+ */
+export async function getReservesDetail(assetId: number, client: SuiClient) {
+    const config = await getConfig();
+    const result = await client.getDynamicFieldObject({ parentId: config.ReserveParentId, name: { type: 'u8', value: assetId } });
+    return result;
+}
+
+export async function getAddressPortfolio(address: string, prettyPrint: boolean = true, client: SuiClient) {
+    const balanceMap = new Map<string, { borrowBalance: number, supplyBalance: number }>();
+
+    await Promise.all(Object.keys(pool).map(async (poolKey) => {
+        const reserve: PoolConfig = pool[poolKey as keyof Pool];
+        const borrowBalance: any = await client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: address } });
+        const supplyBalance: any = await client.getDynamicFieldObject({ parentId: reserve.supplyBalanceParentId, name: { type: 'address', value: address } });
+
+        const borrowIndexData: any = await getReservesDetail(reserve.assetId, client);
+        const borrowIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_borrow_index / Math.pow(10, 27);
+        const supplyIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_supply_index / Math.pow(10, 27);
+
+        let borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
+        let supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
+        borrowValue *= borrowIndex;
+        supplyValue *= supplyIndex;
+
+        if (prettyPrint) {
+            console.log(`| ${reserve.name} | ${borrowValue} | ${supplyValue} |`);
+        }
+        balanceMap.set(reserve.name, { borrowBalance: borrowValue, supplyBalance: supplyValue });
+    }));
+
+    return balanceMap;
 }
