@@ -18,6 +18,7 @@ export interface Pool {
   haSui: PoolConfig;
   NAVX: PoolConfig;
   WBTC: PoolConfig;
+  AUSD: PoolConfig;
 }
 
 export interface PoolConfig {
