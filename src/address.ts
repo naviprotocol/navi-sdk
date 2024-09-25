@@ -16,6 +16,7 @@ export const AddressMap: Record<string, string> = {
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS': 'CETUS',
     '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI': 'haSui',
     '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN': 'WBTC',
+    '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD': 'AUSD'
 };
 
 
@@ -140,6 +141,15 @@ export const pool: Pool = {
         borrowBalanceParentId: '0x55e1f3c9e6e5cf9fff563bdd61db07a3826458c56ef72c455e049ab3b1b0e99c',
         supplyBalanceParentId: '0x821e505a0091b089edba94deaa14c2f2230d026bbaa7b85680554441aad447e0',
     },
+    AUSD: {
+        name: 'AUSD',
+        assetId: 9,
+        poolId: '0xc9208c1e75f990b2c814fa3a45f1bf0e85bb78404cfdb2ae6bb97de58bb30932',
+        type: '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD',
+        reserveObjectId: '0x918889c6a9d9b93108531d4d59a4ebb9cc4d41689798ffc1d4aed6e1ae816ec0',
+        borrowBalanceParentId: '0x551300b9441c9a3a16ca1d7972c1dbb4715e15004ccd5f001b2c2eee22fd92c1',
+        supplyBalanceParentId: '0xe151af690355de8be1c0281fbd0d483c099ea51920a57c4bf8c9666fd36808fd',
+    },
 };
 
 export const flashloanConfig = {
@@ -198,6 +208,12 @@ export const WBTC: CoinInfo = {
     symbol: 'WBTC',
     address: '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN',
     decimal: 8
+}
+
+export const AUSD: CoinInfo = {
+    symbol: 'AUSD',
+    address: '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD',
+    decimal: 6
 }
 
 export const vSuiConfig = {
@@ -389,6 +405,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43', // Crypto.BTC/USD -> https://pyth.network/developers/price-feed-ids
         pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
         priceDecimal: 8,
+        expiration: 30,
+    },
+    AUSD: {
+        oracleId: 9,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 10000, // 0.01 = 0.01 * 1e6 = 10000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD',
+        feedId: '0x9a0656e1e10a0cdf3f03dce9db9ad931f51dc6eac2e52ebfbf535dfbcf8100ef', // TODO: values
+        supraPairId: 99999,
+        pythPriceFeedId: '0xd9912df360b5b7f21a122f15bdd5e27f62ce5e72bd316c291f7c86620e07fb2a',
+        pythPriceInfoObject: '0x94ef89923e7beccd4a52043a9451a87c614684b847426fb5fd76faa8cb1e907f',
+        priceDecimal: 6,
         expiration: 30,
     },
 }
