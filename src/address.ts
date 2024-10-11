@@ -279,7 +279,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 9,
         expiration: 30,
     },
-    wUSDC: {
+    USDC: {
         oracleId: 1,
         maxTimestampDiff: 30 * 1000, // 30s(millisecond)
         priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
@@ -438,6 +438,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         supraPairId: 99999,
         pythPriceFeedId: '0xd9912df360b5b7f21a122f15bdd5e27f62ce5e72bd316c291f7c86620e07fb2a',
         pythPriceInfoObject: '0x94ef89923e7beccd4a52043a9451a87c614684b847426fb5fd76faa8cb1e907f',
+        priceDecimal: 6,
+        expiration: 30,
+    },
+    NUSDC: {
+        oracleId: 10,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 100000, // 0.1 = 0.1 * 1e6 = 100000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
+        feedId: '0xe120611435395f144b4bcc4466a00b6b26d7a27318f96e148648852a9dd6b31c', // TODO: value
+        supraPairId: 47, // USDC_USDT -> 47, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Standard-,USDC_USDT,-47
+        pythPriceFeedId: '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a', // **fixed value: Crypto.USDC/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
         priceDecimal: 6,
         expiration: 30,
     },
