@@ -10,13 +10,14 @@ export const AddressMap: Record<string, string> = {
     '0x2::sui::SUI': "Sui",
     '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX': "NAVX",
     '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT': 'vSui',
-    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 'USDC',
+    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 'wUSDC', //wormhole usdc
     '0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN': 'USDT',
     '0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN': 'WETH',
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS': 'CETUS',
     '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI': 'haSui',
     '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN': 'WBTC',
-    '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD': 'AUSD'
+    '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD': 'AUSD',
+    '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC': 'USDC'
 };
 
 
@@ -69,8 +70,8 @@ export const pool: Pool = {
         borrowBalanceParentId: '0xe7ff0daa9d090727210abe6a8b6c0c5cd483f3692a10610386e4dc9c57871ba7',
         supplyBalanceParentId: '0x589c83af4b035a3bc64c40d9011397b539b97ea47edf7be8f33d643606bf96f8',
     },
-    USDC: {
-        name: 'USDC',
+    wUSDC: {
+        name: 'wUSDC',
         assetId: 1,
         poolId: '0xa02a98f9c88db51c6f5efaaf2261c81f34dd56d86073387e0ef1805ca22e39c8',
         type: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
@@ -150,6 +151,15 @@ export const pool: Pool = {
         borrowBalanceParentId: '0x551300b9441c9a3a16ca1d7972c1dbb4715e15004ccd5f001b2c2eee22fd92c1',
         supplyBalanceParentId: '0xe151af690355de8be1c0281fbd0d483c099ea51920a57c4bf8c9666fd36808fd',
     },
+    USDC: {
+        name: 'USDC',
+        assetId: 10,
+        poolId: '0xa3582097b4c57630046c0c49a88bfc6b202a3ec0a9db5597c31765f7563755a8',
+        type: '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
+        reserveObjectId: '0x4c8a2c72a22ae8da803a8519798d312c86e74a9e0d6ec0eec2bfcf7e4b3fef5e',
+        borrowBalanceParentId: '0xb0b0c7470e96cabbb4f1e8d06bef2fbea65f4dbac52afae8635d9286b1ea9a09',
+        supplyBalanceParentId: '0x08b5ce8574ac3bc9327e66ad5decd34d07ee798f724ad01058e8855ac9acb605',
+    }
 };
 
 export const flashloanConfig = {
@@ -180,8 +190,8 @@ export const USDT: CoinInfo = {
     decimal: 6
 }
 
-export const USDC: CoinInfo = {
-    symbol: 'USDC',
+export const wUSDC: CoinInfo = {
+    symbol: 'wUSDC',
     address: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
     decimal: 6
 }
@@ -213,6 +223,12 @@ export const WBTC: CoinInfo = {
 export const AUSD: CoinInfo = {
     symbol: 'AUSD',
     address: '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD',
+    decimal: 6
+}
+
+export const USDC: CoinInfo = {
+    symbol: 'USDC',
+    address: '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
     decimal: 6
 }
 
@@ -263,7 +279,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 9,
         expiration: 30,
     },
-    USDC: {
+    wUSDC: {
         oracleId: 1,
         maxTimestampDiff: 30 * 1000, // 30s(millisecond)
         priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
@@ -425,6 +441,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 6,
         expiration: 30,
     },
+
 }
 
 export interface IOracleProConfig {
