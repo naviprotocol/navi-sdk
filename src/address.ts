@@ -10,13 +10,15 @@ export const AddressMap: Record<string, string> = {
     '0x2::sui::SUI': "Sui",
     '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX': "NAVX",
     '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT': 'vSui',
-    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 'USDC',
+    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 'USDC', //wormhole usdc
     '0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN': 'USDT',
     '0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN': 'WETH',
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS': 'CETUS',
     '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI': 'haSui',
     '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN': 'WBTC',
-    '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD': 'AUSD'
+    '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD': 'AUSD',
+    '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC': 'USDC',
+    '0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH': 'ETH', // native eth
 };
 
 
@@ -69,7 +71,7 @@ export const pool: Pool = {
         borrowBalanceParentId: '0xe7ff0daa9d090727210abe6a8b6c0c5cd483f3692a10610386e4dc9c57871ba7',
         supplyBalanceParentId: '0x589c83af4b035a3bc64c40d9011397b539b97ea47edf7be8f33d643606bf96f8',
     },
-    USDC: {
+    USDC: { // This will be deprecated in the future, please use wUSDC instead
         name: 'USDC',
         assetId: 1,
         poolId: '0xa02a98f9c88db51c6f5efaaf2261c81f34dd56d86073387e0ef1805ca22e39c8',
@@ -150,6 +152,34 @@ export const pool: Pool = {
         borrowBalanceParentId: '0x551300b9441c9a3a16ca1d7972c1dbb4715e15004ccd5f001b2c2eee22fd92c1',
         supplyBalanceParentId: '0xe151af690355de8be1c0281fbd0d483c099ea51920a57c4bf8c9666fd36808fd',
     },
+    wUSDC: {
+        name: 'wUSDC',
+        assetId: 1,
+        poolId: '0xa02a98f9c88db51c6f5efaaf2261c81f34dd56d86073387e0ef1805ca22e39c8',
+        type: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
+        reserveObjectId: '0xeb3903f7748ace73429bd52a70fff278aac1725d3b58afa781f25ce3450ac203',
+        borrowBalanceParentId: '0x8a3aaa817a811131c624658f6e77cba04ab5829293d2c49c1a9cce8ac9c8dec4',
+        supplyBalanceParentId: '0x8d0a4467806458052d577c8cd2be6031e972f2b8f5f77fce98aa12cd85330da9',
+    },
+    nUSDC: {
+        name: 'nUSDC',
+        assetId: 10,
+        poolId: '0xa3582097b4c57630046c0c49a88bfc6b202a3ec0a9db5597c31765f7563755a8',
+        type: '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
+        reserveObjectId: '0x4c8a2c72a22ae8da803a8519798d312c86e74a9e0d6ec0eec2bfcf7e4b3fef5e',
+        borrowBalanceParentId: '0xb0b0c7470e96cabbb4f1e8d06bef2fbea65f4dbac52afae8635d9286b1ea9a09',
+        supplyBalanceParentId: '0x08b5ce8574ac3bc9327e66ad5decd34d07ee798f724ad01058e8855ac9acb605',
+    },
+    ETH: {
+        name: 'ETH',
+        assetId: 11,
+        poolId: '0x78ba01c21d8301be15690d3c30dc9f111871e38cfb0b2dd4b70cc6052fba41bb',
+        type: '0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH',
+        reserveObjectId: '0x376faea6dfbffab9ea808474cb751d91222b6d664f38c0f1d23de442a8edb1ce',
+        borrowBalanceParentId: '0xf0c6ce5cfaee96073876a5fab7426043f3a798b79502c4caeb6d9772cd35af1f',
+        supplyBalanceParentId: '0xc0a0cb43620eb8a84d5a4a50a85650e7fa7ba81e660f9cc2863404fd84591d4b',
+    },
+
 };
 
 export const flashloanConfig = {
@@ -180,7 +210,7 @@ export const USDT: CoinInfo = {
     decimal: 6
 }
 
-export const USDC: CoinInfo = {
+export const USDC: CoinInfo = { // This will be deprecated in the future, please use wUSDC instead
     symbol: 'USDC',
     address: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
     decimal: 6
@@ -215,6 +245,25 @@ export const AUSD: CoinInfo = {
     address: '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD',
     decimal: 6
 }
+
+export const wUSDC: CoinInfo = {
+    symbol: 'USDC',
+    address: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
+    decimal: 6
+}
+
+export const nUSDC: CoinInfo = {
+    symbol: 'USDC',
+    address: '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
+    decimal: 6
+}
+
+export const ETH: CoinInfo = {
+    symbol: 'ETH',
+    address: '0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH',
+    decimal: 8
+}
+
 
 export const vSuiConfig = {
     ProtocolPackage: "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",
@@ -425,6 +474,43 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 6,
         expiration: 30,
     },
+    NUSDC: {
+        oracleId: 10,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 100000, // 0.1 = 0.1 * 1e6 = 100000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC',
+        feedId: '0xe120611435395f144b4bcc4466a00b6b26d7a27318f96e148648852a9dd6b31c', // TODO: value
+        supraPairId: 47, // USDC_USDT -> 47, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Standard-,USDC_USDT,-47
+        pythPriceFeedId: '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a', // **fixed value: Crypto.USDC/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+        priceDecimal: 6,
+        expiration: 30,
+    },
+    ETH: {
+        oracleId: 11,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+        priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 600000000000, // 6000 = 6000 * 1e8 = 600000000000
+        minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH',
+        feedId: '0x9a6ffc707270286e98e8d0f654ce38f69efbc302ac98e2deb11fbad2211600f0', // TODO: value
+        supraPairId: 1, // ETH_USDT -> 1, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,ETH_USDT,-1
+        pythPriceFeedId: '0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace', // **fixed value: Crypto.ETH/USD -> https://pyth.network/developers/price-feed-ids
+        pythPriceInfoObject: '0x9193fd47f9a0ab99b6e365a464c8a9ae30e6150fc37ed2a89c1586631f6fc4ab',
+        priceDecimal: 8,
+        expiration: 30,
+    },
+
 }
 
 export interface IOracleProConfig {

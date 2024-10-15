@@ -19,6 +19,9 @@ export interface Pool {
   NAVX: PoolConfig;
   WBTC: PoolConfig;
   AUSD: PoolConfig;
+  wUSDC: PoolConfig;
+  nUSDC: PoolConfig;
+  ETH: PoolConfig;
 }
 
 export interface PoolConfig {

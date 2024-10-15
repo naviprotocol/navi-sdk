@@ -82,7 +82,7 @@ client.getHealthFactor(address); //You may check any address
 ### Supply/Withdraw/Borrow/Repay/Liquidate/ClaimRewards
 You may Simply input 'NAVX' as a string or NAVX as a type imported from address.ts. 
 
-Current These Pools are supported: **Sui | NAVX | vSui | USDC | USDT | WETH | CETUS | haSui**
+Current These Pools are supported: **Sui | NAVX | vSui | USDC | wUSDC | USDT | WETH | CETUS | haSui | AUSD | WBTC**
 ```javascript
 account.depositToNavi(Sui, amount)
 account.depositToNaviWithAccountCap(NAVX, amount， accountCap_Address_that_you_own)
