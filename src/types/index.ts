@@ -20,6 +20,7 @@ export interface Pool {
   WBTC: PoolConfig;
   AUSD: PoolConfig;
   USDC: PoolConfig;
+  ETH: PoolConfig;
 }
 
 export interface PoolConfig {
