@@ -71,7 +71,7 @@ export const pool: Pool = {
         borrowBalanceParentId: '0xe7ff0daa9d090727210abe6a8b6c0c5cd483f3692a10610386e4dc9c57871ba7',
         supplyBalanceParentId: '0x589c83af4b035a3bc64c40d9011397b539b97ea47edf7be8f33d643606bf96f8',
     },
-    USDC: {
+    USDC: { // This will be deprecated in the future, please use wUSDC instead
         name: 'USDC',
         assetId: 1,
         poolId: '0xa02a98f9c88db51c6f5efaaf2261c81f34dd56d86073387e0ef1805ca22e39c8',
@@ -210,7 +210,7 @@ export const USDT: CoinInfo = {
     decimal: 6
 }
 
-export const USDC: CoinInfo = {
+export const USDC: CoinInfo = { // This will be deprecated in the future, please use wUSDC instead
     symbol: 'USDC',
     address: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
     decimal: 6
