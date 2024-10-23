@@ -180,16 +180,6 @@ export const pool: Pool = {
         borrowBalanceParentId: '0xc0f59c5665d6289408ba31efc48718daa4d14a291a303a0d50d306e51eb68872',
         supplyBalanceParentId: '0x8aac332c01340926066a53f7a5f8ac924e61ea2ae6bc6ce61f112e9094fd5639',
     },
-    FDUSD: { // This will be updated soon
-        name: 'FDUSD',
-        assetId: 13,
-        poolId: '',
-        type: '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
-        reserveObjectId: '',
-        borrowBalanceParentId: '',
-        supplyBalanceParentId: '',
-    },
-
 };
 
 export const flashloanConfig = {
@@ -525,28 +515,10 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         minimumEffectivePrice: 10000, // 0.01 = 0.01 * 1e6 = 10000
         historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
         coinType: '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY',
-        feedId: '', // TODO: value
-        supraPairId: 185, // https://docs.supra.com/oracles/data-feeds/data-feeds-index
-        pythPriceFeedId: '0xe393449f6aff8a4b6d3e1165a7c9ebec103685f3b41e60db4277b5b6d10e7326', // Crypto.USDY/USD -> https://pyth.network/developers/price-feed-ids
+        feedId: '0x11ddf2ac1868d493e2487deeb2a0c2791bb7ca69632c8c5fefe85e09390be093', // TODO: values
+        supraPairId: 185,
+        pythPriceFeedId: '0xe393449f6aff8a4b6d3e1165a7c9ebec103685f3b41e60db4277b5b6d10e7326',
         pythPriceInfoObject: '0x62e15c2fd1437a4d0e111dbd8a193f244878ba25cc7caa9120d0ee41ac151ea5',
-        priceDecimal: 6,
-        expiration: 30,
-    },
-    FDUSD: {
-        oracleId: 13,
-        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
-        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
-        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
-        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
-        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
-        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
-        minimumEffectivePrice: 10000, // 0.01 = 0.01 * 1e6 = 10000
-        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
-        coinType: '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
-        feedId: '',
-        supraPairId: 474, // https://docs.supra.com/oracles/data-feeds/data-feeds-index
-        pythPriceFeedId: '0xccdc1a08923e2e4f4b1e6ea89de6acbc5fe1948e9706f5604b8cb50bc1ed3979', // Crypto.FDUSD/USD -> https://pyth.network/developers/price-feed-ids
-        pythPriceInfoObject: '0x5f6583b2b0fe1ecf94aaffeaab8a838794693960cea48c0da282d5f4a24be027',
         priceDecimal: 6,
         expiration: 30,
     },
