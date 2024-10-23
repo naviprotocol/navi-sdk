@@ -10,17 +10,18 @@ export const AddressMap: Record<string, string> = {
     '0x2::sui::SUI': "Sui",
     '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX': "NAVX",
     '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT': 'vSui',
-    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 'USDC', //wormhole usdc
+    '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN': 'wUSDC', //wormhole usdc
     '0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN': 'USDT',
     '0xaf8cd5edc19c4512f4259f0bee101a40d41ebed738ade5874359610ef8eeced5::coin::COIN': 'WETH',
     '0x06864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS': 'CETUS',
     '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI': 'haSui',
     '0x027792d9fed7f9844eb4839566001bb6f6cb4804f66aa2da6fe1ee242d896881::coin::COIN': 'WBTC',
     '0x2053d08c1e2bd02791056171aab0fd12bd7cd7efad2ab8f6b9c8902f14df2ff2::ausd::AUSD': 'AUSD',
-    '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC': 'USDC',
+    '0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC': 'nUSDC',
     '0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH': 'ETH', // native eth
+    '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY': 'USDY',
+    '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD': 'FDUSD',
 };
-
 
 export function getPackageCache(): string | undefined {
     if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
@@ -70,15 +71,6 @@ export const pool: Pool = {
         reserveObjectId: '0xab644b5fd11aa11e930d1c7bc903ef609a9feaf9ffe1b23532ad8441854fbfaf',
         borrowBalanceParentId: '0xe7ff0daa9d090727210abe6a8b6c0c5cd483f3692a10610386e4dc9c57871ba7',
         supplyBalanceParentId: '0x589c83af4b035a3bc64c40d9011397b539b97ea47edf7be8f33d643606bf96f8',
-    },
-    USDC: { // This will be deprecated in the future, please use wUSDC instead
-        name: 'USDC',
-        assetId: 1,
-        poolId: '0xa02a98f9c88db51c6f5efaaf2261c81f34dd56d86073387e0ef1805ca22e39c8',
-        type: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
-        reserveObjectId: '0xeb3903f7748ace73429bd52a70fff278aac1725d3b58afa781f25ce3450ac203',
-        borrowBalanceParentId: '0x8a3aaa817a811131c624658f6e77cba04ab5829293d2c49c1a9cce8ac9c8dec4',
-        supplyBalanceParentId: '0x8d0a4467806458052d577c8cd2be6031e972f2b8f5f77fce98aa12cd85330da9',
     },
     USDT: {
         name: 'USDT',
@@ -179,7 +171,15 @@ export const pool: Pool = {
         borrowBalanceParentId: '0xf0c6ce5cfaee96073876a5fab7426043f3a798b79502c4caeb6d9772cd35af1f',
         supplyBalanceParentId: '0xc0a0cb43620eb8a84d5a4a50a85650e7fa7ba81e660f9cc2863404fd84591d4b',
     },
-
+    USDY: {
+        name: 'USDY',
+        assetId: 12,
+        poolId: '0x4b6253a9f8cf7f5d31e6d04aed4046b9e325a1681d34e0eff11a8441525d4563',
+        type: '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY',
+        reserveObjectId: '0xddeb55afe4860995d755fddb0b1dfb8f8011ca08edb66e43c867a21bd6e0551a',
+        borrowBalanceParentId: '0xc0f59c5665d6289408ba31efc48718daa4d14a291a303a0d50d306e51eb68872',
+        supplyBalanceParentId: '0x8aac332c01340926066a53f7a5f8ac924e61ea2ae6bc6ce61f112e9094fd5639',
+    },
 };
 
 export const flashloanConfig = {
@@ -207,12 +207,6 @@ export const vSui: CoinInfo = {
 export const USDT: CoinInfo = {
     symbol: 'USDT',
     address: '0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN',
-    decimal: 6
-}
-
-export const USDC: CoinInfo = { // This will be deprecated in the future, please use wUSDC instead
-    symbol: 'USDC',
-    address: '0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN',
     decimal: 6
 }
 
@@ -312,7 +306,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 9,
         expiration: 30,
     },
-    USDC: {
+    wUSDC: {
         oracleId: 1,
         maxTimestampDiff: 30 * 1000, // 30s(millisecond)
         priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
@@ -510,7 +504,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 8,
         expiration: 30,
     },
-
+    USDY: {
+        oracleId: 12,
+        maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 10000, // 0.01 = 0.01 * 1e6 = 10000
+        historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+        coinType: '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY',
+        feedId: '0x11ddf2ac1868d493e2487deeb2a0c2791bb7ca69632c8c5fefe85e09390be093', // TODO: values
+        supraPairId: 185,
+        pythPriceFeedId: '0xe393449f6aff8a4b6d3e1165a7c9ebec103685f3b41e60db4277b5b6d10e7326',
+        pythPriceInfoObject: '0x62e15c2fd1437a4d0e111dbd8a193f244878ba25cc7caa9120d0ee41ac151ea5',
+        priceDecimal: 6,
+        expiration: 30,
+    },
 }
 
 export interface IOracleProConfig {

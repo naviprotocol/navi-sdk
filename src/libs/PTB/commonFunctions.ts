@@ -1,5 +1,5 @@
 import { Transaction } from "@mysten/sui/transactions";
-import { getConfig, flashloanConfig, pool, vSuiConfig, PriceFeedConfig, OracleProConfig, IPriceFeed } from '../../address'
+import { getConfig, flashloanConfig, pool, vSuiConfig, PriceFeedConfig, OracleProConfig, IPriceFeed, AddressMap } from '../../address'
 import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
 import { bcs } from '@mysten/sui.js/bcs';
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
@@ -246,15 +246,6 @@ export async function getHealthFactor(txb: Transaction, address: string) {
  * @returns The merged coin object.
  */
 export function returnMergedCoins(txb: Transaction, coinInfo: any) {
-    //deprecated
-    // if (coinInfo.data.length >= 2) {
-    //     let baseObj = coinInfo.data[0].coinObjectId;
-    //     let i = 1;
-    //     while (i < coinInfo.data.length) {
-    //         txb.mergeCoins(baseObj, [coinInfo.data[i].coinObjectId]);
-    //         i++;
-    //     }
-    // }
 
     if (coinInfo.data.length >= 2) {
         let baseObj = coinInfo.data[0].coinObjectId;
@@ -498,13 +489,14 @@ export async function getIncentivePools(client: SuiClient, assetId: number, opti
 export async function getAvailableRewards(client: SuiClient, checkAddress: string, option: OptionType = 1, prettyPrint = true) {
 
     registerStructs();
-    const assetIds = Array.from({ length: 8 }, (_, i) => i); // Generates an array [0, 1, 2, ..., 7]
+    const assetIds = Array.from({ length: Number(Object.keys(AddressMap).length) }, (_, i) => i);
     try {
         const allResults = await Promise.all(
             assetIds.map(assetId => getIncentivePools(client, assetId, option, checkAddress))
         );
 
         const allPools = allResults.flat();
+
         const activePools = allPools.filter(pool => pool.available.trim() != '0');
 
         const summedRewards = activePools.reduce((acc, pool) => {
@@ -539,6 +531,12 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 '5extra': 'vSui',
                 '6': 'haSui',
                 '7': 'NAVX',
+                '8': 'WBTC',
+                '9': 'AUSD',
+                '10': 'nUSDC',
+                '11': 'ETH',
+                '12': 'USDY',
+                '13': 'FDUSD',
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
@@ -686,13 +684,18 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
         console.info(`request update pyth price feed, ids: ${stalePriceFeedIds}`)
     }
     updateSinglePrice(txb, PriceFeedConfig.SUI)
-    updateSinglePrice(txb, PriceFeedConfig.USDC)
+    updateSinglePrice(txb, PriceFeedConfig.wUSDC)
     updateSinglePrice(txb, PriceFeedConfig.USDT)
     updateSinglePrice(txb, PriceFeedConfig.WETH)
     updateSinglePrice(txb, PriceFeedConfig.CETUS)
     updateSinglePrice(txb, PriceFeedConfig.CERT)
     updateSinglePrice(txb, PriceFeedConfig.HASUI)
     updateSinglePrice(txb, PriceFeedConfig.NAVX)
+    updateSinglePrice(txb, PriceFeedConfig.WBTC)
+    updateSinglePrice(txb, PriceFeedConfig.AUSD)
+    updateSinglePrice(txb, PriceFeedConfig.NUSDC)
+    updateSinglePrice(txb, PriceFeedConfig.ETH)
+    updateSinglePrice(txb, PriceFeedConfig.USDY)
 }
 
 
