@@ -4,7 +4,41 @@ import { CoinInfo, Pool, PoolConfig } from "../../types";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { getConfig } from "../../address";
 
+type FetchPoolDataArgs = { 
+    poolId: string, 
+    client: SuiClient, 
+    reserveParentId: string, 
+    poolInfo: any
+}
 
+export const fetchPoolData = async ({ poolId, client, reserveParentId, poolInfo }: FetchPoolDataArgs ) => {
+    const poolData = poolInfo[poolId];
+    const result: any = await client.getDynamicFieldObject({ parentId: reserveParentId, name: { type: 'u8', value: poolId } });
+    const filedsData = result.data?.content?.fields?.value?.fields;
+    const total_supply_with_index = poolData.total_supply * filedsData.current_supply_index / 1e27;
+    const total_borrow_with_index = poolData.total_borrow * filedsData.current_borrow_index / 1e27;
+
+    return {
+        coin_type: poolData.coin_type,
+        total_supply: total_supply_with_index,
+        total_borrow: total_borrow_with_index,
+        tokenPrice: poolData.price,
+        base_supply_rate: poolData.supply_rate,
+        base_borrow_rate: poolData.borrow_rate,
+        boosted_supply_rate: poolData.boosted,
+        boosted_borrow_rate: poolData.borrow_reward_apy,
+        supply_cap_ceiling: Number((filedsData.supply_cap_ceiling / 1e36)),
+        borrow_cap_ceiling: Number((filedsData.borrow_cap_ceiling / 1e27).toFixed(2)) * poolData.total_supply,
+        current_supply_utilization: total_supply_with_index / Number((filedsData.supply_cap_ceiling / 1e36)),
+        current_borrow_utilization: total_borrow_with_index / (Number((filedsData.borrow_cap_ceiling / 1e27).toFixed(2)) * poolData.total_supply),
+        optimal_borrow_utilization: (Number(filedsData.borrow_rate_factors?.fields?.optimal_utilization) / 1e27).toFixed(2),
+        pool: poolData.pool,
+        max_ltv: (Number(filedsData.ltv) / 1e27).toFixed(2),
+        liquidation_threshold: (Number(filedsData.liquidation_factors.fields.threshold) / 1e27).toFixed(2),
+        symbol: poolData.symbol,
+        rewardTokenAddress: poolData.rewardTokens,
+    };
+};
 
 /**
  * Retrieves pool information for a given coin symbol.
@@ -18,50 +52,21 @@ export async function getPoolInfo(coin?: CoinInfo, client?: SuiClient) {
             url: getFullnodeUrl("mainnet"),
         });
     }
-    
+
     try {
         const response = await axios.get('https://api-defi.naviprotocol.io/getIndexAssetData');
         const poolInfo = response.data;
         const config = await getConfig();
         const poolResults: { [key: string]: any } = {};
 
-        const fetchPoolData = async (poolId: string) => {
-            const poolData = poolInfo[poolId];
-            const result: any = await client.getDynamicFieldObject({ parentId: config.ReserveParentId, name: { type: 'u8', value: poolId } });
-            const filedsData = result.data?.content?.fields?.value?.fields;
-            const total_supply_with_index = poolData.total_supply * filedsData.current_supply_index / 1e27;
-            const total_borrow_with_index = poolData.total_borrow * filedsData.current_borrow_index / 1e27;
-
-            return {
-                coin_type: poolData.coin_type,
-                total_supply: total_supply_with_index,
-                total_borrow: total_borrow_with_index,
-                tokenPrice: poolData.price,
-                base_supply_rate: poolData.supply_rate,
-                base_borrow_rate: poolData.borrow_rate,
-                boosted_supply_rate: poolData.boosted,
-                boosted_borrow_rate: poolData.borrow_reward_apy,
-                supply_cap_ceiling: Number((filedsData.supply_cap_ceiling / 1e36)),
-                borrow_cap_ceiling: Number((filedsData.borrow_cap_ceiling / 1e27).toFixed(2)) * poolData.total_supply,
-                current_supply_utilization: total_supply_with_index / Number((filedsData.supply_cap_ceiling / 1e36)),
-                current_borrow_utilization: total_borrow_with_index / (Number((filedsData.borrow_cap_ceiling / 1e27).toFixed(2)) * poolData.total_supply),
-                optimal_borrow_utilization: (Number(filedsData.borrow_rate_factors?.fields?.optimal_utilization) / 1e27).toFixed(2),
-                pool: poolData.pool,
-                max_ltv: (Number(filedsData.ltv) / 1e27).toFixed(2),
-                liquidation_threshold: (Number(filedsData.liquidation_factors.fields.threshold) / 1e27).toFixed(2),
-                symbol: poolData.symbol,
-                rewardTokenAddress: poolData.rewardTokens,
-            };
-        };
-
         if (coin) {
             const pool_real: PoolConfig = pool[coin.symbol as keyof Pool];
             const poolId = String(pool_real.assetId);
-            return await fetchPoolData(poolId);
+            return await fetchPoolData({ poolId, reserveParentId: config.ReserveParentId, client, poolInfo });
         } else {
             for (const poolId in poolInfo) {
                 if (poolInfo.hasOwnProperty(poolId)) {
-                    poolResults[poolId] = await fetchPoolData(poolId);
+                    poolResults[poolId] = await fetchPoolData({ poolId, reserveParentId: config.ReserveParentId, client, poolInfo });
                 }
             }
             return poolResults;
