@@ -527,7 +527,7 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
         if (prettyPrint) {
             const coinDictionary: { [key: string]: string } = {
                 '0': 'Sui',
-                '1': 'USDC',
+                '1': 'wUSDC',
                 '2': 'USDT',
                 '3': 'WETH',
                 '4': 'CETUS',
