@@ -497,7 +497,6 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
 
         const allPools = allResults.flat();
         const activePools = allPools.filter(pool => pool.available.trim() != '0');
-
         const summedRewards = activePools.reduce((acc, pool) => {
             let assetId = pool.asset_id.toString();
             if (assetId == '5' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
@@ -506,8 +505,15 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             if (assetId == '10' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
                 assetId = '10extra' //Means NAVX Rewards
             }
+            if (assetId == '13' && pool.funds == 'bc14736bbe4ac59a4e3af6835a98765c15c5f7dbf9e7ba9b36679ce7ff00dc19') {
+                assetId = '13extra' //Means NS Rewards
+            }
             const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
-            const availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
+            
+            let availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
+            if (assetId == '13extra') {
+                availableFixed = (Number(availableDecimal) / 10 ** 6).toFixed(5); // Adjust for 5 decimal places
+            }
             if (!acc[assetId]) {
 
                 acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
@@ -516,6 +522,9 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 }
                 if (assetId == '10extra') {
                     acc[assetId] = { asset_id: '10', funds: pool.funds, available: availableFixed };
+                }
+                if (assetId == '13extra') {
+                    acc[assetId] = { asset_id: '13', funds: pool.funds, available: availableFixed };
                 }
             } else {
                 acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
@@ -541,12 +550,15 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 '10extra': 'nUSDC',
                 '11': 'ETH',
                 '12': 'USDY',
-                '13': 'FDUSD',
+                '13': 'NS',
+                '13extra': 'NS'
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
                 if (key == '5extra' || key == '10extra' || key == '7') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
+                } else if (key == '13extra') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NS`);
                 } else {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
                 }
@@ -701,6 +713,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.NUSDC)
     updateSinglePrice(txb, PriceFeedConfig.ETH)
     updateSinglePrice(txb, PriceFeedConfig.USDY)
+    updateSinglePrice(txb, PriceFeedConfig.NS)
 }
 
 
