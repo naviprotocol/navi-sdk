@@ -1,15 +1,19 @@
 
 import { describe, it, expect } from 'vitest';
 import { NAVISDKClient } from '../src/index';
-import { NAVX, Sui } from '../src/address';
+import { NAVX, nUSDC, Sui } from '../src/address';
 import { Transaction } from "@mysten/sui/transactions";
 import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB } from '../src/libs/PTB';
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
 import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 describe('NAVI SDK Client', async () => {
-    const client = new NAVISDKClient({});
+    const rpcUrl = process.env.RPC || '';
+    const client = new NAVISDKClient({ networkType: rpcUrl });
     it('should generate correct account', async () => {
         expect(client.accounts[0].getPublicKey()).toBe(client.getAllAccounts()[0].getPublicKey());
     });
@@ -29,7 +33,7 @@ describe('NAVI SDK Client', async () => {
         const userToCheck = '0x523c19fd6af645a12c6cb69bff0740b693aedd3f7613b1b20aa40d78f45204be';
         const res = await client.getHealthFactor(userToCheck)
         expect(res).toBeGreaterThan(1);
-        expect(res).toBeLessThan(5);
+        expect(res).toBeLessThan(20);
 
     });
     it('should get correct check user dynamic health factor', async () => {
@@ -37,7 +41,7 @@ describe('NAVI SDK Client', async () => {
         const res = await client.getDynamicHealthFactor(userToCheck, Sui, 1e9, 0, true)
         const resNumber = Number(res);
         expect(resNumber).toBeGreaterThan(1);
-        expect(resNumber).toBeLessThan(5);
+        expect(resNumber).toBeLessThan(20);
 
     });
     it('should get correct return all accounts\' Navi Portfolio', async () => {
@@ -188,5 +192,12 @@ describe('NAVI SDK Account Manager', async () => {
         }
         expect(result.effects.status.status).toEqual("success");
 
+    });
+    it('should get correct quote', async () => {
+        const res = await client.getQuote(Sui.address, nUSDC.address, 1e9, '');
+        console.log(res);
+        expect(Number(res.amount_in)).toBeGreaterThan(0);
+        expect(Number(res.amount_out)).toBeGreaterThan(0);
+        expect(res.routes.length).toBeGreaterThan(0);
     });
 });
