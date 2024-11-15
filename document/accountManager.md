@@ -2,12 +2,12 @@
 
 ### Get Specific Account Address
 ```javascript
-account1.getPublicKey() //or
-account1.address
+account.getPublicKey() //or
+account.address
 ```
 ### Create Account Cap for specific account
 ```javascript
-account1.createAccountCap() //Account1 will create an Account Cap
+account.createAccountCap() //Account1 will create an Account Cap
 ```
 
 ## Get Objs and Coin Info
@@ -119,4 +119,18 @@ await account.updateOracle();
 // For Devevelopers who wants to integrate the Oracle in PTB
 let txb = new Transaction();
 await updateOraclePTB(account.client, txb); //add updateOracle code to PTB
+```
+
+### Swap Token using NAVI Aggregator
+```Typescript
+const fromCoinAddress = Sui.address; //From coin address
+const toCoinAddress = nUSDC.address; //To coin address
+const amountIn = 1e9; //Amount in   
+const apiKey = 'your_api_key'; //NAVI Aggregator API Key
+const swapOptions = { dexList: [Dex.Cetus, Dex.Aftermath]}; //Swap options, leave the dexList empty to use all the DEXs
+
+//Execute the swap, this will return a transaction result
+account.swap(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions)
+//Dry run the swap, this will return a dryRun result
+account.dryRunSwap(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions)
 ```

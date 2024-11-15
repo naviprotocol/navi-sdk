@@ -120,3 +120,14 @@ client.getDynamicHealthFactor(address, coinType = 'USDC', supplyBalanceChange:10
 //supplyBalanceChange and borrowBalanceChange needs to be an integer with token decimals
 //Change is_increase to false if it's decrease
 ```
+
+### Get token swap quote from NAVI Aggregator
+```javascript
+const fromCoinAddress = Sui.address; //From coin address
+const toCoinAddress = nUSDC.address; //To coin address
+const amountIn = 1e9; //Amount in   
+const apiKey = 'your_api_key'; //NAVI Aggregator API Key
+const swapOptions = { dexList: [Dex.Cetus, Dex.Aftermath]}; //Swap options, leave the dexList empty to use all the DEXs
+
+client.getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions)
+```
