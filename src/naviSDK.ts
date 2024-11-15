@@ -1,10 +1,11 @@
 import { AccountManager } from "./libs/AccountManager";
-import { initializeParams, CoinInfo, Pool, PoolConfig, OptionType } from "./types";
+import { initializeParams, CoinInfo, Pool, PoolConfig, OptionType, SwapOptions, Quote } from "./types";
 import { getPoolInfo, getUserRewardHistory } from './libs/PoolInfo';
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { pool } from "./address";
 import { getAvailableRewards } from './libs/PTB';
+import { getQuote } from './libs/Aggregator/getQuote';
 
 export class NAVISDKClient {
 
@@ -153,7 +154,14 @@ export class NAVISDKClient {
         return getAvailableRewards(client, address, option, true);
     }
 
+
     async getClaimedRewardsHistory(userAddress: string = this.accounts[0].address, page: number = 1, size: number = 400) {
         return getUserRewardHistory(userAddress, page, size);
+    }
+
+    async getQuote(fromCoinAddress: string, toCoinAddress: string, amountIn: number | string | bigint, apiKey: string,
+        swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 },
+    ): Promise<Quote> {
+        return getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions);
     }
 }

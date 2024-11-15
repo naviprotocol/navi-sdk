@@ -1,6 +1,6 @@
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { initializeParams, NetworkType } from "../../types";
+import { initializeParams, NetworkType, SwapOptions } from "../../types";
 import { getCoinAmount, getCoinDecimal } from "../Coins";
 import { Transaction } from "@mysten/sui/transactions";
 import { getConfig, pool, AddressMap, vSui } from "../../address";
@@ -19,7 +19,9 @@ import {
   stakeTovSuiPTB,
   unstakeTovSui,
   claimAllRewardsPTB,
-  updateOraclePTB
+  updateOraclePTB,
+  swapPTB,
+  getCoinPTB
 } from "../PTB";
 import { getAddressPortfolio, getReservesDetail, moveInspect } from "../CallFunctions";
 import assert from 'assert';
@@ -754,5 +756,49 @@ export class AccountManager {
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
+  }
+
+  async swap(
+    fromCoinAddress: string,
+    toCoinAddress: string,
+    amountIn: number | string | bigint,
+    minAmountOut: number,
+    apiKey?: string,
+    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 }
+  ) {
+    const txb = new Transaction();
+    txb.setSender(this.address);
+
+    const coinA = await getCoinPTB(this.address, fromCoinAddress, amountIn, txb, this.client);
+
+    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions);
+    txb.transferObjects([finalCoinB], this.address);
+
+    const result = await SignAndSubmitTXB(txb, this.client, this.keypair);
+    return result;
+  }
+
+  async dryRunSwap(
+    fromCoinAddress: string,
+    toCoinAddress: string,
+    amountIn: number | string | bigint,
+    minAmountOut: number,
+    apiKey?: string,
+    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 }
+  ) {
+    const txb = new Transaction();
+    txb.setSender(this.address);
+
+    const coinA = await getCoinPTB(this.address, fromCoinAddress, amountIn, txb, this.client);
+
+    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions);
+    txb.transferObjects([finalCoinB], this.address);
+
+    const dryRunTxBytes: Uint8Array = await txb.build({
+      client: this.client
+    });
+    const dryRunResult = await this.client.dryRunTransactionBlock({ transactionBlock: dryRunTxBytes });
+
+    return dryRunResult;
   }
 }
