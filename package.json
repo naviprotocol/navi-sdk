@@ -1,5 +1,5 @@
 {
-  "name": "navi-sdk-dev",
+  "name": "navi-sdk",
   "version": "1.4.1",
   "description": "",
   "main": "dist/index.js",
