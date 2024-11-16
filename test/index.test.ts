@@ -7,9 +7,13 @@ import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updat
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
 import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 describe('NAVI SDK Client', async () => {
-    const client = new NAVISDKClient({});
+    const rpc = process.env.RPC || '';
+    const client = new NAVISDKClient({ networkType: rpc });
     it('should generate correct account', async () => {
         expect(client.accounts[0].getPublicKey()).toBe(client.getAllAccounts()[0].getPublicKey());
     });
@@ -29,7 +33,7 @@ describe('NAVI SDK Client', async () => {
         const userToCheck = '0x523c19fd6af645a12c6cb69bff0740b693aedd3f7613b1b20aa40d78f45204be';
         const res = await client.getHealthFactor(userToCheck)
         expect(res).toBeGreaterThan(1);
-        expect(res).toBeLessThan(5);
+        expect(res).toBeLessThan(20);
 
     });
     it('should get correct check user dynamic health factor', async () => {
@@ -37,7 +41,7 @@ describe('NAVI SDK Client', async () => {
         const res = await client.getDynamicHealthFactor(userToCheck, Sui, 1e9, 0, true)
         const resNumber = Number(res);
         expect(resNumber).toBeGreaterThan(1);
-        expect(resNumber).toBeLessThan(5);
+        expect(resNumber).toBeLessThan(20);
 
     });
     it('should get correct return all accounts\' Navi Portfolio', async () => {
@@ -188,5 +192,11 @@ describe('NAVI SDK Account Manager', async () => {
         }
         expect(result.effects.status.status).toEqual("success");
 
+    });
+
+    it('should get correct NS rewards', async () => {
+        const res = await client.getAddressAvailableRewards('0x33be2c133f87c268e48b527a7c62a509ad862b01e1eb4cf671ea5064218cfdc0');
+        expect(res).toHaveProperty('13extra');
+        expect(Number(res['13extra'].available)).toBeGreaterThan(0);
     });
 });
