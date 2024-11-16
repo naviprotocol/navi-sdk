@@ -22,7 +22,6 @@ export interface Pool {
   nUSDC: PoolConfig;
   ETH: PoolConfig;
   USDY: PoolConfig;
-  NS: PoolConfig;
 }
 
 export interface PoolConfig {
