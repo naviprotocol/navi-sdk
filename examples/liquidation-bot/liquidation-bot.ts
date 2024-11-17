@@ -1,5 +1,4 @@
 import { NAVISDKClient } from "navi-sdk";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { depositCoin, withdrawCoin, borrowCoin, flashloan, repayFlashLoan, SignAndSubmitTXB, liquidateFunction } from 'navi-sdk/dist/libs/PTB'
 import dotenv from 'dotenv';
 import { Transaction } from "@mysten/sui/transactions";
@@ -20,7 +19,7 @@ const to_pay_coin: CoinInfo = wUSDC;
 const to_liquidate_address = '0xcaa4af4b06b6eed841bbd254cb19a3fcd64e3e902fe2bcbd4e02f6f9711e0c43';
 const collectral_coin: CoinInfo = Sui;
 //End of Set UP Zone
-const txb:any = new TransactionBlock();
+const txb = new Transaction();
 let [coinObj, to_liquidate_amount] = await getCoinObj(txb,account, to_pay_coin);
 
 

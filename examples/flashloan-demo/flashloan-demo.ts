@@ -1,5 +1,5 @@
 import { NAVISDKClient } from 'navi-sdk'
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { depositCoin, withdrawCoin, borrowCoin, flashloan, repayFlashLoan, SignAndSubmitTXB } from 'navi-sdk/dist/libs/PTB'
 import { CoinInfo, Pool, PoolConfig } from "navi-sdk/dist/types";
 import { pool, wUSDC } from 'navi-sdk/dist/address';
@@ -16,7 +16,7 @@ const amountToBorrow = 1 * 10 ** toBorrowCoin.decimal; //Borrow 1 USDC
 
 //For the following code, you can directly copy and paste it to your project
 // Initialize the TransactionBlock
-let txb:any = new TransactionBlock();
+let txb:any = new Transaction();
 const account = client.accounts[0];
 let sender = account.address;
 console.log(sender)
