@@ -1,8 +1,8 @@
 import { NAVISDKClient } from 'navi-sdk'
 import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { depositCoin, withdrawCoin, borrowCoin, flashloan, repayFlashLoan, SignAndSubmitTXB, mergeCoins } from 'navi-sdk/dist/libs/PTB'
+import { depositCoin, withdrawCoin, borrowCoin, flashloan, repayFlashLoan, SignAndSubmitTXB } from 'navi-sdk/dist/libs/PTB'
 import { CoinInfo, Pool, PoolConfig } from "navi-sdk/dist/types";
-import { pool, USDC } from 'navi-sdk/dist/address';
+import { pool, wUSDC } from 'navi-sdk/dist/address';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -10,13 +10,13 @@ const mnemonic = process.env.mnemonic;
 const client = new NAVISDKClient({ mnemonic: mnemonic, networkType: "mainnet", numberOfAccounts: 1 });
 
 //Set Up Zone
-const toBorrowCoin: CoinInfo = USDC;
+const toBorrowCoin: CoinInfo = wUSDC;
 const amountToBorrow = 1 * 10 ** toBorrowCoin.decimal; //Borrow 1 USDC
 //End of Set Up Zone
 
 //For the following code, you can directly copy and paste it to your project
 // Initialize the TransactionBlock
-let txb = new TransactionBlock();
+let txb:any = new TransactionBlock();
 const account = client.accounts[0];
 let sender = account.address;
 console.log(sender)

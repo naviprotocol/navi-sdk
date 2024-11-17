@@ -2,7 +2,7 @@ import { NAVISDKClient } from "navi-sdk";
 import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { SignAndSubmitTXB, liquidateFunction } from 'navi-sdk/dist/libs/PTB'
 import dotenv from 'dotenv';
-import { CETUS, getConfig, pool, Sui, USDC, USDT, vSui } from 'navi-sdk/dist/address';
+import { CETUS, getConfig, pool, Sui, wUSDC, USDT, vSui } from 'navi-sdk/dist/address';
 import { PoolConfig, Pool, CoinInfo } from 'navi-sdk/dist/types';
 import { AccountManager } from "navi-sdk/dist/libs/AccountManager";
 dotenv.config();
