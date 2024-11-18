@@ -1,8 +1,8 @@
 import { NAVISDKClient } from "navi-sdk";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { SignAndSubmitTXB, liquidateFunction } from 'navi-sdk/dist/libs/PTB'
 import dotenv from 'dotenv';
-import { CETUS, getConfig, pool, Sui, USDC, USDT, vSui } from 'navi-sdk/dist/address';
+import { CETUS, getConfig, pool, Sui, wUSDC, USDT, vSui } from 'navi-sdk/dist/address';
 import { PoolConfig, Pool, CoinInfo } from 'navi-sdk/dist/types';
 import { AccountManager } from "navi-sdk/dist/libs/AccountManager";
 dotenv.config();
@@ -21,7 +21,7 @@ console.log(`\n\nTo Liquidate address: `, to_liquidate_address)
 let [coinObj, to_liquidate_amount] = await getCoinObj(account, to_pay_coin);
 
 //Initialize the TransactionBlock
-let txb: any = new TransactionBlock();
+let txb = new Transaction();
 txb.setSender(sender);
 
 //Add the liquidation function to the ptb
@@ -54,7 +54,7 @@ async function getCoinObj(account: AccountManager, realCoin: CoinInfo) {
     let allBalance = await account.client.getBalance({ owner: account.address, coinType: realCoin.address });
 
     if (getCoinInfo.data.length >= 2) {
-        const txb: any = new TransactionBlock();
+        const txb = new Transaction();
         txb.setSender(account.address);
         let baseObj = getCoinInfo.data[0].coinObjectId;
         let i = 1;
