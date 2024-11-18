@@ -33,6 +33,7 @@ if (!CONFIG.mnemonic) {
     throw new Error("Mnemonic is not defined in environment variables");
 }
 
+
 /**
  * SECURITY WARNING:
  * Ensure that your `.env` file containing the mnemonic is included in `.gitignore`

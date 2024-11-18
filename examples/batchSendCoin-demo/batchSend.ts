@@ -1,5 +1,5 @@
 import { NAVISDKClient } from "navi-sdk";
-import {NAVX, Sui, USDC, USDT, vSui, haSui, WETH, CETUS} from 'navi-sdk/dist/address';
+import {NAVX, Sui, wUSDC, USDT, vSui, haSui, WETH, CETUS} from 'navi-sdk/dist/address';
 import { parse } from 'csv-parse/sync';
 import { readFileSync } from 'fs';
 import dotenv from 'dotenv';
@@ -50,4 +50,4 @@ const result = extractAddressesAndRewards(csvFilePath);
 console.log('Addresses:', result.addresses);
 console.log('Rewards:', result.rewards);
 
-account.sendCoinToMany(toSendToken, result.addresses, result.rewards)
+account.sendCoinsToMany(toSendToken, result.addresses, result.rewards)
