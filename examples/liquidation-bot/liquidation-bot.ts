@@ -1,9 +1,8 @@
 import { NAVISDKClient } from "navi-sdk";
-import { TransactionBlock } from "@mysten/sui.js/transactions";
-import { depositCoin, withdrawCoin, borrowCoin, flashloan, repayFlashLoan, SignAndSubmitTXB, mergeCoins, liquidateFunction } from 'navi-sdk/dist/libs/PTB'
+import { depositCoin, withdrawCoin, borrowCoin, flashloan, repayFlashLoan, SignAndSubmitTXB, liquidateFunction } from 'navi-sdk/dist/libs/PTB'
 import dotenv from 'dotenv';
-import { CETUS, config, pool, Sui, USDC, USDT, vSui } from 'navi-sdk/dist/address';
-import { getCoinObj } from "./getCoinobj";
+import { Transaction } from "@mysten/sui/transactions";
+import { CETUS, pool, Sui, wUSDC, USDT, vSui } from 'navi-sdk/dist/address';
 import { PoolConfig, Pool, CoinInfo } from 'navi-sdk/dist/types';
 import { AccountManager } from "navi-sdk/dist/libs/AccountManager"
 
@@ -16,12 +15,12 @@ const account = client.accounts[0];
 const sender = account.address;
 
 //Set UP Zone
-const to_pay_coin: CoinInfo = USDC;
+const to_pay_coin: CoinInfo = wUSDC;
 const to_liquidate_address = '0xcaa4af4b06b6eed841bbd254cb19a3fcd64e3e902fe2bcbd4e02f6f9711e0c43';
 const collectral_coin: CoinInfo = Sui;
 //End of Set UP Zone
-
-let [coinObj, to_liquidate_amount] = await getCoinObj(account, to_pay_coin);
+const txb = new Transaction();
+let [coinObj, to_liquidate_amount] = await getCoinObj(txb,account, to_pay_coin);
 
 
 async function monitorAndExecute(txb: any, account: any, to_liquidator_address: string): Promise<void> {
@@ -93,7 +92,7 @@ async function monitorAndExecute(txb: any, account: any, to_liquidator_address: 
     });
 }
 
-export async function getCoinObj(account: AccountManager, realCoin: CoinInfo) {
+export async function getCoinObj(txb: Transaction,account: AccountManager, realCoin: CoinInfo) {
 
     let getCoinInfo = await account.getCoins(
         realCoin.address
@@ -101,7 +100,6 @@ export async function getCoinObj(account: AccountManager, realCoin: CoinInfo) {
     let allBalance = await account.client.getBalance({owner: account.address, coinType: realCoin.address});
     
     if (getCoinInfo.data.length >= 2) {
-        const txb = new TransactionBlock();
         txb.setSender(account.address);
         let baseObj = getCoinInfo.data[0].coinObjectId;
         let i = 1;
