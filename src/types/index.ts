@@ -23,6 +23,7 @@ export interface Pool {
   ETH: PoolConfig;
   USDY: PoolConfig;
   NS: PoolConfig;
+  LorenzoBTC: PoolConfig;
 }
 
 export interface PoolConfig {
