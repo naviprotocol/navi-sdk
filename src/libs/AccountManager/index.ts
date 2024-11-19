@@ -1,5 +1,5 @@
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
+import { getFullnodeUrl, SuiClient, CoinStruct, CoinBalance } from "@mysten/sui/client";
 import { initializeParams, NetworkType, SwapOptions } from "../../types";
 import { getCoinAmount, getCoinDecimal } from "../Coins";
 import { Transaction } from "@mysten/sui/transactions";
@@ -79,19 +79,41 @@ export class AccountManager {
   }
 
   /**
-   * getAllCoins is an asynchronous function that retrieves all the coins owned by the account.
-   * 
-   * @param prettyPrint - A boolean indicating whether to print the data in a pretty format. Default is true.
-   * @returns A Promise that resolves to the data containing all the coins owned by the account.
+   * fetchAllCoins is a helper function that recursively retrieves all coin data for the given account.
+   * It handles pagination by utilizing the cursor provided in the response.
+   * Recursion is necessary because a single request cannot retrieve all data 
+   * if the user's data exceeds QUERY_MAX_RESULT_LIMIT_CHECKPOINTS (50).
+   *
+   * @param account - The account address to retrieve coin data for.
+   * @param cursor - An optional cursor for pagination. Default is null.
+   * @returns A Promise that resolves to an array containing all the coins owned by the account.
    */
-  async getAllCoins(prettyPrint: boolean = true): Promise<any> {
-    const allData = await this.client.getAllCoins({
-      owner: this.address,
+  async fetchAllCoins(account: string, cursor: string | null = null): Promise<ReadonlyArray<CoinStruct>> {
+    const { data, nextCursor, hasNextPage } = await this.client.getAllCoins({
+      owner: account,
+      cursor,
     });
 
+    if (!hasNextPage) return data;
+
+    const newData = await this.fetchAllCoins(account, nextCursor);
+
+    return [...data, ...newData];
+  }
+
+  /**
+   * getAllCoins is an asynchronous function that retrieves all the coins owned by the specified account.
+   * It utilizes a recursive function to fetch all pages of coin data if pagination is required.
+   *
+   * @param prettyPrint - A boolean indicating whether to print the coin data in a formatted manner. Default is true.
+   * @returns A Promise that resolves to an array containing all the coins owned by the account.
+   */
+  async getAllCoins(prettyPrint: boolean = true): Promise<ReadonlyArray<CoinStruct>> {
+    const allData = await this.fetchAllCoins(this.address);
+
     if (prettyPrint) {
-      allData.data.forEach((element: any) => {
-        console.log("Coin Type: ", element.coinType, "| Obj id: ", element.coinObjectId, " | Balance: ", element.balance);
+      allData.forEach(({ coinType, coinObjectId, balance }) => {
+        console.log("Coin Type: ", coinType, "| Obj id: ", coinObjectId, " | Balance: ", balance);
       });
     }
 
@@ -105,46 +127,59 @@ export class AccountManager {
    * @returns A Promise that resolves to an object containing the balance of each coin in the wallet. Record<string, number>
    */
   async getWalletBalance(prettyPrint: boolean = true): Promise<Record<string, number>> {
-    const allData = await this.getAllCoins(false);
+    const allBalances = await this.client.getAllBalances({ owner: this.address })
     const coinBalances: Record<string, number> = {};
 
-    await Promise.all(allData.data.map(async (element: any) => {
-      const coinType = element.coinType;
-      const balance: any = element.balance;
-      const decimal: any = await this.getCoinDecimal(coinType);
-
-      if (coinBalances[coinType]) {
-        coinBalances[coinType] += Number(balance) / Math.pow(10, decimal);
-      } else {
-        coinBalances[coinType] = Number(balance) / Math.pow(10, decimal);
-      }
-    }));
+    for (const { coinType, totalBalance } of allBalances) {
+      const decimal = await this.getCoinDecimal(coinType);
+      coinBalances[coinType] = Number(totalBalance) / Math.pow(10, decimal);
+    }
 
     if (prettyPrint) {
-      for (const coinType in coinBalances) {
-        if (AddressMap.hasOwnProperty(coinType)) {
-          console.log("Coin Type: ", AddressMap[coinType], "| Balance: ", coinBalances[coinType]);
-        } else {
-          console.log("Unknown Coin Type: ", coinType, "| Balance: ", coinBalances[coinType]);
-        }
-      }
+      Object.entries(coinBalances).forEach(([coinType, balance]) => {
+        const coinName = AddressMap[coinType] ? `Coin Type: ${AddressMap[coinType]}` : `Unknown Coin Type: ${coinType}`;
+        console.log(coinName, "| Balance: ", balance);
+      });
     }
+
     return coinBalances;
   }
 
+
   /**
-   * Retrieves coin objects based on the specified coin type.
+   * fetchCoins is a helper function that recursively retrieves coin objects for the given account and coin type.
+   * It handles pagination by utilizing the cursor provided in the response.
+   *
+   * @param account - The account address to retrieve coin data for.
+   * @param coinType - The coin type to retrieve.
+   * @param cursor - An optional cursor for pagination. Default is null.
+   * @returns A Promise that resolves to an array containing all the coin objects of the specified type owned by the account.
+   */
+  async fetchCoins(account: string, coinType: string, cursor: string | null = null): Promise<ReadonlyArray<CoinStruct>> {
+    const { data, nextCursor, hasNextPage } = await this.client.getCoins({
+      owner: account,
+      coinType,
+      cursor,
+    });
+
+    if (!hasNextPage) return data;
+
+    const newData = await this.fetchCoins(account, coinType, nextCursor);
+
+    return [...data, ...newData];
+  }
+
+  /**
+   * Retrieves coin objects based on the specified coin type, with pagination handling.
+   * Recursively fetches all coin objects if they exceed QUERY_MAX_RESULT_LIMIT_CHECKPOINTS (50).
+   *
    * @param coinType - The coin type to retrieve coin objects for. Defaults to "0x2::sui::SUI".
    * @returns A Promise that resolves to the retrieved coin objects.
    */
-  async getCoins(coinType: any = "0x2::sui::SUI") {
+  async getCoins(coinType: any = "0x2::sui::SUI"): Promise<{ data: CoinStruct[] }> {
     const coinAddress = coinType.address ? coinType.address : coinType;
-
-    const coinDetails = await this.client.getCoins({
-      owner: this.address,
-      coinType: coinAddress
-    });
-    return coinDetails;
+    const data = [...(await this.fetchCoins(this.address, coinAddress))];
+    return { data };
   }
 
   /**
