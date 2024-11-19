@@ -22,6 +22,7 @@ export const AddressMap: Record<string, string> = {
     '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY': 'USDY',
     '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS': 'NS',
     '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD': 'FDUSD',
+    '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN': 'stBTC',
 };
 
 export function getPackageCache(): string | undefined {
@@ -190,6 +191,15 @@ export const pool: Pool = {
         borrowBalanceParentId: '0x2c7b7e6d323ca8f63908bb03191225a2ecf177bf0c4602ccd21d7ac121d52fa4',
         supplyBalanceParentId: '0x071dc718b1e579d476d088456979e30d142ecdde6a6eec875477b5b4786530f0',
     },
+    LorenzoBTC: {
+        name: 'stBTC',
+        assetId: 14,
+        poolId: '0xd96dcd6982c45e580c83ff1d96c2b4455a874c284b637daf67c0787f25bc32dd',
+        type: '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN',
+        reserveObjectId: '0x9634f9f7f8ea7236e2ad5bfbecdce9673c811a34cf8c3741edfbcaf5d9409100',
+        borrowBalanceParentId: '0xb5cac1b39f67da86f4496f75339001a12f4b8ba78b047682f5158ac4ae8e1649',
+        supplyBalanceParentId: '0xad0d8be450e020f54e3212b5b1f4f1256bb8ea882bc85bc9f86708f73d653720',
+    },
 };
 
 export const flashloanConfig = {
@@ -272,6 +282,12 @@ export const NS: CoinInfo = {
     symbol: 'NS',
     address: '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS',
     decimal: 6
+}
+
+export const LorenzoBTC: CoinInfo = {
+    symbol: 'stBTC',
+    address: '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN',
+    decimal: 8
 }
 
 export const vSuiConfig = {
@@ -553,6 +569,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         pythPriceFeedId: '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a',
         pythPriceInfoObject: '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
         priceDecimal: 6,
+        expiration: 30,
+    },
+    LorenzoBTC: {
+        oracleId: 14,
+        maxTimestampDiff: 30000, // 30s(millisecond)
+        priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+        priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+        maxDurationWithinThresholds: 30000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 20000000000000, // 20000000000000 = 200000 * 1e8 = 20000000000000
+        minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+        historicalPriceTTL: 300000, // 5min(millisecond)
+        coinType: '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN',
+        feedId: '0xdf9b254a7a64742e1edf8c48bd2a1f182b52f020de2ab070ae0e3f9228d05280',
+        supraPairId: 0,
+        pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+        pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+        priceDecimal: 8,
         expiration: 30,
     },
 }

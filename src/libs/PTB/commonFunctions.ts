@@ -499,6 +499,9 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
         const activePools = allPools.filter(pool => pool.available.trim() != '0');
         const summedRewards = activePools.reduce((acc, pool) => {
             let assetId = pool.asset_id.toString();
+            if (assetId == '0' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
+                assetId = '0extra' //Means Sui Rewards
+            }
             if (assetId == '5' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
                 assetId = '5extra' //Means NAVX Rewards
             }
@@ -517,6 +520,9 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             if (!acc[assetId]) {
 
                 acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
+                if (assetId == '0extra') {
+                    acc[assetId] = { asset_id: '0', funds: pool.funds, available: availableFixed };
+                }
                 if (assetId == '5extra') {
                     acc[assetId] = { asset_id: '5', funds: pool.funds, available: availableFixed };
                 }
@@ -536,6 +542,7 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
         if (prettyPrint) {
             const coinDictionary: { [key: string]: string } = {
                 '0': 'Sui',
+                '0extra': 'Sui',
                 '1': 'wUSDC',
                 '2': 'USDT',
                 '3': 'WETH',
@@ -555,7 +562,7 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
-                if (key == '5extra' || key == '10extra' || key == '7') {
+                if (key == '0extra' || key == '5extra' || key == '10extra' || key == '13extra' || key == '7') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
                 } else if (key == '13extra') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NS`);
@@ -714,6 +721,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.ETH)
     updateSinglePrice(txb, PriceFeedConfig.USDY)
     updateSinglePrice(txb, PriceFeedConfig.NS)
+    updateSinglePrice(txb, PriceFeedConfig.LorenzoBTC)
 }
 
 
