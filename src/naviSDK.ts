@@ -1,10 +1,11 @@
 import { AccountManager } from "./libs/AccountManager";
-import { initializeParams, CoinInfo, Pool, PoolConfig, OptionType } from "./types";
+import { initializeParams, CoinInfo, Pool, PoolConfig, OptionType, SwapOptions, Quote } from "./types";
 import { getPoolInfo, getUserRewardHistory } from './libs/PoolInfo';
 import * as bip39 from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english";
 import { pool } from "./address";
 import { getAvailableRewards } from './libs/PTB';
+import { getQuote } from './libs/Aggregator/getQuote';
 
 export class NAVISDKClient {
 
@@ -153,7 +154,30 @@ export class NAVISDKClient {
         return getAvailableRewards(client, address, option, true);
     }
 
+
+    /**
+     * Retrieves the claimed rewards history for a given user address.
+     * @param userAddress - The address of the user to retrieve the rewards history for. Defaults to the first account's address.
+     * @param page - The page number to retrieve. Defaults to 1.
+     * @param size - The number of records per page. Defaults to 400.
+     * @returns A promise that resolves with the user's claimed rewards history.
+     */
     async getClaimedRewardsHistory(userAddress: string = this.accounts[0].address, page: number = 1, size: number = 400) {
         return getUserRewardHistory(userAddress, page, size);
+    }
+
+    /**
+     * Retrieves a quote for swapping one coin to another.
+     * @param fromCoinAddress - The address of the coin to swap from.
+     * @param toCoinAddress - The address of the coin to swap to.
+     * @param amountIn - The amount of the fromCoin to swap. Can be a number, string, or bigint.
+     * @param apiKey - The API key for authentication.
+     * @param swapOptions - Optional. The options for the swap, including baseUrl, dexList, byAmountIn, and depth.
+     * @returns A promise that resolves with the quote for the swap.
+     */
+    async getQuote(fromCoinAddress: string, toCoinAddress: string, amountIn: number | string | bigint, apiKey: string,
+        swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 },
+    ): Promise<Quote> {
+        return getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions);
     }
 }

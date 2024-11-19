@@ -53,3 +53,28 @@ export enum OptionType {
   OptionBorrow = 3,
   OptionRepay = 4,
 }
+
+export enum Dex {
+  Cetus = 'cetus',
+  Turbos = 'turbos',
+  KriyaV2 = 'kriyaV2',
+  KriyaV3 = 'kriyaV3',
+  Aftermath = 'aftermath',
+  Deepbook = 'deepbook'
+}
+
+export type Quote = {
+  routes: any[];
+  amount_in: string;
+  amount_out: string;
+  from: string;
+  target: string;
+  dexList: Dex[];
+}
+
+export type SwapOptions = {
+  baseUrl?: string;
+  dexList?: Dex[];
+  byAmountIn?: boolean;
+  depth?: number;
+};
