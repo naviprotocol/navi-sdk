@@ -175,7 +175,7 @@ export class NAVISDKClient {
      * @param swapOptions - Optional. The options for the swap, including baseUrl, dexList, byAmountIn, and depth.
      * @returns A promise that resolves with the quote for the swap.
      */
-    async getQuote(fromCoinAddress: string, toCoinAddress: string, amountIn: number | string | bigint, apiKey: string,
+    async getQuote(fromCoinAddress: string, toCoinAddress: string, amountIn: number | string | bigint, apiKey?: string,
         swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 },
     ): Promise<Quote> {
         return getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions);
