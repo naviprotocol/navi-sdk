@@ -92,7 +92,7 @@ export class NAVISDKClient {
      * @param coinType - The type of the pool.
      * @param estimateSupply - The estimated supply value.
      * @param estimateBorrow - The estimated borrow value.
-     * @param isIncrease - A boolean indicating whether to increase the dynamic health factor.
+     * @param isIncrease - A boolean indicating whether the estimated supply or borrow is increasing (default: true).
      * @returns A Promise that resolves to the dynamic health factor.
      */
     async getDynamicHealthFactor(address: string, coinType: CoinInfo, estimateSupply: number, estimateBorrow: number, isIncrease: boolean = true) {

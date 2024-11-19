@@ -193,6 +193,12 @@ describe('NAVI SDK Account Manager', async () => {
         expect(result.effects.status.status).toEqual("success");
 
     });
+
+    it('should get correct NS rewards', async () => {
+        const res = await client.getAddressAvailableRewards('0x33be2c133f87c268e48b527a7c62a509ad862b01e1eb4cf671ea5064218cfdc0');
+        expect(res).toHaveProperty('13extra');
+        expect(Number(res['13extra'].available)).toBeGreaterThan(0);
+    });
     it('should get correct quote', async () => {
         const res = await client.getQuote(Sui.address, nUSDC.address, 1e9, '');
         console.log(res);
@@ -201,3 +207,4 @@ describe('NAVI SDK Account Manager', async () => {
         expect(res.routes.length).toBeGreaterThan(0);
     });
 });
+

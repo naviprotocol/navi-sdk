@@ -601,7 +601,7 @@ export class AccountManager {
    * @param poolName - The name of the pool.
    * @param estimatedSupply - The estimated supply value (default: 0).
    * @param estimatedBorrow - The estimated borrow value (default: 0).
-   * @param isIncrease - A boolean indicating whether the health factor is increasing (default: true).
+   * @param isIncrease - A boolean indicating whether the estimated supply or borrow is increasing (default: true).
    * @returns The health factor for the user in the pool.
    * @throws Error if the pool does not exist.
    */
