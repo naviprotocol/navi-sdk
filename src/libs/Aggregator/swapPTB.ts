@@ -46,7 +46,7 @@ export async function getCoinPTB(address: string, coin: string, amountIn: number
     return coinA;
 }
 
-export async function buildPTBFromQuote(userAddress: string, txb: Transaction, minAmountOut: number, coinIn: TransactionResult, quote: Quote, referral: number = 0): Promise<TransactionResult> {
+export async function buildSwapPTBFromQuote(userAddress: string, txb: Transaction, minAmountOut: number, coinIn: TransactionResult, quote: Quote, referral: number = 0): Promise<TransactionResult> {
     if (!quote.routes || quote.routes.length === 0) {
         throw new Error("No routes found in data");
     }
@@ -216,7 +216,7 @@ export async function swapPTB(
 
     // Get the output coin from the swap route and transfer it to the user
     const quote = await getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions);
-    const finalCoinB = await buildPTBFromQuote(address, txb, minAmountOut, coin, quote);
+    const finalCoinB = await buildSwapPTBFromQuote(address, txb, minAmountOut, coin, quote);
 
     return finalCoinB;
 }

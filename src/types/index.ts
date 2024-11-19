@@ -55,12 +55,12 @@ export enum OptionType {
 }
 
 export enum Dex {
-  Cetus = 'cetus',
-  Turbos = 'turbos',
-  KriyaV2 = 'kriyaV2',
-  KriyaV3 = 'kriyaV3',
-  Aftermath = 'aftermath',
-  Deepbook = 'deepbook'
+  CETUS = 'cetus',
+  TURBOS = 'turbos',
+  KRIYA_V2 = 'kriyaV2',
+  KRIYA_V3 = 'kriyaV3',
+  AFTERMATH = 'aftermath',
+  DEEPBOOK = 'deepbook'
 }
 
 export type Quote = {
