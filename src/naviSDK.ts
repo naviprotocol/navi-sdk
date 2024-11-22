@@ -21,12 +21,16 @@ export class NAVISDKClient {
      * @param wordLength - The length of the mnemonic phrase. Defaults to 12.
      * @param numberOfAccounts - The number of accounts to generate. Defaults to 10.
      */
-    constructor({ mnemonic, networkType, wordLength = 12, numberOfAccounts = 10 }: initializeParams = {}) {
-        this.mnemonic = mnemonic ?? bip39.generateMnemonic(wordlist, wordLength === 12 ? 128 : 256);
+    constructor({ mnemonic = "", networkType, wordLength = 12, numberOfAccounts = 10, privateKeyList = [""] }: initializeParams = {}) {
         this.networkType = networkType || "mainnet";
-        for (let i = 0; i < numberOfAccounts; i++) {
-            this.account = new AccountManager({ mnemonic: this.mnemonic, network: this.networkType, accountIndex: i });
-            this.accounts.push(this.account);
+        if (privateKeyList && privateKeyList.length > 0 && privateKeyList[0] !== "") {
+            this.accounts = privateKeyList.map(privateKey => new AccountManager({ privateKey: privateKey, network: this.networkType }));
+        } else {
+            this.mnemonic = mnemonic !== "" ? mnemonic : bip39.generateMnemonic(wordlist, wordLength === 12 ? 128 : 256);
+            for (let i = 0; i < numberOfAccounts; i++) {
+                this.account = new AccountManager({ mnemonic: this.mnemonic, network: this.networkType, accountIndex: i });
+                this.accounts.push(this.account);
+            }
         }
         console.log("Network Type:", this.networkType);
     }
