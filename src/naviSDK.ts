@@ -15,23 +15,32 @@ export class NAVISDKClient {
     public networkType: string = "";
 
     /**
-     * Generates a new NAVISDKClient instance.
-     * @param mnemonic - The mnemonic phrase to use for account generation. If not provided, a new mnemonic will be generated.
-     * @param networkType - The network type to use. Defaults to "mainnet".
-     * @param wordLength - The length of the mnemonic phrase. Defaults to 12.
-     * @param numberOfAccounts - The number of accounts to generate. Defaults to 10.
+     * Constructs a new instance of the NAVISDKClient.
+     * 
+     * @param {Object} params - The initialization parameters.
+     * @param {string} [params.mnemonic=""] - The mnemonic for account generation. If not provided, a new one will be generated.
+     * @param {string} params.networkType - The network type to connect to. Defaults to "mainnet" if not specified.
+     * @param {number} [params.wordLength=12] - The word length for the mnemonic. Can be 12 or 24.
+     * @param {number} [params.numberOfAccounts=10] - The number of accounts to generate.
+     * @param {string[]} [params.privateKeyList=[""]] - A list of private keys for account initialization.
      */
     constructor({ mnemonic = "", networkType, wordLength = 12, numberOfAccounts = 10, privateKeyList = [""] }: initializeParams = {}) {
         this.networkType = networkType || "mainnet";
+
         if (privateKeyList && privateKeyList.length > 0 && privateKeyList[0] !== "") {
+            // Initialize accounts using provided private keys
             this.accounts = privateKeyList.map(privateKey => new AccountManager({ privateKey: privateKey, network: this.networkType }));
         } else {
+            // Generate a new mnemonic if not provided
             this.mnemonic = mnemonic !== "" ? mnemonic : bip39.generateMnemonic(wordlist, wordLength === 12 ? 128 : 256);
+
+            // Generate accounts using the mnemonic
             for (let i = 0; i < numberOfAccounts; i++) {
                 this.account = new AccountManager({ mnemonic: this.mnemonic, network: this.networkType, accountIndex: i });
                 this.accounts.push(this.account);
             }
         }
+
         console.log("Network Type:", this.networkType);
     }
 
