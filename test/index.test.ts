@@ -8,14 +8,28 @@ import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
 import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
 import dotenv from 'dotenv';
+import { AccountManager } from '../src/libs/AccountManager';
 
 dotenv.config();
 
 describe('NAVI SDK Client', async () => {
     const rpcUrl = process.env.RPC || '';
-    const client = new NAVISDKClient({ networkType: rpcUrl });
+    const mnemonic = process.env.MNEMONIC || '';
+    const privateKey = process.env.PRIVATE_KEY || '';
+    const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
+
     it('should generate correct account', async () => {
         expect(client.accounts[0].getPublicKey()).toBe(client.getAllAccounts()[0].getPublicKey());
+    });
+    it('should generate correct account with private key in client', async () => {
+        const client1 = new NAVISDKClient({ privateKeyList: [privateKey, privateKey], networkType: rpcUrl });
+        expect(client1.accounts.length).toBe(2);
+        expect(client1.accounts[0].getPublicKey()).toBe(client.accounts[0].getPublicKey());
+    });
+
+    it('should generate correct account with private key with AccountManager', async () => {
+        const account = new AccountManager({ privateKey: privateKey });
+        expect(account.getPublicKey()).toBe(client.getAllAccounts()[0].getPublicKey());
     });
     it('should get correct pool Info', async () => {
         const coinAddress = '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX';

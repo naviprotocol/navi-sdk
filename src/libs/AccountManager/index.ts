@@ -36,9 +36,13 @@ export class AccountManager {
   /**
    * AccountManager class for managing user accounts.
    */
-  constructor({ mnemonic = "", network = "mainnet", accountIndex = 0 } = {}) {
+  constructor({ mnemonic = "", network = "mainnet", accountIndex = 0, privateKey = "" } = {}) {
 
-    this.keypair = Ed25519Keypair.deriveKeypair(mnemonic, this.getDerivationPath(accountIndex));
+    if (privateKey && privateKey !== "") {
+      this.keypair = Ed25519Keypair.fromSecretKey(privateKey);
+    } else {
+      this.keypair = Ed25519Keypair.deriveKeypair(mnemonic, this.getDerivationPath(accountIndex));
+    }
 
     const validNetworkTypes = ["mainnet", "testnet", "devnet", "localnet"];
     try {

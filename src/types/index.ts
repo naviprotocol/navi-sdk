@@ -6,6 +6,7 @@ export type initializeParams = {
   wordLength?: 12 | 24;
   accountIndex?: number;
   numberOfAccounts?: number;
+  privateKeyList?: string[];
 };
 
 export interface Pool {
