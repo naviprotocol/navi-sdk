@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { NAVISDKClient } from '../src/index';
 import { NAVX, nUSDC, Sui } from '../src/address';
 import { Transaction } from "@mysten/sui/transactions";
-import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB } from '../src/libs/PTB';
+import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB, swapPTB, SignAndSubmitTXB } from '../src/libs/PTB';
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
 import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
@@ -12,10 +12,12 @@ import { AccountManager } from '../src/libs/AccountManager';
 
 dotenv.config();
 
+const rpcUrl = process.env.RPC || '';
+const mnemonic = process.env.MNEMONIC || '';
+const privateKey = process.env.PRIVATE_KEY || '';
+
 describe('NAVI SDK Client', async () => {
-    const rpcUrl = process.env.RPC || '';
-    const mnemonic = process.env.MNEMONIC || '';
-    const privateKey = process.env.PRIVATE_KEY || '';
+
     const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
 
     it('should generate correct account', async () => {
@@ -87,7 +89,7 @@ describe('NAVI SDK Client', async () => {
 });
 
 describe('NAVI SDK Account Manager', async () => {
-    const client = new NAVISDKClient({});
+    const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
     const account = client.accounts[0];
 
     it('should return correct public key', async () => {
@@ -219,6 +221,63 @@ describe('NAVI SDK Account Manager', async () => {
         expect(Number(res.amount_in)).toBeGreaterThan(0);
         expect(Number(res.amount_out)).toBeGreaterThan(0);
         expect(res.routes.length).toBeGreaterThan(0);
+    });
+    it('should build swap ptb from quote without fee', async () => {
+        const txb = new Transaction();
+        const from = "0x2::sui::SUI";
+        const to = "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"
+        const amount = 1e9;
+        const fromCoin = txb.splitCoins(txb.gas, [amount]);
+
+        swapPTB(account.address, txb, from, to, fromCoin, amount, 0, ""
+        ).then(coinB => {
+            txb.transferObjects([coinB], account.address);
+            account.client.devInspectTransactionBlock({
+                transactionBlock: txb,
+                sender: account.address,
+            }).then(result => {
+                if (result.effects.status.status === "failure") {
+                    throw new Error(result.effects.status.error)
+                }
+                expect(result.effects.status.status).toEqual("success");
+            });
+            // txb.build({
+            //     client: account.client
+            // }).then(dryRunTxBytes => {
+            //     account.client.dryRunTransactionBlock({ transactionBlock: dryRunTxBytes }).then(res => {
+            //         console.log(res);
+
+            //     });
+            // });
+        });
+
+    });
+
+    it('should build swap ptb from quote with fee', async () => {
+        const txb = new Transaction();
+        const from = "0x2::sui::SUI";
+        const to = "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC"
+        const amount = 1e9;
+        const fromCoin = txb.splitCoins(txb.gas, [amount]);
+
+        swapPTB(account.address, txb, from, to, fromCoin, amount, 0, "", {
+            feeOption: {
+                fee: 0.1, //10% of fee
+                receiverAddress: account.address
+            }
+        }
+        ).then(coinB => {
+            txb.transferObjects([coinB], account.address);
+            account.client.devInspectTransactionBlock({
+                transactionBlock: txb,
+                sender: account.address,
+            }).then(result => {
+                if (result.effects.status.status === "failure") {
+                    throw new Error(result.effects.status.error)
+                }
+                expect(result.effects.status.status).toEqual("success");
+            });
+        });
     });
 });
 
