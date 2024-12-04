@@ -74,9 +74,15 @@ export type Quote = {
   dexList: Dex[];
 }
 
+export type FeeOption = {
+  fee: number;
+  receiverAddress: string;
+}
+
 export type SwapOptions = {
   baseUrl?: string;
   dexList?: Dex[];
   byAmountIn?: boolean;
   depth?: number;
+  feeOption?: FeeOption;
 };
