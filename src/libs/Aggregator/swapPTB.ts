@@ -223,24 +223,33 @@ export async function swapPTB(
 
         const feeCoin = txb.splitCoins(coin, [feeAmount]);
 
-        const [feeQuote, quote] = await Promise.all([
-            getQuote(fromCoinAddress, vSui.address, feeAmount, apiKey, swapOptions),
-            getQuote(fromCoinAddress, toCoinAddress, leftAmount, apiKey, swapOptions)
-        ]);
+        if (fromCoinAddress === vSui.address) {
+            txb.transferObjects([feeCoin], swapOptions.feeOption.receiverAddress);
+            const quote = await getQuote(fromCoinAddress, toCoinAddress, leftAmount, apiKey, swapOptions);
 
-        const newMinAmountOut = Math.max(0, Math.floor(minAmountOut - Number(feeQuote.amount_out)));
+            const newMinAmountOut = Math.max(0, Math.floor(minAmountOut * (1 - swapOptions.feeOption.fee)));
 
-        const [feeCoinB, finalCoinBResult] = await Promise.all([
-            buildSwapPTBFromQuote(address, txb, 0, feeCoin, feeQuote),
-            buildSwapPTBFromQuote(address, txb, newMinAmountOut, coin, quote)
-        ]);
+            finalCoinB = await buildSwapPTBFromQuote(address, txb, newMinAmountOut, coin, quote);
+        } else {
+            const [feeQuote, quote] = await Promise.all([
+                getQuote(fromCoinAddress, vSui.address, feeAmount, apiKey, swapOptions),
+                getQuote(fromCoinAddress, toCoinAddress, leftAmount, apiKey, swapOptions)
+            ]);
 
-        txb.transferObjects([feeCoinB], swapOptions.feeOption.receiverAddress);
-        finalCoinB = finalCoinBResult;
+            const newMinAmountOut = Math.max(0, Math.floor(minAmountOut - Number(feeQuote.amount_out)));
+
+            const [feeCoinB, finalCoinBResult] = await Promise.all([
+                buildSwapPTBFromQuote(address, txb, 0, feeCoin, feeQuote),
+                buildSwapPTBFromQuote(address, txb, newMinAmountOut, coin, quote)
+            ]);
+
+            txb.transferObjects([feeCoinB], swapOptions.feeOption.receiverAddress);
+            finalCoinB = finalCoinBResult;
+        }
     } else {
         // Get the output coin from the swap route and transfer it to the user
         const quote = await getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions);
-        finalCoinB = await buildSwapPTBFromQuote(address, txb, minAmountOut, coin, quote, 0);
+        finalCoinB = await buildSwapPTBFromQuote(address, txb, minAmountOut, coin, quote);
     }
 
     return finalCoinB;
