@@ -58,7 +58,8 @@ export const fetchFlashloanData = async (client: SuiClient) => {
         const fields = result2.data?.content?.fields?.value?.fields;
         const coin_type = fields?.coin_type;
         if (coin_type) {
-            resultList[coin_type] = {
+            const hexCoinType = '0x' + coin_type
+            resultList[hexCoinType] = {
                 max: fields.max,
                 min: fields.min,
                 assetId: fields.asset_id,
