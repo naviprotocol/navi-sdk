@@ -40,6 +40,39 @@ export const fetchPoolData = async ({ poolId, client, reserveParentId, poolInfo 
     };
 };
 
+export const fetchFlashloanData = async (client: SuiClient) => {
+    const config = await getConfig();
+    const result: any = await client.getDynamicFields({
+        parentId: config.flashloanSupportedAssets,
+    });
+
+    const resultList: { [key: string]: any } = {};
+
+    await Promise.all(result.data.map(async (item: any) => {
+        const result2: any = await client.getObject({
+            id: item.objectId,
+            options: {
+                showContent: true
+            }
+        });
+        const fields = result2.data?.content?.fields?.value?.fields;
+        const coin_type = fields?.coin_type;
+        if (coin_type) {
+            const hexCoinType = '0x' + coin_type
+            resultList[hexCoinType] = {
+                max: fields.max,
+                min: fields.min,
+                assetId: fields.asset_id,
+                poolId: fields.pool_id,
+                supplierFee: Number(fields.rate_to_supplier) / 10000,
+                flashloanFee: Number(fields.rate_to_treasury) / 10000,
+            };
+        }
+    }));
+
+    return resultList;
+};
+
 /**
  * Retrieves pool information for a given coin symbol.
  * @param coinSymbol - The symbol of the coin.

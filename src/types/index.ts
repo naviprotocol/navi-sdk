@@ -6,6 +6,7 @@ export type initializeParams = {
   wordLength?: 12 | 24;
   accountIndex?: number;
   numberOfAccounts?: number;
+  privateKeyList?: string[];
 };
 
 export interface Pool {
@@ -23,6 +24,7 @@ export interface Pool {
   ETH: PoolConfig;
   USDY: PoolConfig;
   NS: PoolConfig;
+  LorenzoBTC: PoolConfig;
 }
 
 export interface PoolConfig {
@@ -55,12 +57,12 @@ export enum OptionType {
 }
 
 export enum Dex {
-  Cetus = 'cetus',
-  Turbos = 'turbos',
-  KriyaV2 = 'kriyaV2',
-  KriyaV3 = 'kriyaV3',
-  Aftermath = 'aftermath',
-  Deepbook = 'deepbook'
+  CETUS = 'cetus',
+  TURBOS = 'turbos',
+  KRIYA_V2 = 'kriyaV2',
+  KRIYA_V3 = 'kriyaV3',
+  AFTERMATH = 'aftermath',
+  DEEPBOOK = 'deepbook'
 }
 
 export type Quote = {
@@ -72,9 +74,15 @@ export type Quote = {
   dexList: Dex[];
 }
 
+export type FeeOption = {
+  fee: number;
+  receiverAddress: string;
+}
+
 export type SwapOptions = {
   baseUrl?: string;
   dexList?: Dex[];
   byAmountIn?: boolean;
   depth?: number;
+  feeOption?: FeeOption;
 };
