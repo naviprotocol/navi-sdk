@@ -280,6 +280,12 @@ export const ETH: CoinInfo = {
     decimal: 8
 }
 
+export const USDY: CoinInfo = {
+    symbol: 'USDY',
+    address: '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY',
+    decimal: 6
+}
+
 export const NS: CoinInfo = {
     symbol: 'NS',
     address: '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS',
