@@ -1,15 +1,10 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { getAddressPortfolio } from "../CallFunctions";
 import { CoinInfo, Pool } from "../../types";
 import { getPoolInfo } from "../PoolInfo";
-import { CETUS, wUSDC, WETH, pool, USDT, haSui, vSui, NAVX, WBTC, AUSD, nUSDC, ETH, NS, USDY, LorenzoBTC } from "../../address";
-import { PoolConfig } from "../../types";
-import { getHealthFactorCall } from "../../libs/CallFunctions";
-import { borrowCoin, depositCoin, flashloan, repayDebt, repayFlashLoan, swapPTB, withdrawCoin, getHealthFactorPTB } from "../../libs/PTB";
+import { pool } from "../../address";
+import { borrowCoin, depositCoin, flashloan, repayDebt, repayFlashLoan, swapPTB, withdrawCoin } from "../../libs/PTB";
 import { Sui } from "../../address";
-
-
 
 
 export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, apiKey: string, client: SuiClient) {
