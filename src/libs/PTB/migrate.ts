@@ -3,84 +3,17 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { getAddressPortfolio } from "../CallFunctions";
 import { CoinInfo, Pool } from "../../types";
 import { getPoolInfo } from "../PoolInfo";
-import { pool } from "../../address";
+import { CETUS, wUSDC, WETH, pool, USDT, haSui, vSui, NAVX, WBTC, AUSD, nUSDC, ETH, NS, USDY, LorenzoBTC } from "../../address";
 import { PoolConfig } from "../../types";
 import { getHealthFactorCall } from "../../libs/CallFunctions";
-import { borrowCoin, flashloan, repayDebt, repayFlashLoan, swapPTB } from "../../libs/PTB";
-
-async function getHealthFactorByNewAmount(fromCoin: CoinInfo, toCoin: CoinInfo, newSuppliedAmount: number, newBorrowedAmount: number, client: SuiClient, userAddress?: string) {
-
-    const allPools = await getPoolInfo();
-    const fromPoolConfig = pool[fromCoin.symbol as keyof Pool];
-    const fromPoolInfo = (allPools as { [key: string]: any })[String(fromPoolConfig.assetId)];
-    const toPoolConfig: PoolConfig = pool[toCoin.symbol as keyof Pool];
-    const toPoolInfo = (allPools as { [key: string]: any })[String(toPoolConfig.assetId)];
-
-    let supplyAmount = newSuppliedAmount * fromPoolInfo.tokenPrice * Number(fromPoolInfo.liquidation_threshold) / Math.pow(10, fromCoin.decimal);
-    let borrowAmount = newBorrowedAmount * toPoolInfo.tokenPrice / Math.pow(10, toCoin.decimal);
-    if (userAddress) {
-        console.log(`current hf: `, await getHealthFactorCall(userAddress, client))
-        let supplyAmountWithUserSupply = 0;
-        let borrowAmountWithUserSupply = 0;
-        const portfolio = await getAddressPortfolio(userAddress, false, client);
-        const suiPool = (allPools as { [key: string]: any })[0];
-        const usdcPool = (allPools as { [key: string]: any })[1]
-        const usdtPool = (allPools as { [key: string]: any })[2]
-        const wethPool = (allPools as { [key: string]: any })[3]
-        const cetusPool = (allPools as { [key: string]: any })[4]
-        const haSuiPool = (allPools as { [key: string]: any })[5]
-        const vSuiPool = (allPools as { [key: string]: any })[6]
-        const navxPool = (allPools as { [key: string]: any })[7];
-        const poolInfoMap: { [symbol: string]: any } = {
-            'SUI': suiPool,
-            'USDC': usdcPool,
-            'USDT': usdtPool,
-            'WETH': wethPool,
-            'CETUS': cetusPool,
-            'HaedalSui': haSuiPool,
-            'VoloSui': vSuiPool,
-            'NAVX': navxPool
-        };
-
-        const nonZeroBalances = new Map(
-            [...portfolio.entries()]
-                .filter(([key, value]) => value.borrowBalance !== 0 || value.supplyBalance !== 0)
-                .map(([key, value]) => {
-                    const poolInfo = poolInfoMap[key];
-                    return [key, { ...value, price: poolInfo ? poolInfo.tokenPrice : null, liquidationThreshold: poolInfo ? poolInfo.liquidation_threshold : null }];
-                })
-        );
-
-        nonZeroBalances.forEach((value) => {
-            borrowAmountWithUserSupply += value.borrowBalance * value.price;
-            supplyAmountWithUserSupply += value.supplyBalance * value.price * value.liquidationThreshold;
-        });
-        if (borrowAmountWithUserSupply != 0) {
-            supplyAmountWithUserSupply = await getHealthFactorCall(userAddress, client) * borrowAmountWithUserSupply;
-        }
-        console.log(supplyAmountWithUserSupply)
-        supplyAmount += supplyAmountWithUserSupply;
-        borrowAmount += borrowAmountWithUserSupply;
+import { borrowCoin, depositCoin, flashloan, repayDebt, repayFlashLoan, swapPTB, withdrawCoin, getHealthFactorPTB } from "../../libs/PTB";
+import { Sui } from "../../address";
 
 
-        return supplyAmount / borrowAmount;
-    }
 
-    return supplyAmount / borrowAmount;
-}
 
-export async function migratePTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, borrow: boolean, address: string, apiKey: string, client: SuiClient) {
+export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, apiKey: string, client: SuiClient) {
     const defaultSlippage = 0.01; //default pool fee
-
-    //This part can be optimized in frontend
-    // const portfolio = await getAddressPortfolio(address, false, client, false);
-    // let fromCoinBalance;
-
-    // fromCoinBalance = Math.floor(portfolio.get(fromCoin.symbol)?.borrowBalance || 0);
-
-    // if (fromCoinBalance < amount) {
-    //     throw new Error(`Insufficient borrow balance for migration ${fromCoin.symbol}`);
-    // }
 
     const allPools = await getPoolInfo();
     const fromPoolConfig = pool[fromCoin.symbol as keyof Pool];
@@ -90,24 +23,24 @@ export async function migratePTB(txb: Transaction, fromCoin: CoinInfo, toCoin: C
 
     const fromPoolPrice = fromPoolInfo.tokenPrice;
     const toPoolPrice = toPoolInfo.tokenPrice;
-    console.log(`fromPoolPrice: ${fromPoolPrice}, toPoolPrice: ${toPoolPrice}`)
 
-    console.log(`amount: ${amount}, fromPoolPrice: ${fromPoolPrice}, fromCoin.decimal: ${fromCoin.decimal}`)
     const fromValue = amount * fromPoolPrice / Math.pow(10, fromCoin.decimal);
-    console.log(`fromValue: ${fromValue}`)
 
     const toLoanToCoinValue = fromValue * (1 + defaultSlippage);
-    console.log(`toLoanToCoinValue: ${toLoanToCoinValue}`)
 
     const toLoanCoinAmount = Math.floor(toLoanToCoinValue / toPoolPrice * Math.pow(10, toCoin.decimal));
 
-    const flashloanFee = await fetch("https://open-api.naviprotocol.io/api/navi/stats");
+    const flashloanFee = await fetch("https://open-api.naviprotocol.io/api/navi/flashloan");
     const fee = await flashloanFee.json();
-    let toCoinFlashloanFee = fee.data.flashLoanFee[toCoin.symbol] || 0;
-    console.log(`toCoinFlashloanFee: ${toCoinFlashloanFee}`)
+    let toCoinFlashloanFee;
+    if (toCoin == Sui) {
+        toCoinFlashloanFee = Number(fee.data["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"].flashloanFee);
+    } else {
+        toCoinFlashloanFee = fee.data[toCoin.address].flashloanFee || 0;
+    }
+
     const flashloantoRepayAmount = Math.floor(toLoanCoinAmount * (1 + toCoinFlashloanFee));
 
-    console.log(`toLoanCoinAmount: ${toLoanCoinAmount}`)
     const [toBalance, receipt] = await flashloan(txb, toPoolConfig, Number(toLoanCoinAmount));
 
     const [toCoinFlashloaned]: any = txb.moveCall({
@@ -115,7 +48,6 @@ export async function migratePTB(txb: Transaction, fromCoin: CoinInfo, toCoin: C
         arguments: [toBalance],
         typeArguments: [toCoin.address],
     });
-    console.log(`fromCoin: ${fromCoin.address}`, `toCoin: ${toCoin.address}`)
     const [swappedFromCoin] = await swapPTB(address, txb, toCoin.address, fromCoin.address, toCoinFlashloaned, toLoanCoinAmount, 0, apiKey)
     const [repayCoin] = txb.splitCoins(swappedFromCoin, [amount])
 
@@ -137,5 +69,65 @@ export async function migratePTB(txb: Transaction, fromCoin: CoinInfo, toCoin: C
         typeArguments: [toCoin.address],
     })
     txb.transferObjects([extraCoin], address)
+
     return txb;
 }
+
+export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, apiKey: string, client: SuiClient) {
+
+    const allPools = await getPoolInfo();
+    const fromPoolConfig = pool[fromCoin.symbol as keyof Pool];
+    const fromPoolInfo = (allPools as { [key: string]: any })[String(fromPoolConfig.assetId)];
+    const toPoolConfig = pool[toCoin.symbol as keyof Pool];
+    const toPoolInfo = (allPools as { [key: string]: any })[String(toPoolConfig.assetId)];
+
+    const flashloanFee = await fetch("https://open-api.naviprotocol.io/api/navi/flashloan");
+    const fee = await flashloanFee.json();
+    let fromCoinFlashloanFee;
+    if (fromCoin == Sui) {
+        fromCoinFlashloanFee = Number(fee.data["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"].flashloanFee);
+    } else {
+        fromCoinFlashloanFee = fee.data[fromCoin.address].flashloanFee || 0;
+    }
+
+    const flashloantoRepayAmount = amount;
+    const fromRepayCoinAmount = Math.ceil(amount / (1 + fromCoinFlashloanFee));
+    // const toDepositCoinAmount = Math.ceil(toRepayCoinAmount / (1 + defaultSlippage));
+
+    const [fromBalance, receipt] = await flashloan(txb, fromPoolConfig, Number(fromRepayCoinAmount));
+
+    const [fromCoinFlashloaned]: any = txb.moveCall({
+        target: '0x2::coin::from_balance',
+        arguments: [fromBalance],
+        typeArguments: [fromCoin.address],
+    });
+
+    const [swappedToCoin] = await swapPTB(address, txb, fromCoin.address, toCoin.address, fromCoinFlashloaned, fromRepayCoinAmount, 0, apiKey)
+
+    const swappedValue = txb.moveCall({
+        target: '0x2::coin::value',
+        arguments: [swappedToCoin],
+        typeArguments: [toCoin.address],
+    })
+    await depositCoin(txb, toPoolConfig, swappedToCoin, swappedValue);
+
+    const [withdrawnFromCoin] = await withdrawCoin(txb, fromPoolConfig, amount)
+
+    const repayBalance = txb.moveCall({
+        target: '0x2::coin::into_balance',
+        arguments: [withdrawnFromCoin],
+        typeArguments: [fromCoin.address],
+    })
+
+    const [leftBalance] = await repayFlashLoan(txb, fromPoolConfig, receipt, repayBalance)
+
+    const [extraCoin] = txb.moveCall({
+        target: '0x2::coin::from_balance',
+        arguments: [leftBalance],
+        typeArguments: [fromCoin.address],
+    })
+    txb.transferObjects([extraCoin], address)
+
+    return txb;
+}
+
