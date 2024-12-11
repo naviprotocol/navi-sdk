@@ -3,13 +3,19 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { CoinInfo, Pool } from "../../types";
 import { getPoolInfo } from "../PoolInfo";
 import { pool } from "../../address";
-import { borrowCoin, depositCoin, flashloan, repayDebt, repayFlashLoan, swapPTB, withdrawCoin } from "../../libs/PTB";
+import { borrowCoin, buildSwapPTBFromQuote, depositCoin, flashloan, getQuote, repayDebt, repayFlashLoan, withdrawCoin } from "../../libs/PTB";
 import { Sui } from "../../address";
 
 
-export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, apiKey: string, client: SuiClient) {
+export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, client: SuiClient, baseUrl?: string, apiKey?: string) {
     const defaultSlippage = 0.01; //default pool fee
 
+    if (fromCoin == toCoin) {
+        throw new Error("fromCoin and toCoin cannot be the same");
+    }
+    if (amount <= 0) {
+        throw new Error("amount must be greater than 0");
+    }
     const allPools = await getPoolInfo();
     const fromPoolConfig = pool[fromCoin.symbol as keyof Pool];
     const fromPoolInfo = (allPools as { [key: string]: any })[String(fromPoolConfig.assetId)];
@@ -29,8 +35,14 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     const fee = await flashloanFee.json();
     let toCoinFlashloanFee;
     if (toCoin == Sui) {
+        if (!fee.data["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"]) {
+            throw new TypeError("Cannot read properties of undefined (reading 'flashloanFee')");
+        }
         toCoinFlashloanFee = Number(fee.data["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"].flashloanFee);
     } else {
+        if (!fee.data[toCoin.address]) {
+            throw new TypeError("Unsupported coin");
+        }
         toCoinFlashloanFee = fee.data[toCoin.address].flashloanFee || 0;
     }
 
@@ -43,7 +55,10 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
         arguments: [toBalance],
         typeArguments: [toCoin.address],
     });
-    const [swappedFromCoin] = await swapPTB(address, txb, toCoin.address, fromCoin.address, toCoinFlashloaned, toLoanCoinAmount, 0, apiKey)
+
+    const quote = await getQuote(toCoin.address, fromCoin.address, toLoanCoinAmount, apiKey, { baseUrl: baseUrl })
+    const swappedFromCoin = await buildSwapPTBFromQuote(address, txb, 0, toCoinFlashloaned, quote)
+
     const [repayCoin] = txb.splitCoins(swappedFromCoin, [amount])
 
     txb.transferObjects([swappedFromCoin], address)
@@ -68,8 +83,13 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
-export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, apiKey: string, client: SuiClient) {
-
+export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, client: SuiClient, baseUrl?: string, apiKey?: string) {
+    if (fromCoin == toCoin) {
+        throw new Error("fromCoin and toCoin cannot be the same");
+    }
+    if (amount <= 0) {
+        throw new Error("amount must be greater than 0");
+    }
     const allPools = await getPoolInfo();
     const fromPoolConfig = pool[fromCoin.symbol as keyof Pool];
     const fromPoolInfo = (allPools as { [key: string]: any })[String(fromPoolConfig.assetId)];
@@ -82,13 +102,14 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
     if (fromCoin == Sui) {
         fromCoinFlashloanFee = Number(fee.data["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"].flashloanFee);
     } else {
+        if (!fee.data[fromCoin.address]) {
+            throw new TypeError("Unsupported coin");
+        }
         fromCoinFlashloanFee = fee.data[fromCoin.address].flashloanFee || 0;
     }
 
-    const flashloantoRepayAmount = amount;
     const fromRepayCoinAmount = Math.ceil(amount / (1 + fromCoinFlashloanFee));
-    // const toDepositCoinAmount = Math.ceil(toRepayCoinAmount / (1 + defaultSlippage));
-
+    console.log("fromRepayCoinAmount", fromRepayCoinAmount)
     const [fromBalance, receipt] = await flashloan(txb, fromPoolConfig, Number(fromRepayCoinAmount));
 
     const [fromCoinFlashloaned]: any = txb.moveCall({
@@ -97,8 +118,9 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
         typeArguments: [fromCoin.address],
     });
 
-    const [swappedToCoin] = await swapPTB(address, txb, fromCoin.address, toCoin.address, fromCoinFlashloaned, fromRepayCoinAmount, 0, apiKey)
-
+    const quote = await getQuote(fromCoin.address, toCoin.address, fromRepayCoinAmount, apiKey, { baseUrl: baseUrl })
+    console.log("quote", quote)
+    const swappedToCoin = await buildSwapPTBFromQuote(address, txb, 0, fromCoinFlashloaned, quote)
     const swappedValue = txb.moveCall({
         target: '0x2::coin::value',
         arguments: [swappedToCoin],
@@ -126,3 +148,8 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
+export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, client: SuiClient, baseUrl?: string, apiKey?: string) {
+    await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, client, baseUrl, apiKey)
+    await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, client, baseUrl, apiKey)
+    return txb;
+}
