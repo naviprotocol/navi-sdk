@@ -558,7 +558,10 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 '11': 'ETH',
                 '12': 'USDY',
                 '13': 'NS',
-                '13extra': 'NS'
+                '13extra': 'NS',
+                '14': 'stBTC',
+                '15': 'DEEP',
+                '16': 'FDUSD'
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
@@ -722,6 +725,8 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.USDY)
     updateSinglePrice(txb, PriceFeedConfig.NS)
     updateSinglePrice(txb, PriceFeedConfig.LorenzoBTC)
+    updateSinglePrice(txb, PriceFeedConfig.DEEP)
+    updateSinglePrice(txb, PriceFeedConfig.FDUSD)
 }
 
 
