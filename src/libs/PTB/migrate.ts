@@ -1,13 +1,13 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { CoinInfo, Pool } from "../../types";
+import { CoinInfo, MigrateOptions, Pool } from "../../types";
 import { getPoolInfo } from "../PoolInfo";
-import { pool } from "../../address";
+import { nUSDC, haSui, pool, vSui, wUSDC, USDT } from "../../address";
 import { borrowCoin, buildSwapPTBFromQuote, depositCoin, flashloan, getQuote, repayDebt, repayFlashLoan, withdrawCoin } from "../../libs/PTB";
 import { Sui } from "../../address";
 
 
-export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, client: SuiClient, baseUrl?: string, apiKey?: string) {
+export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, migrateOptions?: MigrateOptions) {
     const defaultSlippage = 0.01; //default pool fee
 
     if (fromCoin == toCoin) {
@@ -56,7 +56,7 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
         typeArguments: [toCoin.address],
     });
 
-    const quote = await getQuote(toCoin.address, fromCoin.address, toLoanCoinAmount, apiKey, { baseUrl: baseUrl })
+    const quote = await getQuote(toCoin.address, fromCoin.address, toLoanCoinAmount, migrateOptions?.apiKey, { baseUrl: migrateOptions?.baseUrl })
     const swappedFromCoin = await buildSwapPTBFromQuote(address, txb, 0, toCoinFlashloaned, quote)
 
     const [repayCoin] = txb.splitCoins(swappedFromCoin, [amount])
@@ -83,7 +83,7 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
-export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, client: SuiClient, baseUrl?: string, apiKey?: string) {
+export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, migrateOptions?: MigrateOptions) {
     if (fromCoin == toCoin) {
         throw new Error("fromCoin and toCoin cannot be the same");
     }
@@ -118,7 +118,7 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
         typeArguments: [fromCoin.address],
     });
 
-    const quote = await getQuote(fromCoin.address, toCoin.address, fromRepayCoinAmount, apiKey, { baseUrl: baseUrl })
+    const quote = await getQuote(fromCoin.address, toCoin.address, fromRepayCoinAmount, migrateOptions?.apiKey, { baseUrl: migrateOptions?.baseUrl })
     console.log("quote", quote)
     const swappedToCoin = await buildSwapPTBFromQuote(address, txb, 0, fromCoinFlashloaned, quote)
     const swappedValue = txb.moveCall({
@@ -148,8 +148,12 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
-export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, client: SuiClient, baseUrl?: string, apiKey?: string) {
-    await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, client, baseUrl, apiKey)
-    await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, client, baseUrl, apiKey)
+export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, migrateOptions?: MigrateOptions) {
+    await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, migrateOptions)
+    await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, migrateOptions)
     return txb;
+}
+
+export function getMigratableCoins() {
+    return [Sui, wUSDC, nUSDC, vSui, USDT]
 }

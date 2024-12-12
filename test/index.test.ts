@@ -300,7 +300,7 @@ describe('test Migration', async () => {
         const txb = new Transaction();
         txb.setSender(account.address);
         const amount = 1e6;
-        await migrateSupplyPTB(txb, nUSDC, Sui, amount, account.address, account.client, apiKey);
+        await migrateSupplyPTB(txb, nUSDC, Sui, amount, account.address, { apiKey: apiKey });
         const dryRunResult = await dryRunTXB(txb, account.client);
         expect(dryRunResult.effects.status.status).toEqual("success");
 
@@ -309,7 +309,7 @@ describe('test Migration', async () => {
         const txb = new Transaction();
         txb.setSender(account.address);
         const amount = 1e6;
-        await migrateSupplyPTB(txb, Sui, nUSDC, amount, account.address, account.client, apiKey);
+        await migrateSupplyPTB(txb, Sui, nUSDC, amount, account.address, { apiKey: apiKey });
         const dryRunResult = await dryRunTXB(txb, account.client);
         expect(dryRunResult.effects.status.status).toEqual("success");
 
@@ -318,7 +318,7 @@ describe('test Migration', async () => {
         const txb = new Transaction();
         txb.setSender(account.address);
         const amount = 1e6;
-        await migrateBorrowPTB(txb, Sui, nUSDC, amount, account.address, account.client, apiKey);
+        await migrateBorrowPTB(txb, Sui, nUSDC, amount, account.address, { apiKey: apiKey });
         const dryRunResult = await dryRunTXB(txb, account.client);
         expect(dryRunResult.effects.status.status).toEqual("success");
 
@@ -327,7 +327,7 @@ describe('test Migration', async () => {
         const txb = new Transaction();
         txb.setSender(account.address);
         const amount = 1e6;
-        await migrateBorrowPTB(txb, nUSDC, Sui, amount, account.address, account.client, apiKey);
+        await migrateBorrowPTB(txb, nUSDC, Sui, amount, account.address, { apiKey: apiKey });
         const dryRunResult = await dryRunTXB(txb, account.client);
         expect(dryRunResult.effects.status.status).toEqual("success");
     });
@@ -337,7 +337,7 @@ describe('test Migration', async () => {
         txb.setSender(account.address);
         const amount = 1e6;
         try {
-            await migrateSupplyPTB(txb, nUSDC, nUSDC, amount, account.address, account.client, apiKey);
+            await migrateSupplyPTB(txb, nUSDC, nUSDC, amount, account.address, { apiKey: apiKey });
         } catch (error) {
             console.log("Caught error:", error.message);
             expect(error.message).toBe("fromCoin and toCoin cannot be the same");
@@ -349,7 +349,7 @@ describe('test Migration', async () => {
         txb.setSender(account.address);
         const amount = 0;
         try {
-            await migrateSupplyPTB(txb, nUSDC, Sui, amount, account.address, account.client, apiKey);
+            await migrateSupplyPTB(txb, nUSDC, Sui, amount, account.address, { apiKey: apiKey });
         } catch (error) {
             console.log("Caught error:", error.message);
             expect(error.message).toBe("amount must be greater than 0");
@@ -361,7 +361,7 @@ describe('test Migration', async () => {
         const sender = '0x03fbfd4e4ee3ca0ca58612a4919257270c035164db21d8c2cfc042ce93ee9065';
         txb.setSender(sender);
         const amount = 300000e6;
-        await migrateSupplyPTB(txb, wUSDC, Sui, amount, sender, account.client, apiKey);
+        await migrateSupplyPTB(txb, wUSDC, Sui, amount, sender, { apiKey: apiKey });
         const dryRunResult = await dryRunTXB(txb, account.client);
         expect(dryRunResult.effects.status.status).toEqual("success");
     });
@@ -372,7 +372,7 @@ describe('test Migration', async () => {
         txb.setSender(sender);
         const amount = 300000e9;
         try {
-            await migrateSupplyPTB(txb, haSui, Sui, amount, account.address, account.client, apiKey);
+            await migrateSupplyPTB(txb, haSui, Sui, amount, account.address, { apiKey: apiKey });
         } catch (error) {
             console.log("Caught error:", error.message);
             expect(error.message).toBe("Unsupported coin");
@@ -384,7 +384,7 @@ describe('test Migration', async () => {
         const sender = '0x03fbfd4e4ee3ca0ca58612a4919257270c035164db21d8c2cfc042ce93ee9065';
         txb.setSender(sender);
         const amount = 100e6;
-        await migrateSupplyPTB(txb, wUSDC, Sui, amount, account.address, account.client);
+        await migrateSupplyPTB(txb, wUSDC, Sui, amount, account.address, { apiKey: apiKey });
         const dryRunResult = await dryRunTXB(txb, account.client);
         expect(dryRunResult.effects.status.status).toEqual("success");
     });
@@ -394,7 +394,7 @@ describe('test Migration', async () => {
         const sender = '0x03fbfd4e4ee3ca0ca58612a4919257270c035164db21d8c2cfc042ce93ee9065';
         txb.setSender(sender);
         const amount = 100e6;
-        await migrateSupplyPTB(txb, wUSDC, Sui, amount, account.address, account.client, 'https://aggregator-api.naviprotocol.io', apiKey);
+        await migrateSupplyPTB(txb, wUSDC, Sui, amount, account.address, { apiKey: apiKey, baseUrl: 'https://aggregator-api.naviprotocol.io' });
         const dryRunResult = await dryRunTXB(txb, account.client);
         expect(dryRunResult.effects.status.status).toEqual("success");
     });
