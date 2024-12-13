@@ -711,7 +711,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
         console.info(`request update pyth price feed, ids: ${stalePriceFeedIds}`)
     }
     updateSinglePrice(txb, PriceFeedConfig.SUI)
-    updateSinglePrice(txb, PriceFeedConfig.wUSDC)
+    updateSinglePrice(txb, PriceFeedConfig.WUSDC)
     updateSinglePrice(txb, PriceFeedConfig.USDT)
     updateSinglePrice(txb, PriceFeedConfig.WETH)
     updateSinglePrice(txb, PriceFeedConfig.CETUS)
@@ -724,7 +724,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.ETH)
     updateSinglePrice(txb, PriceFeedConfig.USDY)
     updateSinglePrice(txb, PriceFeedConfig.NS)
-    updateSinglePrice(txb, PriceFeedConfig.LorenzoBTC)
+    updateSinglePrice(txb, PriceFeedConfig.LORENZOBTC)
     updateSinglePrice(txb, PriceFeedConfig.DEEP)
     updateSinglePrice(txb, PriceFeedConfig.FDUSD)
 }
