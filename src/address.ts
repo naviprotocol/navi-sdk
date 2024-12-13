@@ -605,9 +605,9 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         historicalPriceTTL: 300000, // 5min(millisecond)
         coinType: '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS',
         feedId: '0xc771ec0ca245857f30195ce05197a7b3ab41c58c1e8abe0661919d90675ad63d',
-        supraPairId: 47,
-        pythPriceFeedId: '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a',
-        pythPriceInfoObject: '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+        supraPairId: 99999, // ignore for now
+        pythPriceFeedId: '0xbb5ff26e47a3a6cc7ec2fce1db996c2a145300edc5acaabe43bf9ff7c5dd5d32',
+        pythPriceInfoObject: '0xc6352e1ea55d7b5acc3ed690cc3cdf8007978071d7bfd6a189445018cfb366e0',
         priceDecimal: 6,
         expiration: 30,
     },
