@@ -21,8 +21,9 @@ export const AddressMap: Record<string, string> = {
     '0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH': 'ETH', // native eth
     '0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY': 'USDY',
     '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS': 'NS',
-    '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD': 'FDUSD',
     '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN': 'stBTC',
+    '0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT': 'DEEP',
+    '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD': 'FDUSD',
 };
 
 export function getPackageCache(): string | undefined {
@@ -202,6 +203,25 @@ export const pool: Pool = {
         borrowBalanceParentId: '0xb5cac1b39f67da86f4496f75339001a12f4b8ba78b047682f5158ac4ae8e1649',
         supplyBalanceParentId: '0xad0d8be450e020f54e3212b5b1f4f1256bb8ea882bc85bc9f86708f73d653720',
     },
+    DEEP: {
+        name: 'DEEP',
+        assetId: 15,
+        poolId: '0x08373c5efffd07f88eace1c76abe4777489d9ec044fd4cd567f982d9c169e946',
+        type: '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP',
+        reserveObjectId: '0x0b30fe8f42a4fda168c38d734e42a36a77b3d4dd6669069b1cbe53a0c3905ba8',
+        borrowBalanceParentId: '0xba03bb3e0167e1ec355926dfe0c130866857b062b93fb5d9cfba20824ad9f1d5',
+        supplyBalanceParentId: '0x3fdd91f32dcea2af6e16ae66a7220f6439530ef6238deafe5a72026b3e7aa5f5',
+    },
+    FDUSD: {
+        name: 'FDUSD',
+        assetId: 16,
+        poolId: '0x38d8ac76efc14035bbc8c8b38803f5bd012a0f117d9a0bad2103f8b2c6675b66',
+        type: '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
+        reserveObjectId: '0xf1737d6c6c1fffdf145c440a9fc676de0e6d0ffbacaab5fa002d30653f235a8e',
+        borrowBalanceParentId: '0x4a4bb401f011c104083f56e3ee154266f1a88cad10b8acc9c993d4da304ebf00',
+        supplyBalanceParentId: '0x6dffc3d05e79b055749eae1c27e93a47b5a9999214ce8a2f6173574151d120bf',
+    },
+
 };
 
 export const flashloanConfig = {
@@ -296,6 +316,18 @@ export const LorenzoBTC: CoinInfo = {
     symbol: 'stBTC',
     address: '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN',
     decimal: 8
+}
+
+export const DEEP: CoinInfo = {
+    symbol: 'DEEP',
+    address: '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP',
+    decimal: 6
+}
+
+export const FDUSD: CoinInfo = {
+    symbol: 'FDUSD',
+    address: '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
+    decimal: 6
 }
 
 export const vSuiConfig = {
@@ -595,6 +627,42 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
         pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
         priceDecimal: 8,
+        expiration: 30,
+    },
+    DEEP: {
+        oracleId: 15,
+        maxTimestampDiff: 30000, // 30s(millisecond)
+        priceDiffThreshold1: 200, // x1: 2% = 0.02 * 10000 = 200
+        priceDiffThreshold2: 400, // x2: 4% = 0.04 * 10000 = 400
+        maxDurationWithinThresholds: 30000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 400000, // 0.4 = 0.4 * 1e6 = 400000
+        minimumEffectivePrice: 1000, // 0.001 = 0.001 * 1e6 = 1000
+        historicalPriceTTL: 300000, // 5min(millisecond)
+        coinType: '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP',
+        feedId: '0x4558092b08ad1b33b0eb536f91a4655693c2390ac568f06de6f6fad827888600',
+        supraPairId: 491,
+        pythPriceFeedId: '0x29bdd5248234e33bd93d3b81100b5fa32eaa5997843847e2c2cb16d7c6d9f7ff',
+        pythPriceInfoObject: '0x8c7f3a322b94cc69db2a2ac575cbd94bf5766113324c3a3eceac91e3e88a51ed',
+        priceDecimal: 6,
+        expiration: 30,
+    },
+    FDUSD: {
+        oracleId: 16,
+        maxTimestampDiff: 30000, // 30s(millisecond)
+        priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 10000, // 0.01 = 0.01 * 1e6 = 10000
+        historicalPriceTTL: 300000, // 5min(millisecond)
+        coinType: '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
+        feedId: '0x843b39829166bd97d61843b8967405f13d443e066ce2f4fa0685f187974d34bd',
+        supraPairId: 474,
+        pythPriceFeedId: '0xccdc1a08923e2e4f4b1e6ea89de6acbc5fe1948e9706f5604b8cb50bc1ed3979',
+        pythPriceInfoObject: '0x5f6583b2b0fe1ecf94aaffeaab8a838794693960cea48c0da282d5f4a24be027',
+        priceDecimal: 6,
         expiration: 30,
     },
 }
