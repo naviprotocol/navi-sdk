@@ -377,7 +377,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 9,
         expiration: 30,
     },
-    wUSDC: {
+    WUSDC: {
         oracleId: 1,
         maxTimestampDiff: 30 * 1000, // 30s(millisecond)
         priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
@@ -611,7 +611,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 6,
         expiration: 30,
     },
-    LorenzoBTC: {
+    LORENZOBTC: {
         oracleId: 14,
         maxTimestampDiff: 30000, // 30s(millisecond)
         priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
