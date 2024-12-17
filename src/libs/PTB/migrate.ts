@@ -56,7 +56,12 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
         typeArguments: [toCoin.address],
     });
 
-    const quote = await getQuote(toCoin.address, fromCoin.address, toLoanCoinAmount, migrateOptions?.apiKey, { baseUrl: migrateOptions?.baseUrl })
+    let quote;
+    try {
+        quote = await getQuote(toCoin.address, fromCoin.address, toLoanCoinAmount, migrateOptions?.apiKey, { baseUrl: migrateOptions?.baseUrl });
+    } catch (error) {
+        throw new Error(`Failed to get quote: ${(error as Error).message}`);
+    }
     const swappedFromCoin = await buildSwapPTBFromQuote(address, txb, 0, toCoinFlashloaned, quote)
 
     const [repayCoin] = txb.splitCoins(swappedFromCoin, [amount])
@@ -118,7 +123,13 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
         typeArguments: [fromCoin.address],
     });
 
-    const quote = await getQuote(fromCoin.address, toCoin.address, fromRepayCoinAmount, migrateOptions?.apiKey, { baseUrl: migrateOptions?.baseUrl })
+    let quote;
+    try {
+        quote = await getQuote(fromCoin.address, toCoin.address, fromRepayCoinAmount, migrateOptions?.apiKey, { baseUrl: migrateOptions?.baseUrl });
+    } catch (error) {
+        console.error(`Error in getQuote: ${(error as Error).message}`);
+        throw error;
+    }
     console.log("quote", quote)
     const swappedToCoin = await buildSwapPTBFromQuote(address, txb, 0, fromCoinFlashloaned, quote)
     const swappedValue = txb.moveCall({
@@ -149,8 +160,16 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
 }
 
 export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, migrateOptions?: MigrateOptions) {
-    await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, migrateOptions)
-    await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, migrateOptions)
+    try {
+        await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, migrateOptions)
+    } catch (error) {
+        console.error(`Error in migrateSupplyPTB: ${(error as Error).message}`);
+    }
+    try {
+        await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, migrateOptions)
+    } catch (error) {
+        console.error(`Error in migrateBorrowPTB: ${(error as Error).message}`);
+    }
     return txb;
 }
 
