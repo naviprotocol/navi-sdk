@@ -254,3 +254,8 @@ export async function swapPTB(
 
     return finalCoinB;
 }
+
+export async function checkIfNAVIIntegrated(digest: string, client: SuiClient): Promise<boolean> {
+    const results = await client.getTransactionBlock({ digest, options: { showEvents: true } });
+    return results.events?.some(event => event.type.includes(`${AggregatorConfig.aggregatorContract}::slippage`)) ?? false;
+}

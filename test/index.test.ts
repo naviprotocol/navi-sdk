@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { NAVISDKClient } from '../src/index';
 import { NAVX, nUSDC, Sui } from '../src/address';
 import { Transaction } from "@mysten/sui/transactions";
-import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB, swapPTB, SignAndSubmitTXB } from '../src/libs/PTB';
+import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB, swapPTB, SignAndSubmitTXB, checkIfNAVIIntegrated } from '../src/libs/PTB';
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
 import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
@@ -19,7 +19,7 @@ const privateKey = process.env.PRIVATE_KEY || '';
 describe('NAVI SDK Client', async () => {
 
     const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
-
+    const account = client.accounts[0];
     it('should generate correct account', async () => {
         expect(client.accounts[0].getPublicKey()).toBe(client.getAllAccounts()[0].getPublicKey());
     });
@@ -85,6 +85,16 @@ describe('NAVI SDK Client', async () => {
 
         expect(reward.asset_id).toBe('5');
 
+    });
+    it('should check if NAVI is integrated', async () => {
+        const digest = "4JwmF4UFESM2b18wgNgGsfHA7MStTDAomLuQQnUaa6qr";
+        const res = await checkIfNAVIIntegrated(digest, account.client);
+        expect(res).toBe(true);
+    });
+    it('should check if NAVI is not integrated', async () => {
+        const digest = "F94zASa3cudFffhetkW898MDt3ZT1qEmxvAUULp6BSbP";
+        const res = await checkIfNAVIIntegrated(digest, account.client);
+        expect(res).toBe(false);
     });
 
 });
