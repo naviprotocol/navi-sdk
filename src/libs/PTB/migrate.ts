@@ -34,7 +34,7 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     const flashloanFee = await fetch("https://open-api.naviprotocol.io/api/navi/flashloan");
     const fee = await flashloanFee.json();
     let toCoinFlashloanFee;
-    if (toCoin == Sui) {
+    if (toCoin.address === Sui.address) {
         if (!fee.data["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"]) {
             throw new TypeError("Cannot read properties of undefined (reading 'flashloanFee')");
         }
@@ -104,7 +104,7 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
     const flashloanFee = await fetch("https://open-api.naviprotocol.io/api/navi/flashloan");
     const fee = await flashloanFee.json();
     let fromCoinFlashloanFee;
-    if (fromCoin == Sui) {
+    if (fromCoin.address === Sui.address) {
         fromCoinFlashloanFee = Number(fee.data["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"].flashloanFee);
     } else {
         if (!fee.data[fromCoin.address]) {
