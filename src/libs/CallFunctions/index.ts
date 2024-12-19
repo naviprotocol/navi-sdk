@@ -78,7 +78,7 @@ export async function getReservesDetail(assetId: number, client: SuiClient) {
     return result;
 }
 
-export async function getAddressPortfolio(address: string, prettyPrint: boolean = true, client: SuiClient, decimals?: boolean) {
+export async function getAddressPortfolio(address: string, prettyPrint: boolean = true, client: SuiClient) {
     const balanceMap = new Map<string, { borrowBalance: number, supplyBalance: number }>();
 
     await Promise.all(Object.keys(pool).map(async (poolKey) => {
@@ -90,40 +90,16 @@ export async function getAddressPortfolio(address: string, prettyPrint: boolean 
         const borrowIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_borrow_index / Math.pow(10, 27);
         const supplyIndex = borrowIndexData.data?.content?.fields?.value?.fields?.current_supply_index / Math.pow(10, 27);
 
-        let borrowValue = 0;
-        let supplyValue = 0;
-
-        borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
-        supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
+        let borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
+        let supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value / Math.pow(10, 9) : 0;
         borrowValue *= borrowIndex;
         supplyValue *= supplyIndex;
 
-        if (!decimals) {
-            borrowValue = borrowBalance && borrowBalance.data?.content?.fields.value !== undefined ? borrowBalance.data?.content?.fields.value : 0;
-            supplyValue = supplyBalance && supplyBalance.data?.content?.fields.value !== undefined ? supplyBalance.data?.content?.fields.value : 0;
-            borrowValue *= borrowIndex;
-            supplyValue *= supplyIndex;
-        }
-
         if (prettyPrint) {
-            console.log(`| ${poolKey} | ${borrowValue} | ${supplyValue} |`);
+            console.log(`| ${reserve.name} | ${borrowValue} | ${supplyValue} |`);
         }
-        balanceMap.set(poolKey, { borrowBalance: borrowValue, supplyBalance: supplyValue });
+        balanceMap.set(reserve.name, { borrowBalance: borrowValue, supplyBalance: supplyValue });
     }));
 
     return balanceMap;
-}
-
-export async function getHealthFactorCall(address: string, client: SuiClient) {
-    const config = await getConfig();
-    const tx = new Transaction();
-
-    const result: any = await moveInspect(tx, client, address, `${config.ProtocolPackage}::logic::user_health_factor`, [
-        tx.object('0x06'), // clock object id
-        tx.object(config.StorageId), // object id of storage
-        tx.object(config.PriceOracle), // object id of price oracle
-        tx.pure.address(address), // user address
-    ]);
-
-    return result;
 }

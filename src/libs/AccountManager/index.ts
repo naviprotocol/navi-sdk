@@ -9,6 +9,7 @@ import {
   depositCoin,
   depositCoinWithAccountCap,
   returnMergedCoins,
+  getHealthFactor,
   withdrawCoin,
   withdrawCoinWithAccountCap,
   borrowCoin,
@@ -22,7 +23,7 @@ import {
   swapPTB,
   getCoinPTB
 } from "../PTB";
-import { getAddressPortfolio, getHealthFactorCall, getReservesDetail, moveInspect } from "../CallFunctions";
+import { getAddressPortfolio, getReservesDetail, moveInspect } from "../CallFunctions";
 import assert from 'assert';
 import { registerStructs } from '../PTB';
 
@@ -619,8 +620,15 @@ export class AccountManager {
    * @param address - The address for which to retrieve the health factor. Defaults to the instance's address.
    * @returns The health factor as a number.
    */
-  async getHealthFactor(address: string = this.address, client?: SuiClient) {
-    const result = await getHealthFactorCall(address, client ? client : this.client);
+  async getHealthFactor(address: string = this.address) {
+    const config = await getConfig();
+    const tx = new Transaction();
+    const result: any = await moveInspect(tx, this.client, this.getPublicKey(), `${config.ProtocolPackage}::logic::user_health_factor`, [
+      tx.object('0x06'), // clock object id
+      tx.object(config.StorageId), // object id of storage
+      tx.object(config.PriceOracle), // object id of price oracle
+      tx.pure.address(address), // user address
+    ]);
     const healthFactor = Number(result[0]) / Math.pow(10, 27);
 
     return healthFactor;
