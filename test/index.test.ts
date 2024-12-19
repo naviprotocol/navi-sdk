@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { NAVISDKClient } from '../src/index';
 import { NAVX, nUSDC, Sui, wUSDC } from '../src/address';
 import { Transaction } from "@mysten/sui/transactions";
-import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB, swapPTB, SignAndSubmitTXB } from '../src/libs/PTB';
+import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB, swapPTB, SignAndSubmitTXB, checkIfNAVIIntegrated } from '../src/libs/PTB';
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
 import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
@@ -12,6 +12,7 @@ import { AccountManager } from '../src/libs/AccountManager';
 import { migrateBorrowPTB, migrateSupplyPTB } from '../src/libs/PTB/migrate';
 import { SuiClient } from '@mysten/sui/client';
 import { haSui } from 'navi-sdk';
+import { generateRefId } from '../src/libs/Aggregator/utils';
 dotenv.config();
 
 const rpcUrl = process.env.RPC || '';
@@ -29,7 +30,7 @@ async function dryRunTXB(txb: Transaction, client: SuiClient) {
 describe('NAVI SDK Client', async () => {
 
     const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
-
+    const account = client.accounts[0];
     it('should generate correct account', async () => {
         expect(client.accounts[0].getPublicKey()).toBe(client.getAllAccounts()[0].getPublicKey());
     });
@@ -95,6 +96,43 @@ describe('NAVI SDK Client', async () => {
 
         expect(reward.asset_id).toBe('5');
 
+    });
+    it('should check if NAVI is integrated', async () => {
+        const digest = "4JwmF4UFESM2b18wgNgGsfHA7MStTDAomLuQQnUaa6qr";
+        const res = await checkIfNAVIIntegrated(digest, account.client);
+        expect(res).toBe(true);
+    });
+    it('should check if NAVI is not integrated', async () => {
+        const digest = "F94zASa3cudFffhetkW898MDt3ZT1qEmxvAUULp6BSbP";
+        const res = await checkIfNAVIIntegrated(digest, account.client);
+        expect(res).toBe(false);
+    });
+    it('should generate correct ref_id', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res = 
+              (apiKey);
+        expect(res).toBe(5307806464);
+
+    });
+    it('should return same ref_id for same apiKey', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res1 = generateRefId(apiKey);
+        const res2 = generateRefId(apiKey);
+        expect(res1).toBe(res2);
+    });
+    it('should return different ref_id for different apiKey', async () => {
+        const apiKey1 = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const apiKey2 = '6bbbbb-test-4844-bf46-1d6dff248e7b';
+        const res1 = generateRefId(apiKey1);
+        const res2 = generateRefId(apiKey2);
+        expect(res1).not.toBe(res2);
+    });
+    it('should generate ref_id as an integer and meet contract precision requirements', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res = generateRefId(apiKey);
+        expect(Number.isInteger(res)).toBe(true);
+        expect(res).toBeGreaterThanOrEqual(0);
+        expect(res).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER);
     });
 
 });
