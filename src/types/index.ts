@@ -88,3 +88,8 @@ export type SwapOptions = {
   depth?: number;
   feeOption?: FeeOption;
 };
+
+export type MigrateOptions = {
+  apiKey?: string;
+  baseUrl?: string;
+}

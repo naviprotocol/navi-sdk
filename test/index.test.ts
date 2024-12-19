@@ -1,7 +1,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { NAVISDKClient } from '../src/index';
-import { NAVX, nUSDC, Sui } from '../src/address';
+import { NAVX, nUSDC, Sui, wUSDC } from '../src/address';
 import { Transaction } from "@mysten/sui/transactions";
 import { borrowCoin, depositCoin, withdrawCoin, repayDebt, stakeTovSuiPTB, updateOraclePTB, swapPTB, SignAndSubmitTXB, checkIfNAVIIntegrated } from '../src/libs/PTB';
 import { Pool, PoolConfig, CoinInfo, OptionType } from "../src/types";
@@ -9,12 +9,23 @@ import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
 import dotenv from 'dotenv';
 import { AccountManager } from '../src/libs/AccountManager';
-
+import { migrateBorrowPTB, migrateSupplyPTB } from '../src/libs/PTB/migrate';
+import { SuiClient } from '@mysten/sui/client';
+import { haSui } from 'navi-sdk';
+import { generateRefId } from '../src/libs/Aggregator/utils';
 dotenv.config();
 
 const rpcUrl = process.env.RPC || '';
 const mnemonic = process.env.MNEMONIC || '';
 const privateKey = process.env.PRIVATE_KEY || '';
+const apiKey = process.env.API_KEY || '';
+async function dryRunTXB(txb: Transaction, client: SuiClient) {
+    const dryRunTxBytes: Uint8Array = await txb.build({
+        client: client
+    });
+    const dryRunResult = await client.dryRunTransactionBlock({ transactionBlock: dryRunTxBytes });
+    return dryRunResult;
+}
 
 describe('NAVI SDK Client', async () => {
 
@@ -95,6 +106,33 @@ describe('NAVI SDK Client', async () => {
         const digest = "F94zASa3cudFffhetkW898MDt3ZT1qEmxvAUULp6BSbP";
         const res = await checkIfNAVIIntegrated(digest, account.client);
         expect(res).toBe(false);
+    });
+    it('should generate correct ref_id', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res = 
+              (apiKey);
+        expect(res).toBe(5307806464);
+
+    });
+    it('should return same ref_id for same apiKey', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res1 = generateRefId(apiKey);
+        const res2 = generateRefId(apiKey);
+        expect(res1).toBe(res2);
+    });
+    it('should return different ref_id for different apiKey', async () => {
+        const apiKey1 = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const apiKey2 = '6bbbbb-test-4844-bf46-1d6dff248e7b';
+        const res1 = generateRefId(apiKey1);
+        const res2 = generateRefId(apiKey2);
+        expect(res1).not.toBe(res2);
+    });
+    it('should generate ref_id as an integer and meet contract precision requirements', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res = generateRefId(apiKey);
+        expect(Number.isInteger(res)).toBe(true);
+        expect(res).toBeGreaterThanOrEqual(0);
+        expect(res).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER);
     });
 
 });
@@ -252,11 +290,11 @@ describe('NAVI SDK Account Manager', async () => {
                 }
                 expect(result.effects.status.status).toEqual("success");
             });
-            // txb.build({
-            //     client: account.client
-            // }).then(dryRunTxBytes => {
-            //     account.client.dryRunTransactionBlock({ transactionBlock: dryRunTxBytes }).then(res => {
-            //         console.log(res);
+        // txb.build({
+        //     client: account.client
+        // }).then(dryRunTxBytes => {
+        //     account.client.dryRunTransactionBlock({ transactionBlock: dryRunTxBytes }).then(res => {
+        //         console.log(res);
 
             //     });
             // });
@@ -289,6 +327,115 @@ describe('NAVI SDK Account Manager', async () => {
                 expect(result.effects.status.status).toEqual("success");
             });
         });
+    });
+});
+
+
+describe('test Migration', async () => {
+    const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
+    const account = client.accounts[0];
+
+    it('should migrate supply from USDC to Sui', async () => {
+        const txb = new Transaction();
+        txb.setSender(account.address);
+        const amount = 1e6;
+        await migrateSupplyPTB(txb, nUSDC, Sui, amount, account.address, { apiKey: apiKey });
+        const dryRunResult = await dryRunTXB(txb, account.client);
+        expect(dryRunResult.effects.status.status).toEqual("success");
+
+    });
+    it('should migrate supply from Sui to USDC', async () => {
+        const txb = new Transaction();
+        txb.setSender(account.address);
+        const amount = 1e6;
+        await migrateSupplyPTB(txb, Sui, nUSDC, amount, account.address, { apiKey: apiKey });
+        const dryRunResult = await dryRunTXB(txb, account.client);
+        expect(dryRunResult.effects.status.status).toEqual("success");
+
+    });
+    it('should migrate borrow from Sui to USDC', async () => {
+        const txb = new Transaction();
+        txb.setSender(account.address);
+        const amount = 1e6;
+        await migrateBorrowPTB(txb, Sui, nUSDC, amount, account.address, { apiKey: apiKey });
+        const dryRunResult = await dryRunTXB(txb, account.client);
+        expect(dryRunResult.effects.status.status).toEqual("success");
+
+    });
+    it('should migrate repay from USDC to Sui', async () => {
+        const txb = new Transaction();
+        txb.setSender(account.address);
+        const amount = 1e6;
+        await migrateBorrowPTB(txb, nUSDC, Sui, amount, account.address, { apiKey: apiKey });
+        const dryRunResult = await dryRunTXB(txb, account.client);
+        expect(dryRunResult.effects.status.status).toEqual("success");
+    });
+
+    it('should throw error if fromCoin and toCoin are the same', async () => {
+        const txb = new Transaction();
+        txb.setSender(account.address);
+        const amount = 1e6;
+        try {
+            await migrateSupplyPTB(txb, nUSDC, nUSDC, amount, account.address, { apiKey: apiKey });
+        } catch (error) {
+            console.log("Caught error:", error.message);
+            expect(error.message).toBe("fromCoin and toCoin cannot be the same");
+        }
+    });
+
+    it('should throw error if amount is 0', async () => {
+        const txb = new Transaction();
+        txb.setSender(account.address);
+        const amount = 0;
+        try {
+            await migrateSupplyPTB(txb, nUSDC, Sui, amount, account.address, { apiKey: apiKey });
+        } catch (error) {
+            console.log("Caught error:", error.message);
+            expect(error.message).toBe("amount must be greater than 0");
+        }
+    });
+
+    it('should able to migrate at big amount of flashloan', async () => {
+        const txb = new Transaction();
+        const sender = '0x03fbfd4e4ee3ca0ca58612a4919257270c035164db21d8c2cfc042ce93ee9065';
+        txb.setSender(sender);
+        const amount = 300000e6;
+        await migrateSupplyPTB(txb, wUSDC, Sui, amount, sender, { apiKey: apiKey });
+        const dryRunResult = await dryRunTXB(txb, account.client);
+        expect(dryRunResult.effects.status.status).toEqual("success");
+    });
+
+    it('should throw error if unsupported coin', async () => {
+        const txb = new Transaction();
+        const sender = '0x03fbfd4e4ee3ca0ca58612a4919257270c035164db21d8c2cfc042ce93ee9065';
+        txb.setSender(sender);
+        const amount = 300000e9;
+        try {
+            await migrateSupplyPTB(txb, haSui, Sui, amount, account.address, { apiKey: apiKey });
+        } catch (error) {
+            console.log("Caught error:", error.message);
+            expect(error.message).toBe("Unsupported coin");
+        }
+    });
+
+    it('should work well without apikey', async () => {
+        const txb = new Transaction();
+        const sender = '0x03fbfd4e4ee3ca0ca58612a4919257270c035164db21d8c2cfc042ce93ee9065';
+        txb.setSender(sender);
+        const amount = 100e6;
+        await migrateSupplyPTB(txb, wUSDC, Sui, amount, account.address, { apiKey: apiKey });
+        const dryRunResult = await dryRunTXB(txb, account.client);
+        expect(dryRunResult.effects.status.status).toEqual("success");
+    });
+
+    it('should work well with custom baseUrl', async () => {
+        const txb = new Transaction();
+        const sender = '0x03fbfd4e4ee3ca0ca58612a4919257270c035164db21d8c2cfc042ce93ee9065';
+        txb.setSender(sender);
+        const amount = 100e6;
+        await migrateSupplyPTB(txb, wUSDC, Sui, amount, account.address, { apiKey: apiKey, baseUrl: 'https://aggregator-api.naviprotocol.io' });
+        const dryRunResult = await dryRunTXB(txb, account.client);
+        expect(dryRunResult.effects.status.status).toEqual("success");
     });
 });
 

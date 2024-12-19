@@ -1,2 +1,3 @@
-export { depositCoin, depositCoinWithAccountCap, stakeTovSuiPTB, unstakeTovSui, withdrawCoin, withdrawCoinWithAccountCap, getHealthFactor, borrowCoin, repayDebt, returnMergedCoins, flashloan, repayFlashLoan, SignAndSubmitTXB, liquidateFunction, claimRewardFunction, getIncentivePools, getAvailableRewards, claimAllRewardsPTB, registerStructs, updateOraclePTB } from './commonFunctions';
+export { depositCoin, depositCoinWithAccountCap, stakeTovSuiPTB, unstakeTovSui, withdrawCoin, withdrawCoinWithAccountCap, getHealthFactorPTB, borrowCoin, repayDebt, returnMergedCoins, flashloan, repayFlashLoan, SignAndSubmitTXB, liquidateFunction, claimRewardFunction, getIncentivePools, getAvailableRewards, claimAllRewardsPTB, registerStructs, updateOraclePTB } from './commonFunctions';
 export * from '../Aggregator'
+export * as migrateModule from './migrate'
