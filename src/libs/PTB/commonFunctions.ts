@@ -221,7 +221,7 @@ export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject:
  * @param address - The address for which to retrieve the health factor.
  * @returns The health factor balance.
  */
-export async function getHealthFactorPTB(txb: Transaction, address: string) {
+export async function getHealthFactor(txb: Transaction, address: string) {
     const config = await getConfig();
 
     const balance = txb.moveCall({

@@ -132,5 +132,3 @@ dist
 src/**/*.js
 src/tryThisDemo.ts
 *.Identifier
-
-src/**/.DS_Store
