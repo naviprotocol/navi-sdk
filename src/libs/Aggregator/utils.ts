@@ -31,8 +31,7 @@ export function generateRefId(apiKey: string): number {
 
     // Try increasing offset each time and take modulo to stay within 10 digits
     while (RESERVED_REF_IDS.has(finalRefId)) {
-        offset += 1;
-        finalRefId = (refIdCandidate + offset) % REF_ID_MOD;
+        throw new Error('Ref ID conflict, please try a new apiKey');
     }
 
     return finalRefId;
