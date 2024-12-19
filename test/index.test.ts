@@ -9,6 +9,7 @@ import { getConfig, pool, AddressMap, vSui } from "../src/address";
 import { error } from 'console';
 import dotenv from 'dotenv';
 import { AccountManager } from '../src/libs/AccountManager';
+import { generateRefId } from '../src/libs/Aggregator/utils';
 
 dotenv.config();
 
@@ -95,6 +96,32 @@ describe('NAVI SDK Client', async () => {
         const digest = "F94zASa3cudFffhetkW898MDt3ZT1qEmxvAUULp6BSbP";
         const res = await checkIfNAVIIntegrated(digest, account.client);
         expect(res).toBe(false);
+    });
+    it('should generate correct ref_id', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res = generateRefId(apiKey);
+        expect(res).toBe(5307806464);
+
+    });
+    it('should return same ref_id for same apiKey', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res1 = generateRefId(apiKey);
+        const res2 = generateRefId(apiKey);
+        expect(res1).toBe(res2);
+    });
+    it('should return different ref_id for different apiKey', async () => {
+        const apiKey1 = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const apiKey2 = '6bbbbb-test-4844-bf46-1d6dff248e7b';
+        const res1 = generateRefId(apiKey1);
+        const res2 = generateRefId(apiKey2);
+        expect(res1).not.toBe(res2);
+    });
+    it('should generate ref_id as an integer and meet contract precision requirements', async () => {
+        const apiKey = '5aaaaa-test-4844-bf46-1d6dff248e7a';
+        const res = generateRefId(apiKey);
+        expect(Number.isInteger(res)).toBe(true);
+        expect(res).toBeGreaterThanOrEqual(0);
+        expect(res).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER);
     });
 
 });
