@@ -62,7 +62,9 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     } catch (error) {
         throw new Error(`Failed to get quote: ${(error as Error).message}`);
     }
-    const swappedFromCoin = await buildSwapPTBFromQuote(address, txb, 0, toCoinFlashloaned, quote)
+    const slippage = migrateOptions.slippage ?? 0.005;
+    const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
+    const swappedFromCoin = await buildSwapPTBFromQuote(address, txb,  minAmountOut, toCoinFlashloaned, quote)
 
     const [repayCoin] = txb.splitCoins(swappedFromCoin, [amount])
 
@@ -131,7 +133,9 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
         throw error;
     }
     console.log("quote", quote)
-    const swappedToCoin = await buildSwapPTBFromQuote(address, txb, 0, fromCoinFlashloaned, quote)
+    const slippage = migrateOptions.slippage ?? 0.005;
+    const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
+    const swappedToCoin = await buildSwapPTBFromQuote(address, txb, minAmountOut, fromCoinFlashloaned, quote)
     const swappedValue = txb.moveCall({
         target: '0x2::coin::value',
         arguments: [swappedToCoin],
