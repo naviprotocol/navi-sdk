@@ -7,7 +7,7 @@ import { borrowCoin, buildSwapPTBFromQuote, depositCoin, flashloan, getQuote, re
 import { Sui } from "../../address";
 
 
-export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, migrateOptions?: MigrateOptions) {
+export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, slippage: number, migrateOptions?: MigrateOptions) {
     const defaultSlippage = 0.01; //default pool fee
 
     if (fromCoin == toCoin) {
@@ -62,7 +62,8 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     } catch (error) {
         throw new Error(`Failed to get quote: ${(error as Error).message}`);
     }
-    const swappedFromCoin = await buildSwapPTBFromQuote(address, txb, 0, toCoinFlashloaned, quote)
+    const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
+    const swappedFromCoin = await buildSwapPTBFromQuote(address, txb,  minAmountOut , toCoinFlashloaned, quote)
 
     const [repayCoin] = txb.splitCoins(swappedFromCoin, [amount])
 
@@ -88,7 +89,7 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
-export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, migrateOptions?: MigrateOptions) {
+export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, slippage: number, migrateOptions?: MigrateOptions) {
     if (fromCoin == toCoin) {
         throw new Error("fromCoin and toCoin cannot be the same");
     }
@@ -131,7 +132,8 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
         throw error;
     }
     console.log("quote", quote)
-    const swappedToCoin = await buildSwapPTBFromQuote(address, txb, 0, fromCoinFlashloaned, quote)
+    const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
+    const swappedToCoin = await buildSwapPTBFromQuote(address, txb, minAmountOut, fromCoinFlashloaned, quote)
     const swappedValue = txb.moveCall({
         target: '0x2::coin::value',
         arguments: [swappedToCoin],
@@ -159,14 +161,14 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
-export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, migrateOptions?: MigrateOptions) {
+export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, slippage: number, migrateOptions?: MigrateOptions) {
     try {
-        await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, migrateOptions)
+        await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, slippage, migrateOptions)
     } catch (error) {
         console.error(`Error in migrateSupplyPTB: ${(error as Error).message}`);
     }
     try {
-        await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, migrateOptions)
+        await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, slippage, migrateOptions)
     } catch (error) {
         console.error(`Error in migrateBorrowPTB: ${(error as Error).message}`);
     }
