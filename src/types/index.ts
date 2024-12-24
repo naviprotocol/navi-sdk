@@ -92,4 +92,5 @@ export type SwapOptions = {
 export type MigrateOptions = {
   apiKey?: string;
   baseUrl?: string;
+  slippage?: number;
 }
