@@ -63,7 +63,7 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
         throw new Error(`Failed to get quote: ${(error as Error).message}`);
     }
     const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
-    const swappedFromCoin = await buildSwapPTBFromQuote(address, txb,  minAmountOut , toCoinFlashloaned, quote)
+    const swappedFromCoin = await buildSwapPTBFromQuote(address, txb,  minAmountOut, toCoinFlashloaned, quote)
 
     const [repayCoin] = txb.splitCoins(swappedFromCoin, [amount])
 
