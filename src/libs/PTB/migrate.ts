@@ -7,7 +7,7 @@ import { borrowCoin, buildSwapPTBFromQuote, depositCoin, flashloan, getQuote, re
 import { Sui } from "../../address";
 
 
-export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, slippage: number, migrateOptions?: MigrateOptions) {
+export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, migrateOptions?: MigrateOptions) {
     const defaultSlippage = 0.01; //default pool fee
 
     if (fromCoin == toCoin) {
@@ -90,7 +90,7 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
-export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, slippage: number, migrateOptions?: MigrateOptions) {
+export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toCoin: CoinInfo, amount: number, address: string, migrateOptions?: MigrateOptions) {
     if (fromCoin == toCoin) {
         throw new Error("fromCoin and toCoin cannot be the same");
     }
