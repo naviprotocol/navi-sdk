@@ -62,6 +62,7 @@ export async function migrateBorrowPTB(txb: Transaction, fromCoin: CoinInfo, toC
     } catch (error) {
         throw new Error(`Failed to get quote: ${(error as Error).message}`);
     }
+    const slippage = migrateOptions.slippage ?? 0.005;
     const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
     const swappedFromCoin = await buildSwapPTBFromQuote(address, txb,  minAmountOut, toCoinFlashloaned, quote)
 
@@ -132,6 +133,7 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
         throw error;
     }
     console.log("quote", quote)
+    const slippage = migrateOptions.slippage ?? 0.005;
     const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
     const swappedToCoin = await buildSwapPTBFromQuote(address, txb, minAmountOut, fromCoinFlashloaned, quote)
     const swappedValue = txb.moveCall({
@@ -161,14 +163,14 @@ export async function migrateSupplyPTB(txb: Transaction, fromCoin: CoinInfo, toC
     return txb;
 }
 
-export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, slippage: number, migrateOptions?: MigrateOptions) {
+export async function migratePTB(txb: Transaction, supplyFromCoin: CoinInfo, supplyToCoin: CoinInfo, borrowFromCoin: CoinInfo, borrowToCoin: CoinInfo, supplyAmount: number, borrowAmount: number, address: string, migrateOptions?: MigrateOptions) {
     try {
-        await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, slippage, migrateOptions)
+        await migrateSupplyPTB(txb, supplyFromCoin, supplyToCoin, supplyAmount, address, migrateOptions)
     } catch (error) {
         console.error(`Error in migrateSupplyPTB: ${(error as Error).message}`);
     }
     try {
-        await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, slippage, migrateOptions)
+        await migrateBorrowPTB(txb, borrowFromCoin, borrowToCoin, borrowAmount, address, migrateOptions)
     } catch (error) {
         console.error(`Error in migrateBorrowPTB: ${(error as Error).message}`);
     }
