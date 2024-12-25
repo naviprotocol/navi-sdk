@@ -24,6 +24,9 @@ export const AddressMap: Record<string, string> = {
     '0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN': 'stBTC',
     '0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT': 'DEEP',
     '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD': 'FDUSD',
+    '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE': 'BLUE',
+    '0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::buck::BUCK': 'BUCK',
+
 };
 
 export function getPackageCache(): string | undefined {
@@ -221,6 +224,24 @@ export const pool: Pool = {
         borrowBalanceParentId: '0x4a4bb401f011c104083f56e3ee154266f1a88cad10b8acc9c993d4da304ebf00',
         supplyBalanceParentId: '0x6dffc3d05e79b055749eae1c27e93a47b5a9999214ce8a2f6173574151d120bf',
     },
+    BLUE: {
+        name: 'BLUE',
+        assetId: 17,
+        poolId: '0xe2cfd1807f5b44b44d7cabff5376099e76c5f0e4b35a01bdc4b0ef465a23e32c',
+        type: '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE',
+        reserveObjectId: '0xcc993cdfc8fcf421115bb4b2c2247abbfecff35bcab777bb368b4b829d39b073',
+        borrowBalanceParentId: '0x897b75f0e55b9cfaae65e818d02ebefa5c91d4cf581f9c7c86d6e39749c87020',
+        supplyBalanceParentId: '0xc12b3d04d566fb418a199a113c09c65c121fd878172084ec0c60e08def51726f',
+    },
+    BUCK: {
+        name: 'BUCK',
+        assetId: 18,
+        poolId: '0x98953e1c8af4af0cd8f59a52f9df6e60c9790b8143f556751f10949b40c76c50',
+        type: '0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::buck::BUCK',
+        reserveObjectId: '0xe1182350b6756e664f824aa1448f5fc741ddc868168dbe09ed3a6e79b7bf249c',
+        borrowBalanceParentId: '0x6ae3645ff5936c10ab98c2529d3a316b0d4b22eff46d0d262e27db41371af597',
+        supplyBalanceParentId: '0xdcd4fd6c686eebb54b1816e9851183647a306817303d306bbf70f82757f3eff9',
+    },
 
 };
 
@@ -328,6 +349,18 @@ export const FDUSD: CoinInfo = {
     symbol: 'FDUSD',
     address: '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
     decimal: 6
+}
+
+export const BLUE: CoinInfo = {
+    symbol: 'BLUE',
+    address: '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE',
+    decimal: 9
+}
+
+export const BUCK: CoinInfo = {
+    symbol: 'BUCK',
+    address: '0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::buck::BUCK',
+    decimal: 9
 }
 
 export const vSuiConfig = {
