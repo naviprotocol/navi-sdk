@@ -439,3 +439,11 @@ describe('test Migration', async () => {
     });
 });
 
+describe('show available reward', () => {
+    it('should generate correct account', async () => {
+        const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
+        const availableReward = await client.getAddressAvailableRewards('')
+        console.log(availableReward)
+         
+    });
+  }, 500000)
