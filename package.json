@@ -25,7 +25,6 @@
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.7",
     "esrun": "^3.2.26",
-    "navi-sdk": "^1.4.5",
     "tsconfig-paths": "^4.2.0",
     "vitest": "^1.6.0"
   }

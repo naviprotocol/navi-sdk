@@ -745,6 +745,8 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.LORENZOBTC)
     updateSinglePrice(txb, PriceFeedConfig.DEEP)
     updateSinglePrice(txb, PriceFeedConfig.FDUSD)
+    updateSinglePrice(txb, PriceFeedConfig.BLUE)
+    updateSinglePrice(txb, PriceFeedConfig.BUCK)
 }
 
 

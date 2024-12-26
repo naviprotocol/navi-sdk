@@ -698,6 +698,42 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 6,
         expiration: 30,
     },
+    BLUE: {
+        oracleId: 17,
+        maxTimestampDiff: 30000, // 30s(millisecond)
+        priceDiffThreshold1: 200, // x1: 0.8% = 0.008 * 10000 = 80
+        priceDiffThreshold2: 400, // x2: 1.5% = 0.015 * 10000 = 150
+        maxDurationWithinThresholds: 30000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000000, // 2 = 2 * 1e6 = 2000000
+        minimumEffectivePrice: 1000000, // 0.01 = 0.01 * 1e6 = 10000
+        historicalPriceTTL: 300000, // 5min(millisecond)
+        coinType: '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE',
+        feedId: '0xd8286c11df7e49496ee75622ae4132c56385c30b4bedb392e36c0699a52a1d52',
+        supraPairId: 99999,
+        pythPriceFeedId: '0x04cfeb7b143eb9c48e9b074125c1a3447b85f59c31164dc20c1beaa6f21f2b6b',
+        pythPriceInfoObject: '0x5515a34fc610bba6b601575ed1d2535b2f9df1f339fd0d435fef487c1ee3df9c',
+        priceDecimal: 9,
+        expiration: 30,
+    },
+    BUCK: {
+        oracleId: 18,
+        maxTimestampDiff: 30000, // 30s(millisecond)
+        priceDiffThreshold1: 80,
+        priceDiffThreshold2: 150,
+        maxDurationWithinThresholds: 30000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000000,
+        minimumEffectivePrice: 1000000,
+        historicalPriceTTL: 300000, // 5min(millisecond)
+        coinType: '0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::buck::BUCK',
+        feedId: '0x93c1b815f64ef7c4311d74ff7c0ca1e47739c3ac31fdee0068c30887633ba2fb',
+        supraPairId: 161,
+        pythPriceFeedId: '0xfdf28a46570252b25fd31cb257973f865afc5ca2f320439e45d95e0394bc7382',
+        pythPriceInfoObject: '0x3ef821a54dbdfe3f211b2ff7261dea0f0330c72fd292422ce586e21f43809a56',
+        priceDecimal: 9,
+        expiration: 30,
+    },
 }
 
 export interface IOracleProConfig {
