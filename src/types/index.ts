@@ -27,6 +27,8 @@ export interface Pool {
   LorenzoBTC: PoolConfig;
   DEEP: PoolConfig;
   FDUSD: PoolConfig;
+  BLUE: PoolConfig;
+  BUCK: PoolConfig;
 }
 
 export interface PoolConfig {

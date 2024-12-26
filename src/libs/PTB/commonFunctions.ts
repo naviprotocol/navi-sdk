@@ -514,14 +514,12 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             if (assetId == '15' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
                 assetId = '15extra' //Means DEEP Rewards
             }
-            if (assetId == '16' && pool.funds == '141c67c566de590788ff04f2bcc26e68798304254f6595df93a824b0f6acee2a') {
-                assetId = '16extra' //Means FDUSD Rewards
-            }
+
             const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
             
             let availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
-            if (assetId == '13extra' || assetId == '15extra' || assetId == '16extra') {
-                availableFixed = (Number(availableDecimal) / 10 ** 6).toFixed(5); // Adjust for 5 decimal places
+            if (assetId == '13extra' || assetId == '15extra' || assetId == '16') {
+                availableFixed = (Number(availableDecimal) / 10 ** 6).toFixed(5); // coin for Decimals 6
             }
             if (!acc[assetId]) {
 
@@ -540,9 +538,6 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 }
                 if (assetId == '15extra') {
                     acc[assetId] = { asset_id: '15', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '16extra') {
-                    acc[assetId] = { asset_id: '16', funds: pool.funds, available: availableFixed };
                 }
             } else {
                 acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
@@ -575,7 +570,8 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 '15': 'DEEP',
                 '15extra': 'DEEP',
                 '16': 'FDUSD',
-                '16extra': 'FDUSD'
+                '17': 'BLUE',
+                '18': 'BUCK',
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
@@ -585,8 +581,12 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NS`);
                 } else if (key == '15extra') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} DEEP`);
-                }else if (key == '16extra') {
+                }else if (key == '16') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} FDUSD`);
+                }else if (key == '17') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} BLUE`);
+                }else if (key == '18') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} BUCK`);
                 } else {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
                 }
@@ -745,6 +745,8 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.LORENZOBTC)
     updateSinglePrice(txb, PriceFeedConfig.DEEP)
     updateSinglePrice(txb, PriceFeedConfig.FDUSD)
+    updateSinglePrice(txb, PriceFeedConfig.BLUE)
+    updateSinglePrice(txb, PriceFeedConfig.BUCK)
 }
 
 
