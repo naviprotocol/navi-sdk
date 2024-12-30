@@ -26,6 +26,7 @@ export const AddressMap: Record<string, string> = {
     '0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD': 'FDUSD',
     '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE': 'BLUE',
     '0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::buck::BUCK': 'BUCK',
+    '0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT': 'suiUSDT',
 
 };
 
@@ -242,6 +243,15 @@ export const pool: Pool = {
         borrowBalanceParentId: '0x6ae3645ff5936c10ab98c2529d3a316b0d4b22eff46d0d262e27db41371af597',
         supplyBalanceParentId: '0xdcd4fd6c686eebb54b1816e9851183647a306817303d306bbf70f82757f3eff9',
     },
+    suiUSDT: {
+        name: 'suiUSDT',
+        assetId: 19,
+        poolId: '0xa3e0471746e5d35043801bce247d3b3784cc74329d39f7ed665446ddcf22a9e2',
+        type: '0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT',
+        reserveObjectId: '0x2abb6f2b007fef1e59133b027f53eca568f3af79e310e6f16d4b37bc09664a50',
+        borrowBalanceParentId: '0x2ad9fe604fb74c1acfe646fe79fc27acf7b62cf4e7d0c6cbb23f6d440ce79306',
+        supplyBalanceParentId: '0xe0399b39ca6127a879071371aff22ca98d8e7f24872afa8435a12e2a77c00e15',
+    },
 
 };
 
@@ -361,6 +371,12 @@ export const BUCK: CoinInfo = {
     symbol: 'BUCK',
     address: '0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::buck::BUCK',
     decimal: 9
+}
+
+export const suiUSDT: CoinInfo = {
+    symbol: 'suiUSDT',
+    address: '0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT',
+    decimal: 6
 }
 
 export const vSuiConfig = {
@@ -732,6 +748,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         pythPriceFeedId: '0xfdf28a46570252b25fd31cb257973f865afc5ca2f320439e45d95e0394bc7382',
         pythPriceInfoObject: '0x3ef821a54dbdfe3f211b2ff7261dea0f0330c72fd292422ce586e21f43809a56',
         priceDecimal: 9,
+        expiration: 30,
+    },
+    SUIUSDT: {
+        oracleId: 19,
+        maxTimestampDiff: 30000, // 30s(millisecond)
+        priceDiffThreshold1: 80,
+        priceDiffThreshold2: 150,
+        maxDurationWithinThresholds: 30000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 2000000,
+        minimumEffectivePrice: 100000,
+        historicalPriceTTL: 300000, // 5min(millisecond)
+        coinType: '0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT',
+        feedId: '0xdeba21105ff41300f8829aaeba45fdec25d1533a64d504ef0348ff005da3fbe5',
+        supraPairId: 48,
+        pythPriceFeedId: '0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b',
+        pythPriceInfoObject: '0x985e3db9f93f76ee8bace7c3dd5cc676a096accd5d9e09e9ae0fb6e492b14572',
+        priceDecimal: 6,
         expiration: 30,
     },
 }

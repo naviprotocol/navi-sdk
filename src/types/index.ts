@@ -29,6 +29,7 @@ export interface Pool {
   FDUSD: PoolConfig;
   BLUE: PoolConfig;
   BUCK: PoolConfig;
+  suiUSDT: PoolConfig;
 }
 
 export interface PoolConfig {
