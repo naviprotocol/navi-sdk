@@ -93,7 +93,7 @@ function calculateBorrowAmount(
     slippage: number,
     formDecimal: number,  // Number of decimals for formCoin
     toDecimal: number     // Number of decimals for toCoin
-): number {
+): [number, number, number] {
     // Input validation
     if (
         [formCoinAmountInMin, formCoinPrice, toCoinPrice, feeRate, slippage, formDecimal, toDecimal].some(
@@ -128,9 +128,33 @@ function calculateBorrowAmount(
 
     // Floor the borrow amount to the nearest smallest unit
     const finalBorrowAmount = Math.floor(borrowAmount);
+    const shouldSwapAmount = Math.floor(formCoinAmountInMin * R)
+    const expectAmount = Math.floor(shouldSwapAmount * (1 + feeRate))
 
-    return finalBorrowAmount;
+    return [finalBorrowAmount,shouldSwapAmount, expectAmount];
 }
+
+async function calcRealPriceFromSui(originalPrice: number, targetCoin: CoinInfo, migrateOptions?:MigrateOptions) {
+
+    let quoteResult;
+    try {
+        quoteResult = await getQuote(
+            Sui.address, 
+            targetCoin.address, 
+            1e9,
+            migrateOptions?.apiKey,
+            { baseUrl: migrateOptions?.baseUrl });
+        console.log("Quote obtained:", quoteResult);
+    } catch (error) {
+        console.error(`Failed to get quote: ${(error as Error).message}`);
+        throw error;
+    }
+
+
+    const amountOutNum = Number(quoteResult?.amount_out );
+  
+    return (1e9 / amountOutNum) * originalPrice;
+  }
 
 /**
  * Migrates supply from one coin to another using a flashloan.
@@ -165,17 +189,24 @@ export async function migrateSupplyPTB(
     const fromPoolInfo = (allPools as { [key: string]: any })[String(fromPoolConfig.assetId)];
     const toPoolInfo = (allPools as { [key: string]: any })[String(toPoolConfig.assetId)];
 
-    const formCoinPrice = fromPoolInfo.tokenPrice;
-    const toCoinPrice = toPoolInfo.tokenPrice;
+    let fromCoinPrice = fromPoolInfo.tokenPrice;
+    let toCoinPrice = toPoolInfo.tokenPrice;
+
+    if (fromCoin.symbol === 'vSui' || fromCoin.symbol === 'haSui') {
+        fromCoinPrice = await calcRealPriceFromSui(fromCoinPrice, fromCoin, migrateOptions);
+    }
+    if (toCoin.symbol === 'vSui' || toCoin.symbol === 'haSui') {
+        toCoinPrice = await calcRealPriceFromSui(toCoinPrice, toCoin, migrateOptions);
+    }
 
     const toCoinFlashloanFee = await getFlashloanFee(toCoin);
     const formCoinAmountInMin = amount;
     // const formCoinAmountInMin = toMinUnit(amount, fromCoin.decimal);
     const slippage = migrateOptions?.slippage ?? 0.005;
 
-    const borrowAmountInMin = calculateBorrowAmount(
+    const [borrowAmountInMin, shouldSwapAmount, _noUse] = calculateBorrowAmount(
         formCoinAmountInMin,
-        Number(formCoinPrice),
+        Number(fromCoinPrice),
         Number(toCoinPrice),
         toCoinFlashloanFee,
         slippage,
@@ -184,12 +215,15 @@ export async function migrateSupplyPTB(
     );
     console.log(`Borrow Amount Calculation:
         User Input Amount: ${amount} ${fromCoin.symbol}
-        From Coin: ${fromCoin.symbol} (Price: ${formCoinPrice})
+        From Coin: ${fromCoin.symbol} (Price: ${fromCoinPrice})
         To Coin: ${toCoin.symbol} (Price: ${toCoinPrice})
         Fee Rate: ${toCoinFlashloanFee * 100}%
         Slippage: ${slippage * 100}%
         Borrow Amount in Min Units: ${borrowAmountInMin}
-        Borrow Amount in normal: ${fromMinUnit(borrowAmountInMin, toCoin.decimal)}`);
+        should Amount in Min Units: ${shouldSwapAmount}
+        Borrow Amount in normal: ${fromMinUnit(borrowAmountInMin, toCoin.decimal)}
+        should Amount in normal: ${fromMinUnit(shouldSwapAmount, toCoin.decimal)}
+        `);
 
     const [flashloanBalance, receipt] = await flashloan(txb, toPoolConfig, borrowAmountInMin);
 
@@ -218,7 +252,7 @@ export async function migrateSupplyPTB(
         throw error;
     }
 
-    const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
+    const minAmountOut = Math.floor(shouldSwapAmount * (1 - slippage));
     const swappedToCoin = await buildSwapPTBFromQuote(address, txb, minAmountOut, withdrawnFromCoin as any, quote);
 
     const repayBalance = txb.moveCall({
@@ -272,17 +306,24 @@ export async function migrateBorrowPTB(
     const fromPoolInfo = (allPools as { [key: string]: any })[String(fromPoolConfig.assetId)];
     const toPoolInfo = (allPools as { [key: string]: any })[String(toPoolConfig.assetId)];
 
-    const formCoinPrice = fromPoolInfo.tokenPrice;
-    const toCoinPrice = toPoolInfo.tokenPrice;
+    let fromCoinPrice = fromPoolInfo.tokenPrice;
+    let toCoinPrice = toPoolInfo.tokenPrice;
+
+    if (fromCoin.symbol === 'vSui' || fromCoin.symbol === 'haSui') {
+        fromCoinPrice = await calcRealPriceFromSui(fromCoinPrice, fromCoin, migrateOptions);
+    }
+    if (toCoin.symbol === 'vSui' || toCoin.symbol === 'haSui') {
+        toCoinPrice = await calcRealPriceFromSui(toCoinPrice, toCoin, migrateOptions);
+    }
 
     const toCoinFlashloanFee = await getFlashloanFee(toCoin);
-    const formCoinAmountInMin = amount;
+    const fromCoinAmountInMin = amount;
     // const formCoinAmountInMin = toMinUnit(amount, fromCoin.decimal);
     const slippage = migrateOptions?.slippage ?? 0.005;
 
-    const borrowAmountInMin = calculateBorrowAmount(
-        formCoinAmountInMin,
-        Number(formCoinPrice),
+    const [borrowAmountInMin, shouldSwapAmount, loanAmount] = calculateBorrowAmount(
+        fromCoinAmountInMin,
+        Number(fromCoinPrice),
         Number(toCoinPrice),
         toCoinFlashloanFee,
         slippage,
@@ -292,14 +333,19 @@ export async function migrateBorrowPTB(
 
     console.log(`Borrow Amount Calculation:
         User Input Amount: ${amount} ${fromCoin.symbol}
-        From Coin: ${fromCoin.symbol} (Price: ${formCoinPrice})
+        From Coin: ${fromCoin.symbol} (Price: ${fromCoinPrice})
         To Coin: ${toCoin.symbol} (Price: ${toCoinPrice})
         Fee Rate: ${toCoinFlashloanFee * 100}%
         Slippage: ${slippage * 100}%
         Borrow Amount in Min Units: ${borrowAmountInMin}
-        Borrow Amount in normal: ${fromMinUnit(borrowAmountInMin, toCoin.decimal)}`);
+        should Amount in Min Units: ${shouldSwapAmount}
+        Borrow Amount in normal: ${fromMinUnit(borrowAmountInMin, toCoin.decimal)}
+        should Amount in normal: ${fromMinUnit(shouldSwapAmount, toCoin.decimal)}
+        loanAmount Amount in Units: ${loanAmount}
+        loanAmount Amount in normal: ${fromMinUnit(loanAmount, toCoin.decimal)}
+        `);
 
-    const [flashloanBalance, receipt] = await flashloan(txb, toPoolConfig, borrowAmountInMin);
+    const [flashloanBalance, receipt] = await flashloan(txb, toPoolConfig, shouldSwapAmount);
 
     const [flashCoin]: any = txb.moveCall({
         target: '0x2::coin::from_balance',
@@ -312,7 +358,7 @@ export async function migrateBorrowPTB(
         quote = await getQuote(
             toCoin.address,
             fromCoin.address,
-            borrowAmountInMin,
+            shouldSwapAmount,
             migrateOptions?.apiKey,
             { baseUrl: migrateOptions?.baseUrl }
         );
@@ -331,7 +377,7 @@ export async function migrateBorrowPTB(
 
     await repayDebt(txb, fromPoolConfig, repayCoin, minAmountOut);
 
-    const [borrowedToCoin] = await borrowCoin(txb, toPoolConfig, borrowAmountInMin);
+    const [borrowedToCoin] = await borrowCoin(txb, toPoolConfig, loanAmount);
 
     const repayBalance = txb.moveCall({
         target: '0x2::coin::into_balance',
