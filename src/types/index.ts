@@ -66,7 +66,8 @@ export enum Dex {
   KRIYA_V2 = 'kriyaV2',
   KRIYA_V3 = 'kriyaV3',
   AFTERMATH = 'aftermath',
-  DEEPBOOK = 'deepbook'
+  DEEPBOOK = 'deepbook',
+  BLUEFIN = 'bluefin',
 }
 
 export type Quote = {
