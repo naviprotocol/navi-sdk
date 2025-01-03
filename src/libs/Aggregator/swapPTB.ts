@@ -1,5 +1,5 @@
 import { AggregatorConfig } from "./config";
-import { FeeOption, Quote, SwapOptions } from '../../types';
+import { Dex, FeeOption, Quote, SwapOptions } from '../../types';
 import { returnMergedCoins } from "../PTB/commonFunctions";
 
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
@@ -13,6 +13,7 @@ import { getQuote } from "./getQuote";
 import { SuiClient } from "@mysten/sui/dist/cjs/client";
 import { vSui } from "../../address";
 import { generateRefId } from "./utils";
+import { makeBluefinPTB } from "./Dex/bluefin";
 
 export async function getCoins(
     client: SuiClient,
@@ -121,66 +122,111 @@ export async function buildSwapPTBFromQuote(userAddress: string, txb: Transactio
                 arguments: [pathTempCoin],
                 typeArguments: [tempTokenA],
             });
-
-            if (provider === "cetus") {
+            
+            switch (provider) {
+              case Dex.CETUS: {
                 let toSwapBalance = txb.moveCall({
-                    target: "0x2::coin::into_balance",
-                    arguments: [pathTempCoin],
-                    typeArguments: [tempTokenA],
+                  target: "0x2::coin::into_balance",
+                  arguments: [pathTempCoin],
+                  typeArguments: [tempTokenA],
                 });
                 const { receiveCoin, leftCoin } = await makeCETUSPTB(
-                    txb,
-                    poolId,
-                    true,
-                    toSwapBalance,
-                    amountInPTB,
-                    a2b,
-                    typeArguments
+                  txb,
+                  poolId,
+                  true,
+                  toSwapBalance,
+                  amountInPTB,
+                  a2b,
+                  typeArguments
                 );
 
                 txb.transferObjects([leftCoin], userAddress);
                 pathTempCoin = receiveCoin;
-            } else if (provider === "turbos") {
+                break;
+              }
+              case Dex.TURBOS: {
                 pathTempCoin = txb.makeMoveVec({
-                    elements: [pathTempCoin!],
+                  elements: [pathTempCoin!],
                 });
                 const { turbosCoinB, turbosCoinA } = await makeTurbosPTB(
-                    txb,
-                    poolId,
-                    true,
-                    pathTempCoin,
-                    amountInPTB,
-                    a2b,
-                    typeArguments,
-                    userAddress,
-                    tuborsVersion
+                  txb,
+                  poolId,
+                  true,
+                  pathTempCoin,
+                  amountInPTB,
+                  a2b,
+                  typeArguments,
+                  userAddress,
+                  tuborsVersion
                 );
                 txb.transferObjects([turbosCoinA], userAddress);
                 pathTempCoin = turbosCoinB;
-            }
-            else if (provider === "kriyaV2") {
-                pathTempCoin = await makeKriyaV2PTB(txb, poolId, true, pathTempCoin, amountInPTB, a2b, typeArguments)
-            }
-            else if (provider === "kriyaV3") {
-                pathTempCoin = await makeKriyaV3PTB(txb, poolId, true, pathTempCoin, amountInPTB, a2b, typeArguments)
-            }
-            else if (provider === "aftermath") {
+                break;
+              }
+              case Dex.KRIYA_V2: {
+                pathTempCoin = await makeKriyaV2PTB(
+                  txb,
+                  poolId,
+                  true,
+                  pathTempCoin,
+                  amountInPTB,
+                  a2b,
+                  typeArguments
+                );
+                break;
+              }
+              case Dex.KRIYA_V3: {
+                pathTempCoin = await makeKriyaV3PTB(
+                  txb,
+                  poolId,
+                  true,
+                  pathTempCoin,
+                  amountInPTB,
+                  a2b,
+                  typeArguments
+                );
+                break;
+              }
+              case Dex.AFTERMATH: {
                 const amountLimit = route.info_for_ptb.amountLimit;
-                pathTempCoin = await makeAftermathPTB(txb, poolId, pathTempCoin, amountLimit, a2b, typeArguments)
-            }
-            else if (provider === "deepbook") {
+                pathTempCoin = await makeAftermathPTB(
+                  txb,
+                  poolId,
+                  pathTempCoin,
+                  amountLimit,
+                  a2b,
+                  typeArguments
+                );
+                break;
+              }
+              case Dex.DEEPBOOK: {
                 const amountLimit = route.info_for_ptb.amountLimit;
+                const { baseCoinOut, quoteCoinOut, deepCoinOut } =
+                  await makeDeepbookPTB(
+                    txb,
+                    poolId,
+                    pathTempCoin,
+                    amountLimit,
+                    a2b,
+                    typeArguments
+                  );
                 if (a2b) {
-                    const { baseCoinOut, quoteCoinOut, deepCoinOut } = await makeDeepbookPTB(txb, poolId, pathTempCoin, amountLimit, a2b, typeArguments)
-                    pathTempCoin = quoteCoinOut;
-                    txb.transferObjects([baseCoinOut, deepCoinOut], userAddress);
+                  pathTempCoin = quoteCoinOut;
+                  txb.transferObjects([baseCoinOut, deepCoinOut], userAddress);
+                } else {
+                  pathTempCoin = baseCoinOut;
+                  txb.transferObjects([quoteCoinOut, deepCoinOut], userAddress);
                 }
-                else {
-                    const { baseCoinOut, quoteCoinOut, deepCoinOut } = await makeDeepbookPTB(txb, poolId, pathTempCoin, amountLimit, a2b, typeArguments)
-                    pathTempCoin = baseCoinOut;
-                    txb.transferObjects([quoteCoinOut, deepCoinOut], userAddress);
-                }
-
+                break;
+              }
+              case Dex.BLUEFIN: {
+                const amountLimit = route.info_for_ptb.amountLimit;
+                pathTempCoin = await makeBluefinPTB(txb, poolId, true, tempTokenA, tempTokenB, amountInPTB, a2b, userAddress, amountLimit)
+                break;
+              }
+              default: {
+                break;
+              }
             }
         }
 
