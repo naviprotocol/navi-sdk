@@ -221,8 +221,15 @@ export async function buildSwapPTBFromQuote(userAddress: string, txb: Transactio
               }
               case Dex.BLUEFIN: {
                 const amountLimit = route.info_for_ptb.amountLimit;
-                pathTempCoin = await makeBluefinPTB(txb, poolId, true, pathTempCoin, pathCoinAmountIn, a2b, amountLimit, typeArguments)
-                break;
+                const { coinAOut, coinBOut } = await makeBluefinPTB(txb, poolId, pathTempCoin, pathCoinAmountIn, a2b, amountLimit, typeArguments)
+                if (a2b) {
+                  txb.transferObjects([coinAOut], userAddress);
+                  pathTempCoin = coinBOut;
+                }
+                else {
+                  txb.transferObjects([coinBOut], userAddress);
+                  pathTempCoin = coinAOut;
+                }
               }
               default: {
                 break;
