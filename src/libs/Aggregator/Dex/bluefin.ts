@@ -8,7 +8,7 @@ export async function makeBluefinPTB(txb: Transaction, poolId: string, pathTempC
   const coinB = a2b ? zeroCoin(txb, typeArguments[1]) : pathTempCoin
   const coinAInBalance = coinToBalance(txb, coinA, typeArguments[0])
   const coinBInBalance = coinToBalance(txb, coinB, typeArguments[1])
-  const sqrtPriceLimit = BigInt(a2b ? '4295048015' : '79226673515401279992447579054');
+  const sqrtPriceLimit = BigInt(a2b ? '4295048017' : '79226673515401279992447579054');
 
   const args =
     [
