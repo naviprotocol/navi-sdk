@@ -32,6 +32,10 @@ export const AggregatorConfig = {
     "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809",
   deepTokenAddress:
     "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP",
+  bluefinPackageId: 
+    "0x702301e7c6ca527a6f6a83f12c5edf2dcd6ec7a23fb5318ec86d88282eab7057",
+  bluefinGlobalConfig:
+    "0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352"
 };
 
 export function updateConfig(newConfig: Partial<typeof AggregatorConfig>) {
