@@ -6,16 +6,13 @@ import {
   BridgeSwapTransaction,
 } from "../../types";
 import * as mayan from "./providers/mayan";
-import axios from "axios";
 import { WalletConnection } from "./providers/mayan";
+import { apiInstance, config } from "./config";
 
-const instance = axios.create({
-  baseURL: `https://aggregator-api-stage-d5a229fbd33c.naviprotocol.io`,
-  timeout: 30000,
-});
+export { config };
 
 export async function getSupportChains(): Promise<Chain[]> {
-  const res = await instance.get<{
+  const res = await apiInstance.get<{
     data: {
       chains: Chain[];
     };
@@ -28,7 +25,7 @@ export async function getSupportTokens(
   page: number = 1,
   pageSize: number = 100
 ): Promise<Token[]> {
-  const res = await instance.get<{
+  const res = await apiInstance.get<{
     data: {
       list: Token[];
     };
@@ -47,7 +44,7 @@ export async function searchSupportTokens(
   chainId: number,
   keyword: string
 ): Promise<Token[]> {
-  const res = await instance.get<{
+  const res = await apiInstance.get<{
     data: {
       list: Token[];
     };
@@ -69,7 +66,7 @@ export async function getQuote(
   amount: string | number,
   options?: BridgeSwapOptions
 ) {
-  const res = await instance.get<{
+  const res = await apiInstance.get<{
     data: {
       routes: BridgeSwapQuote[];
     };
@@ -87,7 +84,7 @@ export async function getQuote(
 }
 
 export async function getTransaction(hash: string) {
-  const res = await instance.get<{
+  const res = await apiInstance.get<{
     data: {
       transaction: BridgeSwapTransaction;
     };
@@ -96,7 +93,7 @@ export async function getTransaction(hash: string) {
 }
 
 export async function getWalletTransactions(address: string) {
-  const res = await instance.get<{
+  const res = await apiInstance.get<{
     data: {
       transactions: BridgeSwapTransaction[];
     };
