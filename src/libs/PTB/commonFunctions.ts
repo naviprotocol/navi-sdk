@@ -572,6 +572,8 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 '16': 'FDUSD',
                 '17': 'BLUE',
                 '18': 'BUCK',
+                '19': 'suiUSDT',
+                '20': 'stSUI',
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
@@ -585,8 +587,8 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} FDUSD`);
                 }else if (key == '17') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} BLUE`);
-                }else if (key == '18') {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} BUCK`);
+                }else if (key == '20') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} stSUI`);
                 } else {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
                 }
@@ -748,6 +750,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.BLUE)
     updateSinglePrice(txb, PriceFeedConfig.BUCK)
     updateSinglePrice(txb, PriceFeedConfig.SUIUSDT)
+    updateSinglePrice(txb, PriceFeedConfig.stSUI)
 }
 
 
