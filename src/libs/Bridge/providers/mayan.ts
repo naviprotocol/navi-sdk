@@ -13,6 +13,7 @@ import { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 import { Connection, SendOptions } from "@solana/web3.js";
 import { Signer, Overrides, Contract, parseUnits } from "ethers";
+import { waitForSolanaTransaction } from "../utils";
 
 const ERC20_ABI = [
   "function allowance(address owner, address spender) view returns (uint256)",
@@ -30,7 +31,7 @@ type SuiWalletConnection = {
 
 type SolanaWalletConnection = {
   signTransaction: SolanaTransactionSigner;
-  connection?: Connection;
+  connection: Connection;
   extraRpcs?: string[];
   sendOptions?: SendOptions;
   jitoOptions?: JitoBundleOptions;
@@ -40,6 +41,10 @@ type EVMWalletConnection = {
   overrides: Overrides | null | undefined;
   signer: Signer;
   permit: Erc20Permit | null | undefined;
+  waitForTransaction: (data: {
+    hash: string;
+    confirmations: number;
+  }) => Promise<void>;
 };
 
 export type WalletConnection = {
@@ -92,6 +97,9 @@ export async function swap(
       },
     });
     hash = resp.digest;
+    await client.waitForTransaction({
+      digest: hash,
+    });
   } else if (route.from_token.chainId === 0) {
     if (!walletConnection.solana) {
       throw new Error("Solana wallet connection not found");
@@ -151,6 +159,10 @@ export async function swap(
       null
     );
     hash = typeof swapTrx === "string" ? swapTrx : swapTrx.hash;
+    await connection.waitForTransaction({
+      hash,
+      confirmations: 3,
+    });
   }
 
   return hash;

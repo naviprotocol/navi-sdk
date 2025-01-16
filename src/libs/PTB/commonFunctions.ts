@@ -221,7 +221,7 @@ export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject:
  * @param address - The address for which to retrieve the health factor.
  * @returns The health factor balance.
  */
-export async function getHealthFactor(txb: Transaction, address: string) {
+export async function getHealthFactorPTB(txb: Transaction, address: string) {
     const config = await getConfig();
 
     const balance = txb.moveCall({
@@ -511,11 +511,15 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             if (assetId == '13' && pool.funds == 'bc14736bbe4ac59a4e3af6835a98765c15c5f7dbf9e7ba9b36679ce7ff00dc19') {
                 assetId = '13extra' //Means NS Rewards
             }
+            if (assetId == '15' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
+                assetId = '15extra' //Means DEEP Rewards
+            }
+
             const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
             
             let availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
-            if (assetId == '13extra') {
-                availableFixed = (Number(availableDecimal) / 10 ** 6).toFixed(5); // Adjust for 5 decimal places
+            if (assetId == '13extra' || assetId == '15extra' || assetId == '16') {
+                availableFixed = (Number(availableDecimal) / 10 ** 6).toFixed(5); // coin for Decimals 6
             }
             if (!acc[assetId]) {
 
@@ -531,6 +535,9 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 }
                 if (assetId == '13extra') {
                     acc[assetId] = { asset_id: '13', funds: pool.funds, available: availableFixed };
+                }
+                if (assetId == '15extra') {
+                    acc[assetId] = { asset_id: '15', funds: pool.funds, available: availableFixed };
                 }
             } else {
                 acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
@@ -561,7 +568,10 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                 '13extra': 'NS',
                 '14': 'stBTC',
                 '15': 'DEEP',
-                '16': 'FDUSD'
+                '15extra': 'DEEP',
+                '16': 'FDUSD',
+                '17': 'BLUE',
+                '18': 'BUCK',
             };
             console.log(checkAddress, ' available rewards:');
             Object.keys(summedRewards).forEach(key => {
@@ -569,6 +579,14 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
                 } else if (key == '13extra') {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NS`);
+                } else if (key == '15extra') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} DEEP`);
+                }else if (key == '16') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} FDUSD`);
+                }else if (key == '17') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} BLUE`);
+                }else if (key == '18') {
+                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} BUCK`);
                 } else {
                     console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
                 }
@@ -727,6 +745,9 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.LORENZOBTC)
     updateSinglePrice(txb, PriceFeedConfig.DEEP)
     updateSinglePrice(txb, PriceFeedConfig.FDUSD)
+    updateSinglePrice(txb, PriceFeedConfig.BLUE)
+    updateSinglePrice(txb, PriceFeedConfig.BUCK)
+    updateSinglePrice(txb, PriceFeedConfig.SUIUSDT)
 }
 
 

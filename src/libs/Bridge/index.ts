@@ -112,13 +112,55 @@ export async function swap(
   quote: BridgeSwapQuote,
   fromAddress: string,
   toAddress: string,
-  walletConnection: WalletConnection
+  walletConnection: WalletConnection,
+  referrerAddresses?: {
+    sui?: string;
+    evm?: string;
+    solana?: string;
+  }
 ): Promise<BridgeSwapTransaction> {
+  const startAt = new Date().toISOString();
   const hash = await mayan.swap(
     quote,
     fromAddress,
     toAddress,
-    walletConnection
+    walletConnection,
+    referrerAddresses
   );
-  return await getTransaction(hash);
+  const endAt = new Date().toISOString();
+  const sourceToken = {
+    address: quote.from_token.address,
+    symbol: quote.from_token.symbol,
+    decimals: quote.from_token.decimals,
+  };
+  const destToken = {
+    address: quote.to_token.address,
+    symbol: quote.to_token.symbol,
+    decimals: quote.to_token.decimals,
+  };
+  return {
+    id: hash,
+    status: "processing",
+    lastUpdateAt: endAt,
+    sourceChainId: quote.from_token.chainId,
+    destChainId: quote.to_token.chainId,
+    walletSourceAddress: fromAddress,
+    walletDestAddress: toAddress,
+    totalFeeAmount: quote.total_fee,
+    sourceToken: quote.from_token,
+    destToken: quote.to_token,
+    bridgeFromAmount: quote.amount_in,
+    bridgeToAmount: quote.amount_out,
+    bridgeStartAt: startAt,
+    bridgeEndAt: endAt,
+    bridgeFeeAmount: "0",
+    bridgeSourceTxHash: hash,
+    bridgeDestTxHash: "",
+    bridgeRefundTxHash: "",
+    bridgeStatus: "processing",
+    bridgeProvider: "mayan",
+    bridgeFromToken: sourceToken,
+    bridgeToToken: destToken,
+    hasSwap: false,
+  };
 }

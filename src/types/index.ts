@@ -27,6 +27,9 @@ export interface Pool {
   LorenzoBTC: PoolConfig;
   DEEP: PoolConfig;
   FDUSD: PoolConfig;
+  BLUE: PoolConfig;
+  BUCK: PoolConfig;
+  suiUSDT: PoolConfig;
 }
 
 export interface PoolConfig {
@@ -65,6 +68,7 @@ export enum Dex {
   KRIYA_V3 = "kriyaV3",
   AFTERMATH = "aftermath",
   DEEPBOOK = "deepbook",
+  BLUEFIN = "bluefin",
 }
 
 export type Quote = {
@@ -129,8 +133,7 @@ export type BridgeSwapQuote = {
   min_amount_out: string;
   from_token: Token;
   to_token: Token;
-  bridge_fee: string;
-  network_fee: string;
+  total_fee: string;
   spend_duration: number;
   info_for_bridge: any;
   path: {
@@ -143,7 +146,7 @@ export type BridgeRoutes = {
   routes: BridgeSwapQuote[];
 };
 
-export type BridgeSwapStatus = "process" | "completed" | "fail";
+export type BridgeSwapStatus = "processing" | "completed" | "fail";
 
 export type BridgeSwapTransaction = {
   id: string;
@@ -186,4 +189,9 @@ export type BridgeSwapTransaction = {
   bridgeDestTxHash?: string;
   bridgeRefundTxHash?: string;
   mayan?: any;
+};
+export type MigrateOptions = {
+  apiKey?: string;
+  baseUrl?: string;
+  slippage?: number;
 };
