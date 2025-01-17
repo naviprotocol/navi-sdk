@@ -124,6 +124,7 @@ export type Token = {
 
 export type BridgeSwapOptions = {
   slippageBps?: number;
+  referrerBps?: number;
 };
 
 export type BridgeSwapQuote = {

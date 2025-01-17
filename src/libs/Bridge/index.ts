@@ -78,6 +78,7 @@ export async function getQuote(
       toChain: to.chainId,
       amount,
       slippageBps: options?.slippageBps,
+      referrerBps: options?.referrerBps,
     },
   });
   return res.data.data;
