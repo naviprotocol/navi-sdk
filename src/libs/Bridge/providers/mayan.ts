@@ -13,7 +13,6 @@ import { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 import { Connection, SendOptions } from "@solana/web3.js";
 import { Signer, Overrides, Contract, parseUnits } from "ethers";
-import { waitForSolanaTransaction } from "../utils";
 
 const ERC20_ABI = [
   "function allowance(address owner, address spender) view returns (uint256)",
@@ -53,6 +52,11 @@ export type WalletConnection = {
   evm?: EVMWalletConnection;
 };
 
+enum BridgeChain {
+  SUI = 1999,
+  SOLANA = 0,
+}
+
 export async function swap(
   route: BridgeSwapQuote,
   fromAddress: string,
@@ -69,7 +73,7 @@ export async function swap(
   }
   const mayanQuote = route.info_for_bridge as MayanQuote;
   let hash: string;
-  if (route.from_token.chainId === 1999) {
+  if (route.from_token.chainId === BridgeChain.SUI) {
     if (!walletConnection.sui) {
       throw new Error("Sui wallet connection not found");
     }
@@ -100,7 +104,7 @@ export async function swap(
     await client.waitForTransaction({
       digest: hash,
     });
-  } else if (route.from_token.chainId === 0) {
+  } else if (route.from_token.chainId === BridgeChain.SOLANA) {
     if (!walletConnection.solana) {
       throw new Error("Solana wallet connection not found");
     }
