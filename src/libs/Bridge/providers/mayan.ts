@@ -164,6 +164,11 @@ export async function swap(
       confirmations: 3,
     });
   }
-
+  // wait for 2 seconds to make sure the mayan has processed the transaction
+  await new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, 2000);
+  });
   return hash;
 }
