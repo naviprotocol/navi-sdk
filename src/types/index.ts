@@ -30,6 +30,7 @@ export interface Pool {
   BLUE: PoolConfig;
   BUCK: PoolConfig;
   suiUSDT: PoolConfig;
+  stSUI: PoolConfig;
 }
 
 export interface PoolConfig {
