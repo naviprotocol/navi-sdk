@@ -27,6 +27,7 @@ export const AddressMap: Record<string, string> = {
     '0xe1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE': 'BLUE',
     '0xce7ff77a83ea0cb6fd39bd8748e2ec89a3f41e8efdc3f4eb123e0ca37b184db2::buck::BUCK': 'BUCK',
     '0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT': 'suiUSDT',
+    '0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI': 'stSUI',
 
 };
 
@@ -252,6 +253,15 @@ export const pool: Pool = {
         borrowBalanceParentId: '0x2ad9fe604fb74c1acfe646fe79fc27acf7b62cf4e7d0c6cbb23f6d440ce79306',
         supplyBalanceParentId: '0xe0399b39ca6127a879071371aff22ca98d8e7f24872afa8435a12e2a77c00e15',
     },
+    stSUI: {
+        name: 'stSUI',
+        assetId: 20,
+        poolId: '0x0bccd5189d311002f4e10dc98270a3362fb3f7f9d48164cf40828f6c09f351e2',
+        type: '0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI',
+        reserveObjectId: '0x9a91a751ff83ef1eb940066a60900d479cbd39c6eaccdd203632c97dedd10ce9',
+        borrowBalanceParentId: '0x67bbcb4d8ef039883c568fe74016ba85839d14f158d9926d68cf930a4d16b169',
+        supplyBalanceParentId: '0xfa30b3db35ee961f702f259ea42fb9c5524dce630187e3a7e0b0e24eb0187fef',
+    },
 
 };
 
@@ -377,6 +387,12 @@ export const suiUSDT: CoinInfo = {
     symbol: 'suiUSDT',
     address: '0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT',
     decimal: 6
+}
+
+export const stSUI: CoinInfo = {
+    symbol: 'stSUI',
+    address: '0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI',
+    decimal: 9
 }
 
 export const vSuiConfig = {
@@ -768,6 +784,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
         priceDecimal: 6,
         expiration: 30,
     },
+    STSUI: {
+        oracleId: 20,
+        maxTimestampDiff: 30000, // 30s(millisecond)
+        priceDiffThreshold1: 100,
+        priceDiffThreshold2: 300,
+        maxDurationWithinThresholds: 30000, // 30s(millisecond)
+        maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+        maximumEffectivePrice: 10000000000,
+        minimumEffectivePrice: 100000000,
+        historicalPriceTTL: 300000, // 5min(millisecond)
+        coinType: '0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI',
+        feedId: '0xd7a8c920db9f8b5c3c300307d88fca53684fd15b760977dbf8f0adc6e55783bd',
+        supraPairId: 90,
+        pythPriceFeedId: '0x23d7315113f5b1d3ba7a83604c44b94d79f4fd69af77f804fc7f920a6dc65744',
+        pythPriceInfoObject: '0x801dbc2f0053d34734814b2d6df491ce7807a725fe9a01ad74a07e9c51396c37',
+        priceDecimal: 9,
+        expiration: 30,
+      },
 }
 
 export interface IOracleProConfig {
