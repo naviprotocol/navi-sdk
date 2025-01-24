@@ -14,8 +14,7 @@ export const AggregatorConfig = {
     "0xbd8d4489782042c6fafad4de4bc6a5e0b84a43c6c00647ffd7062d1e2bb7549e",
   kriyaV2PackageId:
     "0xa0eba10b173538c8fecca1dff298e488402cc9ff374f8a12ca7758eebe830b66",
-  clockAddress:
-    "0x6",
+  clockAddress: "0x6",
   aftermathPackageId:
     "0xc4049b2d1cc0f6e017fda8260e4377cecd236bd7f56a54fee120816e72e2e0dd",
   aftermathPoolRegistry:
@@ -32,10 +31,16 @@ export const AggregatorConfig = {
     "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809",
   deepTokenAddress:
     "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP",
-  bluefinPackageId: 
+  bluefinPackageId:
     "0x6c796c3ab3421a68158e0df18e4657b2827b1f8fed5ed4b82dba9c935988711b",
   bluefinGlobalConfig:
-    "0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352"
+    "0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352",
+  vSuiPackageId:
+    "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",
+  haSuiPackageId:
+    "0x3f45767c1aa95b25422f675800f02d8a813ec793a00b60667d071a77ba7178a2",
+  haSuiConfigId:
+    "0x47b224762220393057ebf4f70501b6e657c3e56684737568439a04f80849b2ca",
 };
 
 export function updateConfig(newConfig: Partial<typeof AggregatorConfig>) {

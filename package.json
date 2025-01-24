@@ -1,6 +1,6 @@
 {
   "name": "navi-sdk",
-  "version": "1.4.21",
+  "version": "1.4.24",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
