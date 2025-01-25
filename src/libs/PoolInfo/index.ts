@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { pool } from '../../address';
-import { CoinInfo, Pool, PoolConfig } from "../../types";
+import { CoinInfo, Pool, PoolConfig, PoolsResponse, PoolData } from "../../types";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { getConfig } from "../../address";
 
@@ -144,3 +144,14 @@ export async function getUserRewardHistory(userAddress: string, page: number = 1
         throw error;
     }
 }
+
+export async function getPoolsInfo(): Promise<PoolData[]> {
+    const poolInfoUrl = `https://open-api.naviprotocol.io/api/navi/pools`;
+    try {
+      const response = await axios.get<PoolsResponse>(poolInfoUrl);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching pools information:', error);
+      throw error;
+    }
+  }

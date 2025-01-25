@@ -371,11 +371,13 @@ export async function migrateBorrowPTB(
     const minAmountOut = Math.floor(Number(quote.amount_out) * (1 - slippage));
     const swappedFromCoin = await buildSwapPTBFromQuote(address, txb, minAmountOut, flashCoin, quote);
 
+    const swapCoinValue = txb.moveCall({
+        target: '0x2::coin::value',
+        arguments: [swappedFromCoin],
+        typeArguments: [fromCoin.address],
+    });
 
-    const [repayCoin] = txb.splitCoins(swappedFromCoin, [minAmountOut]);
-    txb.transferObjects([swappedFromCoin], address);
-
-    await repayDebt(txb, fromPoolConfig, repayCoin, minAmountOut);
+    await repayDebt(txb, fromPoolConfig, swappedFromCoin, swapCoinValue);
 
     const [borrowedToCoin] = await borrowCoin(txb, toPoolConfig, loanAmount);
 
