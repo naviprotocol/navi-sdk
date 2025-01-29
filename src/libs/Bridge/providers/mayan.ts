@@ -7,7 +7,7 @@ import {
   JitoBundleOptions,
   Erc20Permit,
   addresses,
-} from "@dontuseit/swap-sdk";
+} from "@mayanfinance/swap-sdk";
 import { BridgeSwapQuote } from "../../../types";
 import { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
