@@ -15,7 +15,6 @@ export const AggregatorConfig = {
   kriyaV2PackageId:
     "0xa0eba10b173538c8fecca1dff298e488402cc9ff374f8a12ca7758eebe830b66",
   clockAddress: "0x6",
-  clockAddress: "0x6",
   aftermathPackageId:
     "0xc4049b2d1cc0f6e017fda8260e4377cecd236bd7f56a54fee120816e72e2e0dd",
   aftermathPoolRegistry:
