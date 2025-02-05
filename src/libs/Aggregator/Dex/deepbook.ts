@@ -9,30 +9,6 @@ export async function makeDeepbookPTB(
   a2b: boolean,
   typeArguments: any
 ) {
-  let baseCoin;
-  let quoteCoin;
-
-  // const deepCoin = txb.moveCall({
-  //     target: '0x2::coin::zero',
-  //     typeArguments: [AggregatorConfig.deepTokenAddress]
-  // })
-
-  // if (a2b) {
-  //     baseCoin = coinA;
-  //     quoteCoin = txb.moveCall({
-  //         target: '0x2::coin::zero',
-  //         typeArguments: [typeArguments[1]]
-  //     })
-
-  // }
-  // else {
-  //     baseCoin = txb.moveCall({
-  //         target: '0x2::coin::zero',
-  //         typeArguments: [typeArguments[0]]
-  //     })
-  //     quoteCoin = coinA;
-
-  // }
   const func = a2b
     ? "swap_exact_base_for_quote_sponsored"
     : "swap_exact_quote_for_base_sponsored";
