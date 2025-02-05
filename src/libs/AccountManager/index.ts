@@ -351,7 +351,10 @@ export class AccountManager {
       await depositCoin(txb, poolConfig, toDeposit, amount);
     } else {
       const mergedCoinObject = returnMergedCoins(txb, coinInfo);
-      await depositCoin(txb, poolConfig, mergedCoinObject, amount);
+      const mergedCoinObjectWithAmount = txb.splitCoins(mergedCoinObject, [
+        amount,
+      ]);
+      await depositCoin(txb, poolConfig, mergedCoinObjectWithAmount, amount);
     }
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
