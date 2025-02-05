@@ -70,6 +70,8 @@ export enum Dex {
   AFTERMATH = "aftermath",
   DEEPBOOK = "deepbook",
   BLUEFIN = "bluefin",
+  VSUI = "vSui",
+  HASUI = "haSui",
 }
 
 export type Quote = {
