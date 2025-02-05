@@ -351,7 +351,10 @@ export class AccountManager {
       await depositCoin(txb, poolConfig, toDeposit, amount);
     } else {
       const mergedCoinObject = returnMergedCoins(txb, coinInfo);
-      await depositCoin(txb, poolConfig, mergedCoinObject, amount);
+      const mergedCoinObjectWithAmount = txb.splitCoins(mergedCoinObject, [
+        amount,
+      ]);
+      await depositCoin(txb, poolConfig, mergedCoinObjectWithAmount, amount);
     }
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);
     return result;
@@ -386,10 +389,13 @@ export class AccountManager {
       await depositCoinWithAccountCap(txb, poolConfig, toDeposit, accountCapAddress);
     } else {
       const mergedCoinObject = returnMergedCoins(txb, coinInfo);
+      const mergedCoinObjectWithAmount = txb.splitCoins(mergedCoinObject, [
+        amount,
+      ]);
       await depositCoinWithAccountCap(
         txb,
         poolConfig,
-        mergedCoinObject,
+        mergedCoinObjectWithAmount,
         accountCapAddress
       );
     }
@@ -514,7 +520,10 @@ export class AccountManager {
       await repayDebt(txb, poolConfig, toDeposit, repayAmount);
     } else {
       const mergedCoinObject = returnMergedCoins(txb, coinInfo);
-      await repayDebt(txb, poolConfig, mergedCoinObject, repayAmount);
+      const mergedCoinObjectWithAmount = txb.splitCoins(mergedCoinObject, [
+        repayAmount,
+      ]);
+      await repayDebt(txb, poolConfig, mergedCoinObjectWithAmount, repayAmount);
     }
 
     const result = SignAndSubmitTXB(txb, this.client, this.keypair);

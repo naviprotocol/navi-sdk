@@ -31,6 +31,7 @@ export interface Pool {
   BUCK: PoolConfig;
   suiUSDT: PoolConfig;
   stSUI: PoolConfig;
+  suiBTC: PoolConfig;
 }
 
 export interface PoolConfig {
