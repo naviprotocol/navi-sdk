@@ -216,21 +216,20 @@ export async function buildSwapPTBFromQuote(
         }
         case Dex.DEEPBOOK: {
           const amountLimit = route.info_for_ptb.amountLimit;
-          const { baseCoinOut, quoteCoinOut, deepCoinOut } =
-            await makeDeepbookPTB(
-              txb,
-              poolId,
-              pathTempCoin,
-              amountLimit,
-              a2b,
-              typeArguments
-            );
+          const { baseCoinOut, quoteCoinOut } = await makeDeepbookPTB(
+            txb,
+            poolId,
+            pathTempCoin,
+            amountLimit,
+            a2b,
+            typeArguments
+          );
           if (a2b) {
             pathTempCoin = quoteCoinOut;
-            txb.transferObjects([baseCoinOut, deepCoinOut], userAddress);
+            txb.transferObjects([baseCoinOut], userAddress);
           } else {
             pathTempCoin = baseCoinOut;
-            txb.transferObjects([quoteCoinOut, deepCoinOut], userAddress);
+            txb.transferObjects([quoteCoinOut], userAddress);
           }
           break;
         }

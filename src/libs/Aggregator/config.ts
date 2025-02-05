@@ -29,6 +29,10 @@ export const AggregatorConfig = {
     "0x35d35b0e5b177593d8c3a801462485572fc30861e6ce96a55af6dc4730709278",
   deepbookPackageId:
     "0x2c8d603bc51326b8c13cef9dd07031a408a48dddb541963357661df5d3204809",
+  deepSponsoredPackageId:
+    "0x5871cfe2f6a5e432caea0a894aa51fc423fba798dfed540859abdf17ecc61219",
+  deepSponsoredPoolConfig:
+    "0x0b5e88bb54746b94bc5c7912f279cba30e0c4bd0241b935ba1d0d0c032218b6f",
   deepTokenAddress:
     "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP",
   bluefinPackageId:
