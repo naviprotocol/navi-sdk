@@ -340,7 +340,6 @@ export async function liquidateFunction(txb: Transaction, payCoinType: CoinInfo,
             txb.pure.u8(collateral_pool.assetId),
             txb.object(collateral_pool.poolId),
             txb.pure.address(to_liquidate_address),
-            txb.object(config.Incentive),
             txb.object(config.IncentiveV2),
             txb.object(config.IncentiveV3),
         ],
@@ -420,148 +419,14 @@ export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
  * @param checkAddress - The address to check for rewards. Defaults to the current address.
  * @param option - The option type. Defaults to 1.
  * @param prettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
- * @returns An object containing the summed rewards for each asset.
+ * @returns An object containing the V2/V3 summed rewards for each asset.
  * @throws If there is an error retrieving the available rewards.
  */
 export async function getAvailableRewards(client: SuiClient, checkAddress: string, option: OptionType = 1, prettyPrint = true) {
-
-    registerStructs();
-    const assetIds = Array.from({ length: Number(Object.keys(pool).length) }, (_, i) => i);
-    try {
-        const allResults = await Promise.all(
-            assetIds.map(assetId => getIncentivePools(client, assetId, option, checkAddress))
-        );
-
-        const allPools = allResults.flat();
-        const activePools = allPools.filter(pool => pool.available.trim() != '0');
-        const summedRewards = activePools.reduce((acc, pool) => {
-            let assetId = pool.asset_id.toString();
-            if (assetId == '0' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
-                assetId = '0extra' //Means Sui Rewards
-            }
-            if (assetId == '5' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
-                assetId = '5extra' //Means NAVX Rewards
-            }
-            if (assetId == '10' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
-                assetId = '10extra' //Means NAVX Rewards
-            }
-            if (assetId == '13' && pool.funds == 'bc14736bbe4ac59a4e3af6835a98765c15c5f7dbf9e7ba9b36679ce7ff00dc19') {
-                assetId = '13extra' //Means NS Rewards
-            }
-            if (assetId == '15' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
-                assetId = '15extra' //Means DEEP Rewards
-            }
-
-            const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
-            
-            let availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
-            if (assetId == '13extra' || assetId == '15extra' || assetId == '16') {
-                availableFixed = (Number(availableDecimal) / 10 ** 6).toFixed(5); // coin for Decimals 6
-            }
-            if (!acc[assetId]) {
-
-                acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
-                if (assetId == '0extra') {
-                    acc[assetId] = { asset_id: '0', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '5extra') {
-                    acc[assetId] = { asset_id: '5', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '10extra') {
-                    acc[assetId] = { asset_id: '10', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '13extra') {
-                    acc[assetId] = { asset_id: '13', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '15extra') {
-                    acc[assetId] = { asset_id: '15', funds: pool.funds, available: availableFixed };
-                }
-            } else {
-                acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
-            }
-
-            return acc;
-        }, {} as { [key: string]: { asset_id: string, funds: string, available: string } });
-
-        if (prettyPrint) {
-            const coinDictionary: { [key: string]: string } = {
-              "0": "Sui",
-              "0extra": "Sui",
-              "1": "wUSDC",
-              "2": "USDT",
-              "3": "WETH",
-              "4": "CETUS",
-              "5": "vSui",
-              "5extra": "vSui",
-              "6": "haSui",
-              "7": "NAVX",
-              "8": "WBTC",
-              "9": "AUSD",
-              "10": "nUSDC",
-              "10extra": "nUSDC",
-              "11": "ETH",
-              "12": "USDY",
-              "13": "NS",
-              "13extra": "NS",
-              "14": "stBTC",
-              "15": "DEEP",
-              "15extra": "DEEP",
-              "16": "FDUSD",
-              "17": "BLUE",
-              "18": "BUCK",
-              "19": "suiUSDT",
-              "20": "stSUI",
-              "21": "suiBTC",
-            };
-            console.log(checkAddress, " available rewards:");
-            Object.keys(summedRewards).forEach((key) => {
-              if (
-                key == "0extra" ||
-                key == "5extra" ||
-                key == "10extra" ||
-                key == "13extra" ||
-                key == "7"
-              ) {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} NAVX`
-                );
-              } else if (key == "13extra") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} NS`
-                );
-              } else if (key == "15extra") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} DEEP`
-                );
-              } else if (key == "16") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} FDUSD`
-                );
-              } else if (key == "17") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} BLUE`
-                );
-              } else if (key == "20") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} stSUI`
-                );
-              } else if (key == "21") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} Deep`
-                );
-              } else {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} vSui`
-                );
-              }
-            });
-        }
-
-        return summedRewards;
-    } catch (error) {
-        console.error('Failed to get available rewards:', error);
-        throw error;
-    }
+    const v2 = await V2.getAvailableRewards(client, checkAddress, option, prettyPrint);
+    const v3 = await V3.getAvailableRewards(client, checkAddress, prettyPrint);
+  
+    return {v2: v2, v3: v3};
 }
 
 /**

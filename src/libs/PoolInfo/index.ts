@@ -155,3 +155,104 @@ export async function getPoolsInfo(): Promise<PoolData[]> {
       throw error;
     }
   }
+export function getPoolsInfoFake(): PoolData[] {
+
+    return [
+        {
+            borrowCapCeiling: "900000000000000000000000000",
+            coinType:
+              "0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+            totalSupplyAmount: "41077517017522846",
+            minimumAmount: "7500000",
+            leftSupply: "33922482.98247715",
+            validBorrowAmount: "36969765315770561.4",
+            borrowedAmount: "26413719230966424",
+            leftBorrowAmount: "36969765289356842.4",
+            availableBorrow: "10556046084804137.4",
+            oracle: {
+              decimal: 9,
+              value: "3432559920",
+              price: "3.43255992",
+              oracleId: 0,
+              valid: true,
+            },
+          },
+          {
+            borrowCapCeiling: "900000000000000000000000000",
+            coinType:
+              "bde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI",
+            totalSupplyAmount: "23667403562788886",
+            minimumAmount: "3500000",
+            leftSupply: "11332596.437211115",
+            validBorrowAmount: "20117293028370553.1",
+            borrowedAmount: "390122340331251",
+            leftBorrowAmount: "20117293027980431.1",
+            availableBorrow: "19727170688039302.1",
+            oracle: {
+              decimal: 9,
+              value: "3432559920",
+              price: "3.43255992",
+              oracleId: 6,
+              valid: true,
+            },
+          },
+        {
+          borrowCapCeiling: "900000000000000000000000000",
+          coinType:
+            "549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+          totalSupplyAmount: "22785078106925185",
+          minimumAmount: "5500000",
+          leftSupply: "32214921.893074814",
+          validBorrowAmount: "19367316390886407.25",
+          borrowedAmount: "1446893362959561",
+          leftBorrowAmount: "19367316389439514.25",
+          availableBorrow: "17920423027926846.25",
+          oracle: {
+            decimal: 9,
+            value: "3432559920",
+            price: "3.43255992",
+            oracleId: 5,
+            valid: true,
+          },
+        },
+        {
+          borrowCapCeiling: "900000000000000000000000000",
+          coinType:
+            "0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
+          totalSupplyAmount: "4982143121335951",
+          minimumAmount: "3000000",
+          leftSupply: "25017856.878664049",
+          validBorrowAmount: "4483928809202355.9",
+          borrowedAmount: "3895223301183381",
+          leftBorrowAmount: "4483928805307132.9",
+          availableBorrow: "588705508018974.9",
+          oracle: {
+            decimal: 6,
+            value: "1000000",
+            price: "1",
+            oracleId: 1,
+            valid: true,
+          },
+        },
+        {
+            borrowCapCeiling: "900000000000000000000000000",
+            coinType:
+              "0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
+            totalSupplyAmount: "1946540534229",
+            minimumAmount: "400",
+            leftSupply: "2053.459465771",
+            validBorrowAmount: "1751886480806.1",
+            borrowedAmount: "144532003143",
+            leftBorrowAmount: "1751886480661.1",
+            availableBorrow: "1607354477663.1",
+            oracle: {
+            decimal: 8,
+            value: "281374096002",
+            price: "2813.74096002",
+            oracleId: 3,
+            valid: true
+            },
+          },
+      ] as any;
+
+  }

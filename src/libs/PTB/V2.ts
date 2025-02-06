@@ -78,6 +78,7 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             if (assetId == '15' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
                 assetId = '15extra' //Means DEEP Rewards
             }
+            console.log(activePools)
 
             const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
             
@@ -112,50 +113,75 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
 
         if (prettyPrint) {
             const coinDictionary: { [key: string]: string } = {
-                '0': 'Sui',
-                '0extra': 'Sui',
-                '1': 'wUSDC',
-                '2': 'USDT',
-                '3': 'WETH',
-                '4': 'CETUS',
-                '5': 'vSui',
-                '5extra': 'vSui',
-                '6': 'haSui',
-                '7': 'NAVX',
-                '8': 'WBTC',
-                '9': 'AUSD',
-                '10': 'nUSDC',
-                '10extra': 'nUSDC',
-                '11': 'ETH',
-                '12': 'USDY',
-                '13': 'NS',
-                '13extra': 'NS',
-                '14': 'stBTC',
-                '15': 'DEEP',
-                '15extra': 'DEEP',
-                '16': 'FDUSD',
-                '17': 'BLUE',
-                '18': 'BUCK',
-                '19': 'suiUSDT',
-                '20': 'stSUI',
+              "0": "Sui",
+              "0extra": "Sui",
+              "1": "wUSDC",
+              "2": "USDT",
+              "3": "WETH",
+              "4": "CETUS",
+              "5": "vSui",
+              "5extra": "vSui",
+              "6": "haSui",
+              "7": "NAVX",
+              "8": "WBTC",
+              "9": "AUSD",
+              "10": "nUSDC",
+              "10extra": "nUSDC",
+              "11": "ETH",
+              "12": "USDY",
+              "13": "NS",
+              "13extra": "NS",
+              "14": "stBTC",
+              "15": "DEEP",
+              "15extra": "DEEP",
+              "16": "FDUSD",
+              "17": "BLUE",
+              "18": "BUCK",
+              "19": "suiUSDT",
+              "20": "stSUI",
+              "21": "suiBTC",
             };
-            console.log(checkAddress, ' available rewards:');
-            Object.keys(summedRewards).forEach(key => {
-                if (key == '0extra' || key == '5extra' || key == '10extra' || key == '13extra' || key == '7') {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NAVX`);
-                } else if (key == '13extra') {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} NS`);
-                } else if (key == '15extra') {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} DEEP`);
-                }else if (key == '16') {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} FDUSD`);
-                }else if (key == '17') {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} BLUE`);
-                }else if (key == '20') {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} stSUI`);
-                } else {
-                    console.log(`${coinDictionary[key]}: ${summedRewards[key].available} vSui`);
-                }
+            console.log(checkAddress, " available rewards:");
+            Object.keys(summedRewards).forEach((key) => {
+              if (
+                key == "0extra" ||
+                key == "5extra" ||
+                key == "10extra" ||
+                key == "13extra" ||
+                key == "7"
+              ) {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} NAVX`
+                );
+              } else if (key == "13extra") {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} NS`
+                );
+              } else if (key == "15extra") {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} DEEP`
+                );
+              } else if (key == "16") {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} FDUSD`
+                );
+              } else if (key == "17") {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} BLUE`
+                );
+              } else if (key == "20") {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} stSUI`
+                );
+              } else if (key == "21") {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} Deep`
+                );
+              } else {
+                console.log(
+                  `${coinDictionary[key]}: ${summedRewards[key].available} vSui`
+                );
+              }
             });
         }
 

@@ -22,7 +22,11 @@ export interface Reward extends BaseRewardFields {
 }
 
 // Original ClaimRewardInput interface
-export interface ClaimRewardInput extends BaseRewardFields {}
+export interface ClaimRewardInput {
+  reward_coin_type: string;
+  asset_vector: string[];
+  rules_vector: string[];
+}
 
 // Original ProcessedReward interface
 // This interface differs significantly from BaseRewardFields (lacks asset_coin_type, uses numeric types).
@@ -67,8 +71,8 @@ interface IncentiveApyInfo {
   apy: number; // Annual percentage yield (APY) for the incentive.
 }
 
-// Original FinalResult interface
-export interface FinalResult {
+// Original ApyResult interface
+export interface ApyResult {
   asset: number; 
   asset_coin_type: string; 
   supplyIncentiveApyInfo: IncentiveApyInfo; 

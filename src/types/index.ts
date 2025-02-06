@@ -42,6 +42,7 @@ export interface PoolConfig {
   reserveObjectId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::ReserveData
   borrowBalanceParentId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::TokenBalance
   supplyBalanceParentId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::TokenBalance
+  rewardFundId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::TokenBalance
 }
 
 export interface CoinInfo {

@@ -36,7 +36,7 @@ export const AddressMap: Record<string, string> = {
     "NS",
   "0x5f496ed5d9d045c5b788dc1bb85f54100f2ede11e46f6a232c29daada4c5bdb6::coin::COIN":
     "stBTC",
-  "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT":
+  "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP":
     "DEEP",
   "0xf16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD":
     "FDUSD",
@@ -78,22 +78,24 @@ async function updateCacheIfNeeded() {
 
 export const getConfig = async () => {
   await updateCacheIfNeeded();
-  const protocolPackage = getPackageCache();
+  // const protocolPackage = getPackageCache();
+  const protocolPackage = '0xacc64a324fc6f68b47fefd484419dedc4d620630665ead67f393c90d11b387b9';
   return {
     ProtocolPackage: protocolPackage,
     StorageId:
-      "0xbb4e2f4b6205c2e2a2db47aeb4f830796ec7c005f88537ee775986639bc442fe",
-    Incentive:
-      "0xaaf735bf83ff564e1b219a0d644de894ef5bdc4b2250b126b2a46dd002331821",
+      "0x111b9d70174462646e7e47e6fec5da9eb50cea14e6c5a55a910c8b0e44cd2913",
     IncentiveV2:
-      "0xf87a8acb8b81d14307894d12595541a73f19933f88e1326d5be349c7a6f7559c", // The new incentive version: V2
+      "0x952b6726bbcc08eb14f38a3632a3f98b823f301468d7de36f1d05faaef1bdd2a", // The new incentive version: V2
+    IncentiveV3:
+      "0x5db4063954356f37ebdc791ec30f4cfd39734feff18820ee44dc2d2de96db899", // The new incentive version: V2
 
     PriceOracle:
       "0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef",
     ReserveParentId:
       "0xe6d4c6610b86ce7735ea754596d71d72d10c7980b5052fc3c8cdf8d09fea9b4b", // get it from storage object id. storage.reserves
     uiGetter:
-      "0x1ee4061d3c78d6244b5f32eb4011d081e52f5f4b484ca4a84de48b1146a779f7",
+      "0x7534e0ef352024d79bda0388bfc4af581b7eb006591ce63288182898af29d9b1",
+      // "0x1ee4061d3c78d6244b5f32eb4011d081e52f5f4b484ca4a84de48b1146a779f7",
     flashloanConfig:
       "0x3672b2bf471a60c30a03325f104f92fb195c9d337ba58072dce764fe2aa5e2dc",
     flashloanSupportedAssets:
@@ -106,7 +108,8 @@ export const pool: Pool = {
     name: "SUI",
     assetId: 0,
     poolId:
-      "0x96df0fce3c471489f4debaaa762cf960b3d97820bd1f3f025ff8190730e958c5",
+      // "0x96df0fce3c471489f4debaaa762cf960b3d97820bd1f3f025ff8190730e958c5",
+      "0x68b420259e3adcdadf165350984f59dfdaf677c3d639aaa54c1d907dae2dd1a3",
     type: "0x2::sui::SUI",
     reserveObjectId:
       "0xab644b5fd11aa11e930d1c7bc903ef609a9feaf9ffe1b23532ad8441854fbfaf",
@@ -114,19 +117,24 @@ export const pool: Pool = {
       "0xe7ff0daa9d090727210abe6a8b6c0c5cd483f3692a10610386e4dc9c57871ba7",
     supplyBalanceParentId:
       "0x589c83af4b035a3bc64c40d9011397b539b97ea47edf7be8f33d643606bf96f8",
+    rewardFundId: "",
   },
   USDT: {
     name: "USDT",
     assetId: 2,
     poolId:
       "0x0e060c3b5b8de00fb50511b7a45188c8e34b6995c01f69d98ea5a466fe10d103",
-    type: "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
+    // TODO: change
+    // type: "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
+    type: "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
     reserveObjectId:
       "0xb8c5eab02a0202f638958cc79a69a2d30055565caad1684b3c8bbca3bddcb322",
     borrowBalanceParentId:
       "0xc14d8292a7d69ae31164bafab7ca8a5bfda11f998540fe976a674ed0673e448f",
     supplyBalanceParentId:
       "0x7e2a49ff9d2edd875f82b76a9b21e2a5a098e7130abfd510a203b6ea08ab9257",
+    // TODO: change
+    rewardFundId: "0x619cc3b88a0901e972ae88bdfb51f901170a4b6276bde101e20b7eb852b92632",
   },
   WETH: {
     name: "WETH",
@@ -140,6 +148,7 @@ export const pool: Pool = {
       "0x7568d06a1b6ffc416a36c82791e3daf0e621cf19d4a2724fc6f74842661b6323",
     supplyBalanceParentId:
       "0xa668905b1ad445a3159b4d29b1181c4a62d864861b463dd9106cc0d97ffe8f7f",
+    rewardFundId: "",
   },
   CETUS: {
     name: "CETUS",
@@ -153,6 +162,7 @@ export const pool: Pool = {
       "0x4c3da45ffff6432b4592a39cdb3ce12f4a28034cbcb804bb071facc81fdd923d",
     supplyBalanceParentId:
       "0x6adc72faf2a9a15a583c9fb04f457c6a5f0b456bc9b4832413a131dfd4faddae",
+    rewardFundId: "",
   },
   vSui: {
     name: "VoloSui",
@@ -166,12 +176,14 @@ export const pool: Pool = {
       "0x8fa5eccbca2c4ba9aae3b87fd44aa75aa5f5b41ea2d9be4d5321379384974984",
     supplyBalanceParentId:
       "0xe6457d247b6661b1cac123351998f88f3e724ff6e9ea542127b5dcb3176b3841",
+    rewardFundId: "0x4a1bf763bdf03c1fae15d7329db115ed37b8bf3c323938a3ddaa6b6e31a89789",
   },
   haSui: {
     name: "HaedalSui",
     assetId: 6,
     poolId:
-      "0x6fd9cb6ebd76bc80340a9443d72ea0ae282ee20e2fd7544f6ffcd2c070d9557a",
+      // "0x6fd9cb6ebd76bc80340a9443d72ea0ae282ee20e2fd7544f6ffcd2c070d9557a",
+      "0x2e2fe883402d0b077fc000ab947192fc8c055ad9213bc6d4e8ebc73aaf315f5a",
     type: "0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI",
     reserveObjectId:
       "0x0c9f7a6ca561dc566bd75744bcc71a6af1dc3caf7bd32c099cd640bb5f3bb0e3",
@@ -179,6 +191,7 @@ export const pool: Pool = {
       "0x01f36898e020be6c3423e5c95d9f348868813cd4d0be39b0c8df9d8de4722b00",
     supplyBalanceParentId:
       "0x278b8e3d09c3548c60c51ed2f8eed281876ea58c392f71b7ff650cc9286d095b",
+    rewardFundId: "",
   },
   NAVX: {
     name: "NAVX",
@@ -192,6 +205,7 @@ export const pool: Pool = {
       "0xa5bf13075aa400cbdd4690a617c5f008e1fae0511dcd4f7121f09817df6c8d8b",
     supplyBalanceParentId:
       "0x59dedca8dc44e8df50b190f8b5fe673098c1273ac6168c0a4addf3613afcdee5",
+    rewardFundId: "",
   },
   WBTC: {
     name: "WBTC",
@@ -205,6 +219,7 @@ export const pool: Pool = {
       "0x55e1f3c9e6e5cf9fff563bdd61db07a3826458c56ef72c455e049ab3b1b0e99c",
     supplyBalanceParentId:
       "0x821e505a0091b089edba94deaa14c2f2230d026bbaa7b85680554441aad447e0",
+    rewardFundId: "",
   },
   AUSD: {
     name: "AUSD",
@@ -218,6 +233,7 @@ export const pool: Pool = {
       "0x551300b9441c9a3a16ca1d7972c1dbb4715e15004ccd5f001b2c2eee22fd92c1",
     supplyBalanceParentId:
       "0xe151af690355de8be1c0281fbd0d483c099ea51920a57c4bf8c9666fd36808fd",
+      rewardFundId: "",
   },
   wUSDC: {
     name: "wUSDC",
@@ -231,6 +247,7 @@ export const pool: Pool = {
       "0x8a3aaa817a811131c624658f6e77cba04ab5829293d2c49c1a9cce8ac9c8dec4",
     supplyBalanceParentId:
       "0x8d0a4467806458052d577c8cd2be6031e972f2b8f5f77fce98aa12cd85330da9",
+      rewardFundId: "",
   },
   nUSDC: {
     name: "nUSDC",
@@ -244,19 +261,23 @@ export const pool: Pool = {
       "0xb0b0c7470e96cabbb4f1e8d06bef2fbea65f4dbac52afae8635d9286b1ea9a09",
     supplyBalanceParentId:
       "0x08b5ce8574ac3bc9327e66ad5decd34d07ee798f724ad01058e8855ac9acb605",
+      rewardFundId: "",
   },
   ETH: {
     name: "ETH",
     assetId: 11,
     poolId:
       "0x78ba01c21d8301be15690d3c30dc9f111871e38cfb0b2dd4b70cc6052fba41bb",
-    type: "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
+    // TODO: change
+    // type: "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
+    type: "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
     reserveObjectId:
       "0x376faea6dfbffab9ea808474cb751d91222b6d664f38c0f1d23de442a8edb1ce",
     borrowBalanceParentId:
       "0xf0c6ce5cfaee96073876a5fab7426043f3a798b79502c4caeb6d9772cd35af1f",
     supplyBalanceParentId:
       "0xc0a0cb43620eb8a84d5a4a50a85650e7fa7ba81e660f9cc2863404fd84591d4b",
+      rewardFundId: "0xfb0de07cd39509ecb312464daa9442fac0eb4487d7a9b984cdfc39c1fb7d2791",
   },
   USDY: {
     name: "USDY",
@@ -270,6 +291,7 @@ export const pool: Pool = {
       "0xc0f59c5665d6289408ba31efc48718daa4d14a291a303a0d50d306e51eb68872",
     supplyBalanceParentId:
       "0x8aac332c01340926066a53f7a5f8ac924e61ea2ae6bc6ce61f112e9094fd5639",
+      rewardFundId: "",
   },
   NS: {
     name: "NS",
@@ -283,6 +305,7 @@ export const pool: Pool = {
       "0x2c7b7e6d323ca8f63908bb03191225a2ecf177bf0c4602ccd21d7ac121d52fa4",
     supplyBalanceParentId:
       "0x071dc718b1e579d476d088456979e30d142ecdde6a6eec875477b5b4786530f0",
+      rewardFundId: "",
   },
   LorenzoBTC: {
     name: "stBTC",
@@ -296,6 +319,7 @@ export const pool: Pool = {
       "0xb5cac1b39f67da86f4496f75339001a12f4b8ba78b047682f5158ac4ae8e1649",
     supplyBalanceParentId:
       "0xad0d8be450e020f54e3212b5b1f4f1256bb8ea882bc85bc9f86708f73d653720",
+      rewardFundId: "",
   },
   DEEP: {
     name: "DEEP",
@@ -309,6 +333,7 @@ export const pool: Pool = {
       "0xba03bb3e0167e1ec355926dfe0c130866857b062b93fb5d9cfba20824ad9f1d5",
     supplyBalanceParentId:
       "0x3fdd91f32dcea2af6e16ae66a7220f6439530ef6238deafe5a72026b3e7aa5f5",
+      rewardFundId: "",
   },
   FDUSD: {
     name: "FDUSD",
@@ -322,6 +347,7 @@ export const pool: Pool = {
       "0x4a4bb401f011c104083f56e3ee154266f1a88cad10b8acc9c993d4da304ebf00",
     supplyBalanceParentId:
       "0x6dffc3d05e79b055749eae1c27e93a47b5a9999214ce8a2f6173574151d120bf",
+      rewardFundId: "",
   },
   BLUE: {
     name: "BLUE",
@@ -335,6 +361,7 @@ export const pool: Pool = {
       "0x897b75f0e55b9cfaae65e818d02ebefa5c91d4cf581f9c7c86d6e39749c87020",
     supplyBalanceParentId:
       "0xc12b3d04d566fb418a199a113c09c65c121fd878172084ec0c60e08def51726f",
+      rewardFundId: "",
   },
   BUCK: {
     name: "BUCK",
@@ -348,6 +375,7 @@ export const pool: Pool = {
       "0x6ae3645ff5936c10ab98c2529d3a316b0d4b22eff46d0d262e27db41371af597",
     supplyBalanceParentId:
       "0xdcd4fd6c686eebb54b1816e9851183647a306817303d306bbf70f82757f3eff9",
+      rewardFundId: "",
   },
   suiUSDT: {
     name: "suiUSDT",
@@ -361,6 +389,7 @@ export const pool: Pool = {
       "0x2ad9fe604fb74c1acfe646fe79fc27acf7b62cf4e7d0c6cbb23f6d440ce79306",
     supplyBalanceParentId:
       "0xe0399b39ca6127a879071371aff22ca98d8e7f24872afa8435a12e2a77c00e15",
+      rewardFundId: "",
   },
   stSUI: {
     name: "stSUI",
@@ -374,6 +403,7 @@ export const pool: Pool = {
       "0x67bbcb4d8ef039883c568fe74016ba85839d14f158d9926d68cf930a4d16b169",
     supplyBalanceParentId:
       "0xfa30b3db35ee961f702f259ea42fb9c5524dce630187e3a7e0b0e24eb0187fef",
+      rewardFundId: "",
   },
   suiBTC: {
     name: "suiBTC",
@@ -387,6 +417,7 @@ export const pool: Pool = {
       "0x33d8a4cb800c863f19ae27fc173e1eb5895cdbcea7ae302b756fb275c678dc72",
     supplyBalanceParentId:
       "0xf99e9bbd4c2b5dee460abeddc0f96042f2fb51420cb634d5a378d5d7643dd189",
+      rewardFundId: "",
   },
 };
 
@@ -633,7 +664,9 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     minimumEffectivePrice: 100000, // 0.1 = 0.1 * 1e6 = 100000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
     coinType:
-      "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
+    // TODO: change
+      // "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
+      "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
     feedId:
       "0xf72d8933873bb4e5bfa1edbfa9ff6443ec5fac25c1d99ba2ef37f50a125826f3", // TODO: value
     supraPairId: 48, // USDT_USD -> 48, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,USDT_USD,-48
@@ -831,7 +864,9 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
     coinType:
-      "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
+    // TODO: change
+      // "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
+      "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
     feedId:
       "0x9a6ffc707270286e98e8d0f654ce38f69efbc302ac98e2deb11fbad2211600f0", // TODO: value
     supraPairId: 1, // ETH_USDT -> 1, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,ETH_USDT,-1
