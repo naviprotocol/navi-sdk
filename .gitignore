@@ -134,3 +134,5 @@ src/tryThisDemo.ts
 *.Identifier
 
 src/**/.DS_Store
+
+.DS_Store
