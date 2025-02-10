@@ -3,9 +3,10 @@ import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { bcs } from "@mysten/sui.js/bcs";
 
 import { moveInspect } from "../CallFunctions";
+import { depositCoin } from "./commonFunctions";
 import { getPoolsInfo, getPoolsInfoFake } from "../PoolInfo";
 import { getConfig, PriceFeedConfig, pool } from "../../address";
-import { V3Type, PoolData, Pool } from "../../types";
+import { V3Type, PoolData, Pool, PoolConfig } from "../../types";
 
 const SECONDS_PER_DAY = 86400;
 const RATE_MULTIPLIER = 1000;
@@ -89,16 +90,19 @@ export async function getAvailableRewards(
         if (!acc[asset_coin_type]) {
           acc[asset_coin_type] = [];
         }
-  
+        const assertCoinKey = Object.keys(PriceFeedConfig).find(
+          (key) => PriceFeedConfig[key].coinType === `0x${asset_coin_type}`
+        );
         // Map reward coin types to their respective configuration for precision.
-        const coinKey = Object.keys(PriceFeedConfig).find(
+        const rewardCoinKey = Object.keys(PriceFeedConfig).find(
           (key) => PriceFeedConfig[key].coinType === `0x${reward_coin_type}`
         );
+        if (!rewardCoinKey || !assertCoinKey) {
+          return acc
+        }
   
         // Determine decimal precision based on the coin configuration.
-        const decimalPrecision = coinKey
-          ? PriceFeedConfig[coinKey].priceDecimal
-          : 0; // Default precision if the coin type is not found.
+        const decimalPrecision = PriceFeedConfig[rewardCoinKey].priceDecimal
   
         // Convert raw reward amounts to human-readable values.
         const convertedClaimable =
@@ -108,6 +112,8 @@ export async function getAvailableRewards(
   
         // Append the reward details to the grouped rewards.
         acc[asset_coin_type].push({
+          assert_id: PriceFeedConfig[assertCoinKey].oracleId.toString(),
+          reward_id: PriceFeedConfig[rewardCoinKey].oracleId.toString(),
           reward_coin_type,
           user_claimable_reward: convertedClaimable,
           user_claimed_reward: convertedClaimed,
@@ -253,7 +259,141 @@ export async function claimAllRewardsPTB(
   return tx;
   }
 
+/**
+ * Claim a specific reward by calling the Move entry function.
+ * @param tx The Transaction object.
+ * @param rewardInfo The minimal reward info, including asset_coin_type, reward_coin_type, rule_ids
+ */
+export async function claimRewardResupplyFunction(
+  tx: Transaction,
+  rewardInfo: V3Type.ClaimRewardInput,
+  userAddress: string
+): Promise<void> {
+  const config = await getConfig();
+  const notDepositCoinType = [
+    '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT',
+    '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH'
+  ]
+  console.log("Claiming reward:", rewardInfo);
 
+  // Find matching rewardFund from the pool config
+  let matchedRewardFund: string | null = null;
+  let toPoolConfig: PoolConfig | null = null;
+
+  for (const key of Object.keys(pool) as (keyof Pool)[]) {
+    // e.g. "0x2::sui::SUI".slice(2) => "2::sui::SUI"
+    const coinTypeWithoutHex = pool[key].type.startsWith("0x")
+      ? pool[key].type.slice(2)
+      : pool[key].type;
+
+    const rewardCoinTypeWithoutHex = rewardInfo.reward_coin_type.startsWith("0x")
+      ? rewardInfo.reward_coin_type.slice(2)
+      : rewardInfo.reward_coin_type;
+
+    if (coinTypeWithoutHex === rewardCoinTypeWithoutHex) {
+      matchedRewardFund = pool[key].rewardFundId;
+      toPoolConfig = pool[key];
+      break;
+    }
+  }
+
+  if (!matchedRewardFund || !toPoolConfig) {
+    throw new Error(
+      `No matching rewardFund found for reward_coin_type: ${rewardInfo.reward_coin_type}`
+    );
+  }
+
+  // Construct the Move call 
+  const reward_balance = tx.moveCall({
+    target: `${config.ProtocolPackage}::incentive_v3::claim_reward`,
+    arguments: [
+      tx.object("0x06"),                  
+      tx.object(config.IncentiveV3),
+      tx.object(config.StorageId),
+      tx.object(matchedRewardFund),
+      tx.pure.vector("string", rewardInfo.asset_vector),
+      tx.pure.vector("address", rewardInfo.rules_vector)
+    ],
+    typeArguments: [toPoolConfig.type]
+  });
+
+    const [reward_coin]: any = tx.moveCall({
+        target: '0x2::coin::from_balance',
+        arguments: [reward_balance],
+        typeArguments: [toPoolConfig.type],
+    });
+
+    if (notDepositCoinType.includes(rewardInfo.reward_coin_type)) {
+      tx.transferObjects([reward_coin], userAddress)
+    } else {
+      const reward_coin_value = tx.moveCall({
+        target: '0x2::coin::value',
+        arguments: [reward_coin],
+        typeArguments: [toPoolConfig.type],
+    });
+  console.log(toPoolConfig)
+  // tx.transferObjects([reward_coin], userAddress)
+    await depositCoin(tx, toPoolConfig, reward_coin, reward_coin_value);
+    }
+
+}
+
+/**
+* Claim all rewards for a user by iterating through the grouped rewards.
+* @param client SuiClient instance
+* @param userAddress The address of the user to claim for
+* @param existingTx (Optional) If provided, we append to this Transaction instead of creating a new one
+* @returns The Transaction with all claim commands appended
+*/
+export async function claimAllRewardsResupplyPTB(
+  client: SuiClient,
+  userAddress: string,
+  existingTx?: Transaction
+): Promise<Transaction> {
+
+// Initialize the transaction object, use existingTx if provided
+const tx = existingTx ?? new Transaction();
+
+// Fetch the available grouped rewards for the user
+const groupedRewards = await getAvailableRewards(client, userAddress);
+if (!groupedRewards) {
+  return tx
+}
+console.log(groupedRewards)
+// Object to store aggregated rewards by coin type
+const rewardMap = new Map<string, { assetIds: string[]; ruleIds: string[] }>();
+
+// Single-pass aggregation using Map for O(1) lookups
+for (const [poolId, rewards] of Object.entries(groupedRewards)) {
+  for (const reward of rewards) {
+    const { reward_coin_type: coinType, rule_ids: ruleIds } = reward;
+    
+    for (const ruleId of ruleIds) {
+      if (!rewardMap.has(coinType)) {
+        rewardMap.set(coinType, { assetIds: [], ruleIds: [] });
+      }
+      
+      const group = rewardMap.get(coinType)!;
+      group.assetIds.push(poolId);
+      group.ruleIds.push(ruleId);
+    }
+  }
+}
+
+// Asynchronously create claim transaction instructions for each reward coin type
+Array.from(rewardMap).map(
+  async ([coinType, { assetIds, ruleIds }]) => {
+    const claimInput: V3Type.ClaimRewardInput = {
+      reward_coin_type: coinType,
+      asset_vector: assetIds,
+      rules_vector: ruleIds,
+    };
+    await claimRewardResupplyFunction(tx, claimInput, userAddress);
+  }
+);
+
+return tx;
+}
 
 /**
  * Build a map of coinType -> price from the provided pool information.

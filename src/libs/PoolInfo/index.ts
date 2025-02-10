@@ -218,7 +218,7 @@ export function getPoolsInfoFake(): PoolData[] {
         {
           borrowCapCeiling: "900000000000000000000000000",
           coinType:
-            "0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
+            "0xeedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
           totalSupplyAmount: "4982143121335951",
           minimumAmount: "3000000",
           leftSupply: "25017856.878664049",
@@ -237,7 +237,7 @@ export function getPoolsInfoFake(): PoolData[] {
         {
             borrowCapCeiling: "900000000000000000000000000",
             coinType:
-              "0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
+              "0xeedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
             totalSupplyAmount: "1946540534229",
             minimumAmount: "400",
             leftSupply: "2053.459465771",

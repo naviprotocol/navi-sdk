@@ -31,6 +31,8 @@ export interface ClaimRewardInput {
 // Original ProcessedReward interface
 // This interface differs significantly from BaseRewardFields (lacks asset_coin_type, uses numeric types).
 export interface ProcessedReward {
+  assert_id: string;
+  reward_id: string;
   reward_coin_type: string; // The coin type used for the reward.
   rule_ids: string[]; // An array of rule IDs associated with the reward.
   user_claimable_reward: number; 
