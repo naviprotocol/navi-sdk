@@ -1,4 +1,4 @@
-import { Pool, CoinInfo } from './types';
+import { Pool, CoinInfo,PoolConfig } from './types';
 import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
 
 
@@ -110,13 +110,13 @@ export const getConfig = async () => {
   };
 };
 
-export const pool: Pool = {
+export const pool: { [key: string]: PoolConfig}  = {
   Sui: {
     name: "SUI",
     assetId: 0,
     poolId:
       "0x68b420259e3adcdadf165350984f59dfdaf677c3d639aaa54c1d907dae2dd1a3",
-    type: "0x2::sui::SUI",
+    type: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
     reserveObjectId:
       "0x278cec0691f79d7ba7a4dfef5490d9419eb4e7a48d6cab88d9fa187952ee5462",
     borrowBalanceParentId:
@@ -195,7 +195,7 @@ export const pool: Pool = {
       "0x19807c58a9ba177673e7950208059c7bfe158943fc12a5f015a6e4a2625ac8a9",
     rewardFundId: "",
   },
-  HASUI: {
+  haSui: {
     name: "HASUI",
     assetId: 6,
     poolId:
@@ -641,6 +641,12 @@ export const suiBTC: CoinInfo = {
   decimal: 8,
 };
 
+export const nUSDC: CoinInfo = {
+  symbol: "nUSDC",
+  address:
+    "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC",
+  decimal: 6,
+};
 export const vSuiConfig = {
   ProtocolPackage:
     "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",
@@ -882,7 +888,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     minimumEffectivePrice: 10000, // 0.01 = 0.01 * 1e6 = 10000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
     coinType:
-      "0x960b531667636f39e85867775f52f6b1f220a058c4de786905bdf761e06a56bb::usdy::USDY",
+      "a45fa952a312a0a504fafb9bf3fc95faaccdfe613a740190c511663600d39010::usdys::USDYS",
     feedId:
       "0x11ddf2ac1868d493e2487deeb2a0c2791bb7ca69632c8c5fefe85e09390be093", // TODO: values
     supraPairId: 185,
@@ -1050,7 +1056,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     expiration: 30,
   },
   ETH: {
-    oracleId: 17,
+    oracleId: 18,
     maxTimestampDiff: 30 * 1000, // 30s(millisecond)
     priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
     priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
@@ -1073,7 +1079,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
   },
 
   NS: {
-    oracleId: 18,
+    oracleId: 20,
     maxTimestampDiff: 30000, // 30s(millisecond)
     priceDiffThreshold1: 80, // x1: 0.8% = 0.008 * 10000 = 80
     priceDiffThreshold2: 150, // x2: 1.5% = 0.015 * 10000 = 150
@@ -1095,7 +1101,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     expiration: 30,
   },
   LORENZOBTC: {
-    oracleId: 19,
+    oracleId: 21,
     maxTimestampDiff: 30000, // 30s(millisecond)
     priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
     priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
@@ -1117,7 +1123,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     expiration: 30,
   },
   DEEP: {
-    oracleId: 20,
+    oracleId: 19,
     maxTimestampDiff: 30000, // 30s(millisecond)
     priceDiffThreshold1: 200, // x1: 2% = 0.02 * 10000 = 200
     priceDiffThreshold2: 400, // x2: 4% = 0.04 * 10000 = 400
@@ -1139,7 +1145,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     expiration: 30,
   },
   STSUI: {
-    oracleId: 21,
+    oracleId: 22,
     maxTimestampDiff: 30000, // 30s(millisecond)
     priceDiffThreshold1: 100,
     priceDiffThreshold2: 300,
@@ -1161,7 +1167,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     expiration: 30,
   },
   BLUE: {
-    oracleId: 22,
+    oracleId: 23,
     maxTimestampDiff: 30000, // 30s(millisecond)
     priceDiffThreshold1: 200, // x1: 0.8% = 0.008 * 10000 = 80
     priceDiffThreshold2: 400, // x2: 1.5% = 0.015 * 10000 = 150
@@ -1184,7 +1190,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
   },
 
   SUIUSDT: {
-    oracleId: 23,
+    oracleId: 24,
     maxTimestampDiff: 30000, // 30s(millisecond)
     priceDiffThreshold1: 80,
     priceDiffThreshold2: 150,
@@ -1207,7 +1213,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
   },
 
   SUIBTC: {
-    oracleId: 24,
+    oracleId: 25,
     maxTimestampDiff: 30 * 1000, // 30s(millisecond)
     priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
     priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
@@ -1259,13 +1265,13 @@ export const OracleProConfig: IOracleProConfig = {
     GasObject: '0x1e30410559ed83708ee1bb6b21e3a1dae96f1768ce35ed8233590b130ddc0086', // TODO: value
 }
 
-export const ProFundsPoolInfo = {
+export const ProFundsPoolInfo: Record<string, { coinType: string; oracleId: number }> = {
   '524e28adcb04fe8b0ac5ddc23e6ca78f9a7d8afa17b680f6e59e7ab406ba60a9': {
     coinType: '0x2::sui::SUI',
     oracleId: 0,
 },
 '6797966d809eccdd4827a49012c32172e2cac7dda27109aab922c513e83cf0c9': {
-    coinType: '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT',
+    coinType: '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdc::USDC',
     oracleId: 1,
 },
 'f78f9269623a8a4b8b46b84ac4382ad450deea3d305cd8143870577332399e1f': {
@@ -1289,3 +1295,8 @@ export const ProFundsPoolInfo = {
     oracleId: 8,
 },
 }
+export const noDepositCoinType = [
+  '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT',
+  '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH',
+  '0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdc::USDC',
+]

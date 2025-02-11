@@ -55,7 +55,9 @@ export async function getIncentivePools(client: SuiClient, assetId: number, opti
 export async function getAvailableRewards(client: SuiClient, checkAddress: string, option: OptionType = 1, prettyPrint = true) {
 
     registerStructs();
+    
     const assetIds = Array.from({ length: Number(Object.keys(pool).length) }, (_, i) => i);
+
     try {
         const allResults = await Promise.all(
             assetIds.map(assetId => getIncentivePools(client, assetId, option, checkAddress))
@@ -292,24 +294,6 @@ export async function claimAllRewardsResupplyPTB(client: SuiClient, userToCheck:
 export async function claimRewardResupplyFunction(txb: Transaction, incentiveFundsPool: string, assetId: string, option: OptionType) {
   const config = await getConfig();
 
-  const ProFundsPoolInfo: any = {
-      'f975bc2d4cca10e3ace8887e20afd77b46c383b4465eac694c4688344955dea4': {
-          coinType: '0x2::sui::SUI',
-          oracleId: 0,
-      },
-      'e2b5ada45273676e0da8ae10f8fe079a7cec3d0f59187d3d20b1549c275b07ea': {
-          coinType: '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT',
-          oracleId: 5,
-      },
-      'a20e18085ce04be8aa722fbe85423f1ad6b1ae3b1be81ffac00a30f1d6d6ab51': {
-          coinType: '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI',
-          oracleId: 6,
-      },
-      '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09': {
-          coinType: '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX',
-          oracleId: 7,
-      },
-  }
   const reward_balance = txb.moveCall({
       target: `${config.ProtocolPackage}::incentive_v2::claim_reward_non_entry`,
       arguments: [
@@ -320,7 +304,7 @@ export async function claimRewardResupplyFunction(txb: Transaction, incentiveFun
           txb.pure.u8(Number(assetId)),
           txb.pure.u8(option),
       ],
-      typeArguments: [ProFundsPoolInfo[incentiveFundsPool].coinType],
+      typeArguments: [ProFundsPoolInfo[incentiveFundsPool].coinType ],
   })
     const [reward_coin]: any = txb.moveCall({
         target: '0x2::coin::from_balance',
@@ -333,6 +317,8 @@ export async function claimRewardResupplyFunction(txb: Transaction, incentiveFun
       typeArguments: [ProFundsPoolInfo[incentiveFundsPool].coinType],
   });
   const foundPoolConfig = Object.values(pool).find(poolConfig => poolConfig.type === ProFundsPoolInfo[incentiveFundsPool].coinType);
-
+  if (!foundPoolConfig) {
+    throw new Error(`Pool configuration not found. incentiveFundsPool: ${incentiveFundsPool}, ProFundsPoolInfo: ${JSON.stringify(ProFundsPoolInfo?.[incentiveFundsPool])}`);
+  }
   await depositCoin(txb, foundPoolConfig, reward_coin, reward_coin_value);
 }

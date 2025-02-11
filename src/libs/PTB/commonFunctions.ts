@@ -412,7 +412,10 @@ export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
     return coin;
 }
 
-
+type PoolRewards = {
+    assetId: number;
+    rewards: { coinType: string; available: string }[];
+  };
 /**
  * Retrieves the available rewards for a given address.
  * 
@@ -422,112 +425,89 @@ export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
  * @returns An object containing the V2/V3 summed rewards for each asset.
  * @throws If there is an error retrieving the available rewards.
  */
-export async function getAvailableRewards(client: SuiClient, checkAddress: string, option: OptionType = 1, prettyPrint = true) {
-    const v2 = await V2.getAvailableRewards(client, checkAddress, option, prettyPrint);
-    const v3 = await V3.getAvailableRewards(client, checkAddress, prettyPrint);
+export async function getAvailableRewards(
+    client: SuiClient,
+    checkAddress: string,
+    prettyPrint = true,
+    includeV2: boolean = true // Feature flag to enable/disable V2 logic
+  ): Promise<PoolRewards[]> {
+    // Fetch V2 rewards (option 1 and option 3) and V3 rewards concurrently.
+    const [v2DataOpt1, v2DataOpt3, v3Data] = await Promise.all([
+      includeV2 ? V2.getAvailableRewards(client, checkAddress, 1, prettyPrint) : Promise.resolve(null),
+      includeV2 ? V2.getAvailableRewards(client, checkAddress, 3, prettyPrint) : Promise.resolve(null),
+      V3.getAvailableRewards(client, checkAddress, prettyPrint),
+    ]);
+  
+    // Type definitions
     type V2Entry = {
-        asset_id: string;
-        funds: string;
-        available: string;
-        reward_id: string;
-        reward_coin_type: string;
-      };
-      
-      type V3Entry = {
-        assert_id: string;
-        reward_id: string;
-        reward_coin_type: string;
-        user_claimable_reward: number;
-      };
-      
-      type PoolRewards = {
-        assetId: number;
-        rewards: {
-          coinType: string;
-          available: string;
-        }[];
-      };
-      
-      /**
-       * 优化后的数据聚合：
-       * 1. 先构造一个中间聚合 Map，key 为 compositeKey = `${assetId}-${reward_id}-${reward_coin_type}`，
-       *    value 记录 v2 的 available（如果存在）以及 v3 的累计 user_claimable_reward。
-       * 2. 最后按 assetId 对数据进行分组，得到最终的 PoolRewards 数组。
-       */
-      function aggregatePoolRewards(
-        v2Data: Record<string, V2Entry> | null,
-        v3Data: Record<string, V3Entry[]> | null
-      ): PoolRewards[] {
-        // 中间聚合结构：compositeKey => { assetId, coinType, v2, v3 }
-        v2Data = v2Data || {};
-        v3Data = v3Data || {};
-        const agg = new Map<
-          string,
-          { assetId: number; coinType: string; v2: number; v3: number }
-        >();
-      
-        // 处理 v2 数据，记录 available 数值（注意同一组合只记一次）
-        for (const entry of Object.values(v2Data)) {
-          const assetId = parseInt(entry.asset_id, 10);
-          const compositeKey = `${assetId}-${entry.reward_id}-${entry.reward_coin_type}`;
-          agg.set(compositeKey, {
-            assetId,
-            coinType: entry.reward_coin_type,
-            v2: parseFloat(entry.available),
-            v3: 0,
-          });
+      asset_id: string;
+      available: string;
+      reward_id: string;
+      reward_coin_type: string;
+    };
+  
+    type V3Entry = {
+      // "assert_id" represents the asset id.
+      assert_id: string;
+      reward_id: string;
+      reward_coin_type: string;
+      user_claimable_reward: number;
+    };
+  
+  
+    // Aggregation map keyed by `${assetId}-${reward_id}-${reward_coin_type}`
+    const agg = new Map<string, { assetId: number; coinType: string; total: number }>();
+  
+    // Process V2 data if available.
+    const processV2Data = (v2Data: Record<string, V2Entry> | null) => {
+      if (!v2Data) return;
+      for (const entry of Object.values(v2Data)) {
+        const assetId = parseInt(entry.asset_id, 10);
+        const key = `${assetId}-${entry.reward_id}-${entry.reward_coin_type}`;
+        const value = parseFloat(entry.available);
+        if (agg.has(key)) {
+          agg.get(key)!.total += value;
+        } else {
+          agg.set(key, { assetId, coinType: entry.reward_coin_type, total: value });
         }
-      
-        // 处理 v3 数据，将 user_claimable_reward 按组合累加
-        for (const entries of Object.values(v3Data)) {
-          for (const entry of entries) {
-            const assetId = parseInt(entry.assert_id, 10);
-            const compositeKey = `${assetId}-${entry.reward_id}-${entry.reward_coin_type}`;
-            if (agg.has(compositeKey)) {
-              const rec = agg.get(compositeKey)!;
-              rec.v3 += entry.user_claimable_reward;
-            } else {
-              // 如果 v2 中没有该组合，也要记录 v3 数据
-              agg.set(compositeKey, {
-                assetId,
-                coinType: entry.reward_coin_type,
-                v2: 0,
-                v3: entry.user_claimable_reward,
-              });
-            }
-          }
-        }
-      
-        // 根据 assetId 对数据进行分组，确保每个 coinType 的 available 累加正确
-        const resultMap = new Map<number, Map<string, number>>();
-        for (const rec of agg.values()) {
-          const total = rec.v2 + rec.v3;
-          if (!resultMap.has(rec.assetId)) {
-            resultMap.set(rec.assetId, new Map<string, number>());
-          }
-          const coinMap = resultMap.get(rec.assetId)!;
-          // 如果某个 assetId 下存在同一 coinType的多条记录，则累加它们
-          coinMap.set(
-            rec.coinType,
-            (coinMap.get(rec.coinType) || 0) + total
-          );
-        }
-      
-        // 转换为最终的 PoolRewards[] 结构
-        return Array.from(resultMap.entries()).map(([assetId, coinMap]) => ({
-          assetId,
-          rewards: Array.from(coinMap.entries()).map(([coinType, available]) => ({
-            coinType,
-            available: available.toFixed(6), // 保留6位小数
-          })),
-        }));
       }
-      
-      // 运行示例数据
-      const result = aggregatePoolRewards(v2, v3);
-    //   console.log(JSON.stringify(result, null, 2));
-    return result;
-}
+    };
+  
+    processV2Data(v2DataOpt1);
+    processV2Data(v2DataOpt3);
+  
+    // Process V3 data.
+    if (v3Data) {
+      for (const entries of Object.values(v3Data)) {
+        for (const entry of entries) {
+          const assetId = parseInt(entry.assert_id, 10);
+          const key = `${assetId}-${entry.reward_id}-${entry.reward_coin_type}`;
+          if (agg.has(key)) {
+            agg.get(key)!.total += entry.user_claimable_reward;
+          } else {
+            agg.set(key, { assetId, coinType: entry.reward_coin_type, total: entry.user_claimable_reward });
+          }
+        }
+      }
+    }
+  
+    // Group aggregated results by assetId and coin type.
+    const resultMap = new Map<number, Map<string, number>>();
+    for (const { assetId, coinType, total } of agg.values()) {
+      if (!resultMap.has(assetId)) resultMap.set(assetId, new Map<string, number>());
+      const coinMap = resultMap.get(assetId)!;
+      coinMap.set(coinType, (coinMap.get(coinType) || 0) + total);
+    }
+  
+    // Build final result.
+    return Array.from(resultMap.entries()).map(([assetId, coinMap]) => ({
+      assetId,
+      rewards: Array.from(coinMap.entries()).map(([coinType, available]) => ({
+        coinType,
+        available: available.toFixed(6),
+      })),
+    }));
+  }
 
 /**
    * Claims all available rewards for the specified account.

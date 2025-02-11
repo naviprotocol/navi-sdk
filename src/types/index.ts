@@ -11,6 +11,10 @@ export type initializeParams = {
 
 export interface Pool {
   Sui: PoolConfig;
+  AFSUI: PoolConfig;
+  USDYS: PoolConfig;
+  TDAI: PoolConfig;
+  AUSDs: PoolConfig;
   USDT: PoolConfig;
   WETH: PoolConfig;
   CETUS: PoolConfig;
@@ -20,7 +24,7 @@ export interface Pool {
   WBTC: PoolConfig;
   AUSD: PoolConfig;
   wUSDC: PoolConfig;
-  nUSDC: PoolConfig;
+  // nUSDC: PoolConfig;
   ETH: PoolConfig;
   USDY: PoolConfig;
   NS: PoolConfig;

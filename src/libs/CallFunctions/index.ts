@@ -3,7 +3,8 @@ import { Transaction } from '@mysten/sui/transactions';
 import { bcs } from '@mysten/sui.js/bcs';
 import { DevInspectResults, SuiClient } from '@mysten/sui/client';
 import { getConfig, pool } from '../../address';
-import { Pool, PoolConfig } from '../../types';
+import { Pool, PoolConfig,OptionType } from '../../types';
+import { registerStructs } from '../PTB';
 
 /**
  * Parses and prints the inspection results.
@@ -126,4 +127,52 @@ export async function getHealthFactorCall(address: string, client: SuiClient) {
     ]);
 
     return result;
+}
+
+
+export async function getReserveData(address: string, client: SuiClient) {
+    registerStructs()
+    const config = await getConfig();
+    const tx = new Transaction();
+
+    const result: any = await moveInspect(tx, client, address, `${config.uiGetter}::getter::get_reserve_data`, [
+        tx.object(config.StorageId)
+    ],[],'vector<ReserveDataInfo>'
+);
+    return result[0];
+}
+
+
+export async function getIncentiveAPY(address: string, client: SuiClient, option: OptionType) {
+    registerStructs()
+    const config = await getConfig();
+    const tx = new Transaction();
+
+    const result: any = await moveInspect(
+        tx, client, address,
+        `${config.uiGetter}::incentive_getter::get_incentive_apy`,
+        [
+            tx.object('0x06'), // clock object id
+            tx.object(config.IncentiveV2), // the incentive object v2
+            tx.object(config.StorageId), // object id of storage
+            tx.object(config.PriceOracle), // The price oracle object
+            tx.pure.u8(option),
+        ],
+        [], // type arguments is null
+        'vector<IncentiveAPYInfo>' // parse type
+    );
+    // const result: any = await moveInspect(
+    //     tx, client, address,
+    //     `0x0126000c803ab11cfe715f8186a5e76604fb65d9e1e5db0a518b3ae01626df99::incentive_getter::get_incentive_apy`,
+    //     [
+    //         tx.object('0x06'), // clock object id
+    //         tx.object('0xf87a8acb8b81d14307894d12595541a73f19933f88e1326d5be349c7a6f7559c'), // the incentive object v2
+    //         tx.object('0xbb4e2f4b6205c2e2a2db47aeb4f830796ec7c005f88537ee775986639bc442fe'), // object id of storage
+    //         tx.object('0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef'), // The price oracle object
+    //         tx.pure.u8(option),
+    //     ],
+    //     [], // type arguments is null
+    //     'vector<IncentiveAPYInfo>' // parse type
+    // );
+    return result[0];
 }
