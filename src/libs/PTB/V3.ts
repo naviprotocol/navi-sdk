@@ -36,6 +36,143 @@ export function registerStructs() {
 }
 
 /**
+ * Fetch and group available v3 rewards for a user.
+ *
+ * @param {SuiClient} client - The Sui client instance used to interact with the blockchain.
+ * @param {string} userAddress - The blockchain address of the user whose rewards are being fetched.
+ * @param {boolean} [prettyPrint=true] - Whether to log the rewards data in a readable format.
+ * @returns {Promise<V3Type.GroupedRewards | null>} A promise resolving to the grouped rewards by asset type, or null if no rewards.
+ * @throws {Error} If fetching rewards data fails or returns undefined.
+ */
+export async function getAvailableRewards(
+  client: SuiClient,
+  checkAddress: string,
+  prettyPrint = true
+): Promise<V3Type.GroupedRewards | null> {
+  // Fetch the protocol configuration
+  const protocolConfig = await getConfig();
+
+  // Create a new transaction instance
+  const tx = new Transaction();
+
+  // Call the Move function to fetch the user's claimable rewards
+  const rewardsData = await moveInspect(
+    tx,
+    client,
+    checkAddress,
+    `${protocolConfig.uiGetterV3}::incentive_v3_getter::get_user_atomic_claimable_rewards`,
+    [
+      tx.object("0x06"),
+      tx.object(protocolConfig.StorageId),
+      tx.object(protocolConfig.IncentiveV3),
+      tx.pure.address(checkAddress),
+    ]
+  );
+
+  if (!rewardsData) {
+    throw new Error(
+      "Failed to fetch v3 rewards data: moveInspect returned undefined."
+    );
+  }
+
+  // Parse the raw rewards data into an array of reward objects.
+  // The data may be in the new tuple format (5 arrays) or the legacy object array format.
+  let rewardsList: V3Type.Reward[] = [];
+  if (Array.isArray(rewardsData)) {
+    // Check if the data is in the new tuple format (5 arrays and the first element is an array)
+    if (rewardsData.length === 5 && Array.isArray(rewardsData[0])) {
+      const count = rewardsData[0].length;
+      for (let i = 0; i < count; i++) {
+        rewardsList.push({
+          asset_coin_type: rewardsData[0][i],
+          reward_coin_type: rewardsData[1][i],
+          option: Number(rewardsData[2][i]),
+          // Ensure rule_ids is always an array
+          rule_ids: Array.isArray(rewardsData[3][i])
+            ? rewardsData[3][i]
+            : [rewardsData[3][i]],
+          user_claimable_reward: Number(rewardsData[4][i]),
+        });
+      }
+    } else {
+      // Assume the data is in the legacy format: an array of reward objects
+      rewardsList = rewardsData;
+    }
+  }
+
+  if (rewardsList.length === 0) {
+    console.log("No v3 rewards");
+    return null;
+  }
+
+  // Inline helper functions to retrieve configuration keys.
+  const getPriceFeedKey = (coinType: string): string | undefined =>
+    Object.keys(PriceFeedConfig).find(
+      (key) => PriceFeedConfig[key].coinType === `0x${coinType}`
+    );
+
+  const getPoolKey = (coinType: string): string | undefined =>
+    Object.keys(pool).find((key) => pool[key].type === `0x${coinType}`);
+
+  // Group rewards by asset coin type.
+  const groupedRewards: V3Type.GroupedRewards = {};
+  for (const reward of rewardsList) {
+    const { asset_coin_type, reward_coin_type, option, rule_ids, user_claimable_reward } = reward;
+
+    // Retrieve configuration keys for asset and reward coin types.
+    const assetPriceFeedKey = getPriceFeedKey(asset_coin_type);
+    const rewardPriceFeedKey = getPriceFeedKey(reward_coin_type);
+    const assetPoolKey = getPoolKey(asset_coin_type);
+    const rewardPoolKey = getPoolKey(reward_coin_type);
+
+    // Skip reward if any necessary configuration is missing.
+    if (!assetPriceFeedKey || !rewardPriceFeedKey || !assetPoolKey || !rewardPoolKey) {
+      continue;
+    }
+
+    // Initialize rewards array for this asset if not already present.
+    if (!groupedRewards[asset_coin_type]) {
+      groupedRewards[asset_coin_type] = [];
+    }
+
+    // Convert the raw claimable reward into a human-readable value using the proper decimal precision.
+    const decimalPrecision = PriceFeedConfig[rewardPriceFeedKey].priceDecimal;
+    const convertedClaimable =
+      Number(user_claimable_reward) / Math.pow(10, decimalPrecision);
+
+    groupedRewards[asset_coin_type].push({
+      assert_id: pool[assetPoolKey].assetId.toString(),
+      reward_id: pool[rewardPoolKey].assetId.toString(),
+      reward_coin_type,
+      option,
+      rule_ids,
+      user_claimable_reward: convertedClaimable,
+    });
+  }
+
+  // If prettyPrint is enabled, log the grouped rewards in a user-friendly format.
+  if (prettyPrint) {
+    console.log(`-- V3 Available Rewards --`);
+    console.log(`address: ${checkAddress}`);
+    for (const [assetCoinType, rewards] of Object.entries(groupedRewards)) {
+      const assetKey = getPriceFeedKey(assetCoinType) ?? assetCoinType;
+      console.log(`Asset: ${assetKey}`);
+      rewards.forEach((reward, idx) => {
+        const rewardKey =
+          getPriceFeedKey(reward.reward_coin_type) ?? reward.reward_coin_type;
+        console.log(
+          `  ${idx + 1}. Reward Coin: ${rewardKey}, Option: ${reward.option}, ` +
+            `Claimable: ${reward.user_claimable_reward}`
+        );
+      });
+    }
+  }
+
+  return groupedRewards;
+}
+
+
+/**
  * Retrieves the available rewards for a specific user in the protocol.
  *
  * This function communicates with the Sui blockchain to fetch and process
@@ -47,7 +184,7 @@ export function registerStructs() {
  * @returns {Promise<V3Type.GroupedRewards | null>} A promise resolving to the grouped rewards by asset type, or null if no rewards.
  * @throws {Error} If fetching rewards data fails or returns undefined.
  */
-export async function getAvailableRewards(
+export async function getAvailableRewardsWithoutOption(
   client: SuiClient,
   userAddress: string,
   prettyPrint = true
@@ -69,8 +206,6 @@ export async function getAvailableRewards(
       tx.pure.address(userAddress),
     ],
   });
-
-  // Use moveInspect to parse the returned rewards data.
   const rewardsData = await moveInspect(
     tx,
     client,
@@ -88,6 +223,7 @@ export async function getAvailableRewards(
   }
 
   const rawRewards: V3Type.RewardsList = rewardsData[0];
+
   if (rawRewards.length === 0) {
     console.log("No v3 rewards");
     return null;
@@ -121,7 +257,12 @@ export async function getAvailableRewards(
       const rewardPoolKey = getPoolKey(reward_coin_type);
 
       // Skip this reward if any necessary configuration is missing.
-      if (!assetPriceFeedKey || !rewardPriceFeedKey || !assetPoolKey || !rewardPoolKey) {
+      if (
+        !assetPriceFeedKey ||
+        !rewardPriceFeedKey ||
+        !assetPoolKey ||
+        !rewardPoolKey
+      ) {
         return acc;
       }
 
@@ -163,10 +304,11 @@ export async function getAvailableRewards(
       console.log(`Asset: ${assetKey}`);
 
       rewards.forEach((reward, idx) => {
-        const rewardKey = getPriceFeedKey(reward.reward_coin_type) ?? reward.reward_coin_type;
+        const rewardKey =
+          getPriceFeedKey(reward.reward_coin_type) ?? reward.reward_coin_type;
         console.log(
           `  ${idx + 1}. Reward Coin: ${rewardKey}, ` +
-          `Claimable: ${reward.user_claimable_reward}, Claimed: ${reward.user_claimed_reward}`
+            `Claimable: ${reward.user_claimable_reward}, Claimed: ${reward.user_claimed_reward}`
         );
       });
     }
@@ -245,7 +387,11 @@ export async function claimAllRewardsPTB(
   const tx = existingTx ?? new Transaction();
 
   // Fetch the available grouped rewards for the user
-  const groupedRewards = await getAvailableRewards(client, userAddress);
+  const groupedRewards = await getAvailableRewardsWithoutOption(
+    client,
+    userAddress,
+    false
+  );
   if (!groupedRewards) {
     return tx;
   }
@@ -378,11 +524,14 @@ export async function claimAllRewardsResupplyPTB(
   const tx = existingTx ?? new Transaction();
 
   // Fetch the available grouped rewards for the user
-  const groupedRewards = await getAvailableRewards(client, userAddress);
+  const groupedRewards = await getAvailableRewardsWithoutOption(
+    client,
+    userAddress,
+    false
+  );
   if (!groupedRewards) {
     return tx;
   }
-  console.log(groupedRewards);
   // Object to store aggregated rewards by coin type
   const rewardMap = new Map<
     string,
@@ -592,18 +741,13 @@ export function groupByAssetCoinType(
  * @returns An array of final APY results for each pool.
  */
 export async function getPoolApy(
-  client: SuiClient,
-  userAddress: string
+  client: SuiClient
 ): Promise<V3Type.ApyResult[]> {
   // 1. Get configuration
   const config = await getConfig();
+  const userAddress = '0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2'
 
   // 2. Get ReserveData (this replaces the previous poolsInfo)
-  // const reserves: V3Type.ReserveData[] = await getReserveData(
-  //   config.StorageId,
-  //   client
-  // );
-
   // 3. Get on-chain incentive data
   const [reserves, rawData] = await Promise.all([
     getReserveData(config.StorageId, client),
@@ -612,7 +756,7 @@ export async function getPoolApy(
       options: { showType: true, showOwner: true, showContent: true },
     }),
   ]);
-  const incentiveData = (rawData as unknown) as V3Type.IncentiveData;
+  const incentiveData = rawData as unknown as V3Type.IncentiveData;
 
   // 4. Group incentive data by asset coin type
   const groupedPools = groupByAssetCoinType(incentiveData);
@@ -635,8 +779,8 @@ export async function getPoolApy(
   const coinPriceMap: Record<string, { value: number; decimals: string }> =
     coinPrices?.reduce((map, price) => {
       map[formatCoinType(price.coinType)] = {
-        value: price.value, 
-        decimals: price.decimals, 
+        value: price.value,
+        decimals: price.decimals,
       };
       return map;
     }, {} as Record<string, { value: number; decimals: string }>) || {};
@@ -649,93 +793,107 @@ export async function getPoolApy(
   return mergeApyResults(v3Apy, v2SupplyApy, v2BorrowApy);
 }
 
-const mergeRewardCoins = (arr1: string[], arr2: string[]): string[] =>
-  Array.from(new Set([...arr1, ...arr2]));
+// Merges two arrays of reward coins and ensures uniqueness
+const mergeRewardCoins = (coins1: string[], coins2: string[]): string[] =>
+  Array.from(new Set([...coins1, ...coins2]));
+
+// Interface for V2 APY (Annual Percentage Yield) data structure
 interface V2Apy {
   asset_id: number;
-  apy: string; 
+  apy: string;
   coin_types: string[];
 }
+
+// Function to merge APY results from V2 and V3
 async function mergeApyResults(
-  v3Apy: V3Type.ApyResult[],
-  v2SupplyApy: V2Apy[],
-  v2BorrowApy: V2Apy[]
+  v3ApyResults: V3Type.ApyResult[],  // V3 APY results
+  v2SupplyApy: V2Apy[],              // V2 supply APY data
+  v2BorrowApy: V2Apy[]               // V2 borrow APY data
 ): Promise<V3Type.ApyResult[]> {
-  const calculateApy = (apyStr: string): number =>
+  
+  // Helper function to calculate APY as a percentage
+  const calculateApyPercentage = (apyStr: string): number =>
     (Number(apyStr) / 1e27) * 100;
 
-  const getAssetCoinType = (assetId: number): string => {
+  // Helper function to get the asset's coin type, removing the "0x" prefix if present
+  const getFormattedCoinType = (assetId: number): string => {
     const poolValues = Object.values(pool);
-    const poolEntry = poolValues.find((item) => item.assetId === assetId);
-    return poolEntry ? poolEntry.type : "";
+    const poolEntry = poolValues.find((entry) => entry.assetId === assetId);
+    if (!poolEntry) return "";
+    return poolEntry.type.startsWith("0x") ? poolEntry.type.slice(2) : poolEntry.type;
   };
 
-  const v2Map = new Map<
+  // Map to store merged V2 supply and borrow data by asset ID
+  const v2DataMap = new Map<
     number,
     { supply: V3Type.IncentiveApyInfo; borrow: V3Type.IncentiveApyInfo }
   >();
 
-  // 合并 v2 的 supply 数据
-  v2SupplyApy.forEach((v2) => {
-    const computedApy = calculateApy(v2.apy);
-    const prev = v2Map.get(v2.asset_id) || {
+  // Merge V2 supply data into v2DataMap
+  v2SupplyApy.forEach((supplyData) => {
+    const computedApy = calculateApyPercentage(supplyData.apy);
+    const existingData = v2DataMap.get(supplyData.asset_id) || {
       supply: { apy: 0, rewardCoin: [] },
       borrow: { apy: 0, rewardCoin: [] },
     };
-    prev.supply.apy += computedApy;
-    prev.supply.rewardCoin = mergeRewardCoins(
-      prev.supply.rewardCoin,
-      v2.coin_types
+    existingData.supply.apy += computedApy;
+    existingData.supply.rewardCoin = mergeRewardCoins(
+      existingData.supply.rewardCoin,
+      supplyData.coin_types
     );
-    v2Map.set(v2.asset_id, prev);
+    v2DataMap.set(supplyData.asset_id, existingData);
   });
 
-  // 合并 v2 的 borrow 数据
-  v2BorrowApy.forEach((v2) => {
-    const computedApy = calculateApy(v2.apy);
-    const prev = v2Map.get(v2.asset_id) || {
+  // Merge V2 borrow data into v2DataMap
+  v2BorrowApy.forEach((borrowData) => {
+    const computedApy = calculateApyPercentage(borrowData.apy);
+    const existingData = v2DataMap.get(borrowData.asset_id) || {
       supply: { apy: 0, rewardCoin: [] },
       borrow: { apy: 0, rewardCoin: [] },
     };
-    prev.borrow.apy += computedApy;
-    prev.borrow.rewardCoin = mergeRewardCoins(
-      prev.borrow.rewardCoin,
-      v2.coin_types
+    existingData.borrow.apy += computedApy;
+    existingData.borrow.rewardCoin = mergeRewardCoins(
+      existingData.borrow.rewardCoin,
+      borrowData.coin_types
     );
-    v2Map.set(v2.asset_id, prev);
+    v2DataMap.set(borrowData.asset_id, existingData);
   });
 
-  // 将原始数据 a 和 v2 合并，确保全集数据
-  const resultMap = new Map<number, V3Type.ApyResult>();
+  // Map to store the final merged APY results by asset ID
+  const finalApyResultsMap = new Map<number, V3Type.ApyResult>();
 
-  // 首先将 a 中的数据放入 Map（以 asset 为 key）
-  v3Apy.forEach((item) => {
-    resultMap.set(item.asset, { ...item });
+  // First, add V3 data to the final map (by asset ID)
+  v3ApyResults.forEach((v3Data) => {
+    finalApyResultsMap.set(v3Data.asset, { 
+      ...v3Data,
+      asset_coin_type: getFormattedCoinType(v3Data.asset) });
   });
 
-  // 再将 v2Map 中的数据合并进来
-  v2Map.forEach((v2Data, assetId) => {
-    if (resultMap.has(assetId)) {
-      const existing = resultMap.get(assetId)!;
-      existing.supplyIncentiveApyInfo.apy += v2Data.supply.apy;
-      existing.supplyIncentiveApyInfo.rewardCoin = mergeRewardCoins(
-        existing.supplyIncentiveApyInfo.rewardCoin,
+  // Then, merge the V2 data into the final map
+  v2DataMap.forEach((v2Data, assetId) => {
+    if (finalApyResultsMap.has(assetId)) {
+      const existingApyData = finalApyResultsMap.get(assetId)!;
+      existingApyData.supplyIncentiveApyInfo.apy += v2Data.supply.apy;
+      existingApyData.supplyIncentiveApyInfo.rewardCoin = mergeRewardCoins(
+        existingApyData.supplyIncentiveApyInfo.rewardCoin,
         v2Data.supply.rewardCoin
       );
-      existing.borrowIncentiveApyInfo.apy += v2Data.borrow.apy;
-      existing.borrowIncentiveApyInfo.rewardCoin = mergeRewardCoins(
-        existing.borrowIncentiveApyInfo.rewardCoin,
+      existingApyData.borrowIncentiveApyInfo.apy += v2Data.borrow.apy;
+      existingApyData.borrowIncentiveApyInfo.rewardCoin = mergeRewardCoins(
+        existingApyData.borrowIncentiveApyInfo.rewardCoin,
         v2Data.borrow.rewardCoin
       );
     } else {
-      resultMap.set(assetId, {
+      finalApyResultsMap.set(assetId, {
         asset: assetId,
-        asset_coin_type: getAssetCoinType(assetId),
+        // Ensure coin type is formatted correctly, regardless of whether it's a new asset or not
+        asset_coin_type: getFormattedCoinType(assetId),  
         supplyIncentiveApyInfo: { ...v2Data.supply },
         borrowIncentiveApyInfo: { ...v2Data.borrow },
       });
     }
   });
 
-  return Array.from(resultMap.values());
+  // Return the final merged list of APY results
+  return Array.from(finalApyResultsMap.values());
 }

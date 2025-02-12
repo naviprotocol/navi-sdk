@@ -1,4 +1,5 @@
 import {
+  getAvailableRewardsWithoutOption,
   getAvailableRewards,
   claimAllRewardsPTB,
   getPoolApy,
@@ -151,28 +152,33 @@ describe("NAVI SDK V3 test", async () => {
       throw new Error(txRes.effects.status.error);
     }
   }, 500000);
+  it.skip("should success getAvailableRewardsWithoutOption V3 ", async () => {
+    const txRes = await getAvailableRewardsWithoutOption(account.client, account.address);
+    // console.log(JSON.stringify(txRes, null, 2));
+  }, 50000);
   it.skip("should success getAvailableRewards V3 ", async () => {
     const txRes = await getAvailableRewards(account.client, account.address);
-    console.log(JSON.stringify(txRes, null, 2));
+    // console.log(JSON.stringify(txRes, null, 2));
   }, 50000);
 
-  it.skip("should success getAvailableRewards V3 for user", async () => {
-    const txRes = await getAvailableRewards(
+  it.skip("should success getAvailableRewardsWithoutOption V3 for user", async () => {
+    const txRes = await getAvailableRewardsWithoutOption(
       account.client,
       // "0xf89bf436d166578e84fcd4e726ae206ff24851f1647b0a264114180cc2591914"
-      "0xc8f5684afe4db0886a74563975c1fedad8225bb1c28211da96e10017237892cc"
+      "0x3be8db6ca4adf33387f16c86c443737e78fd14db85a4e1c68cc8f256ac68549c"
     );
     // console.log(JSON.stringify(txRes, null, 2));
     console.log(txRes);
   }, 50000);
-  it("should success getAvailableRewards all ", async () => {
-    const txRes = await V.getAvailableRewards(account.client, account.address);
+  it.skip("should success getAvailableRewards all ", async () => {
+    const txRes = await V.getAvailableRewards(account.client, account.address, [3,1]);
     console.log(JSON.stringify(txRes, null, 2));
-  }, 50000);
+  }, 5000000);
   it.skip("should success getAvailableRewards all for user", async () => {
     const txRes = await V.getAvailableRewards(
       account.client,
-      "0xfaba86400d9cc1d144bbc878bc45c4361d53a16c942202b22db5d26354801e8e"
+      "0x3be8db6ca4adf33387f16c86c443737e78fd14db85a4e1c68cc8f256ac68549c",
+      [3,1]
     );
     console.log(JSON.stringify(txRes, null, 2));
   }, 50000);
@@ -234,7 +240,25 @@ describe("NAVI SDK V3 test", async () => {
       throw new Error(txRes.effects.status.error);
     }
   }, 50000);
+  it.skip("should success get V2/V3 claimAllRewardsResupplyPTB", async () => {
+    let txb = new Transaction();
+    txb.setSender(account.address);
+    txb.setGasBudget(300_000_000);
+    // await claimAllRewardsPTB(account.client, '0xf89bf436d166578e84fcd4e726ae206ff24851f1647b0a264114180cc2591914', txb);
+    await V.claimAllRewardsResupplyPTB(account.client, account.address, txb);
 
+    const txRes = await V.SignAndSubmitTXB(
+      txb,
+      account.client,
+      account.keypair
+    );
+    // const txRes = await dryRunTXB(txb, account.client);
+    // logToFile(txRes, './output.log');
+    expect(txRes.effects.status.status).toEqual("success");
+    if (txRes.effects.status.status === "failure") {
+      throw new Error(txRes.effects.status.error);
+    }
+  }, 50000);
   it.skip("should success get V3 rewards by ueser", async () => {
     let txb = new Transaction();
     txb.setSender(account.address);
@@ -258,8 +282,8 @@ describe("NAVI SDK V3 test", async () => {
     }
   }, 50000);
 
-  it.skip("should success cal apy V3", async () => {
-    const txRes = await getPoolApy(account.client,account.address);
+  it("should success cal apy V3", async () => {
+    const txRes = await getPoolApy(account.client);
     console.log(JSON.stringify(txRes, null, 2));
   }, 50000);
   it.skip("should success get v3 borrow fee", async () => {

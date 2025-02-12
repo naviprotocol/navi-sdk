@@ -18,7 +18,10 @@ function inspectResultParseAndPrint(data: DevInspectResults, funName: string, pa
         if (data.results[0].returnValues && data.results[0].returnValues.length > 0) {
             let values: any[] = [];
             for (let v of data.results[0].returnValues) {
-                const _type = parseType ? parseType : v[1];
+                let _type = parseType ? parseType : v[1];
+                if (_type == 'vector<0x1::ascii::String>') {
+                    _type = 'vector<string>';
+                }
                 let result = bcs.de(_type, Uint8Array.from(v[0]));
                 values.push(result);
             }
@@ -27,6 +30,7 @@ function inspectResultParseAndPrint(data: DevInspectResults, funName: string, pa
     } else if (data.error) {
         console.log(`Get an error, msg: ${data.error}`);
     }
+    return [];
 }
 
 /**
@@ -161,18 +165,6 @@ export async function getIncentiveAPY(address: string, client: SuiClient, option
         [], // type arguments is null
         'vector<IncentiveAPYInfo>' // parse type
     );
-    // const result: any = await moveInspect(
-    //     tx, client, address,
-    //     `0x0126000c803ab11cfe715f8186a5e76604fb65d9e1e5db0a518b3ae01626df99::incentive_getter::get_incentive_apy`,
-    //     [
-    //         tx.object('0x06'), // clock object id
-    //         tx.object('0xf87a8acb8b81d14307894d12595541a73f19933f88e1326d5be349c7a6f7559c'), // the incentive object v2
-    //         tx.object('0xbb4e2f4b6205c2e2a2db47aeb4f830796ec7c005f88537ee775986639bc442fe'), // object id of storage
-    //         tx.object('0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef'), // The price oracle object
-    //         tx.pure.u8(option),
-    //     ],
-    //     [], // type arguments is null
-    //     'vector<IncentiveAPYInfo>' // parse type
-    // );
+
     return result[0];
 }

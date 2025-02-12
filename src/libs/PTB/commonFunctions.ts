@@ -414,31 +414,56 @@ export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
 
 type PoolRewards = {
     assetId: number;
+    rewardType: number;
     rewards: { coinType: string; available: string }[];
   };
 /**
- * Retrieves the available rewards for a given address.
- * 
- * @param checkAddress - The address to check for rewards. Defaults to the current address.
- * @param option - The option type. Defaults to 1.
- * @param prettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
- * @returns An object containing the V2/V3 summed rewards for each asset.
- * @throws If there is an error retrieving the available rewards.
+ * Retrieves available rewards for the given address.
+ *
+ * @param client - Sui client instance.
+ * @param checkAddress - The address for which rewards are being checked.
+ * @param contractOptionTypes - Array of contract option types to filter rewards (e.g., [1], [3], or [1,3]).
+ *                              When passing [1], only option 1 rewards will be returned.
+ *                              When passing [3], only option 3 rewards will be returned.
+ *                              When passing [1,3], rewards for both options will be returned.
+ * @param prettyPrint - Flag to determine if the result should be pretty printed.
+ * @param includeV2 - Feature flag to enable/disable V2 logic.
+ * @returns Promise resolving to an array of aggregated PoolRewards.
  */
 export async function getAvailableRewards(
     client: SuiClient,
     checkAddress: string,
+    contractOptionTypes: number[], // Use ContractOptionType[] if you have a dedicated type
     prettyPrint = true,
     includeV2: boolean = true // Feature flag to enable/disable V2 logic
   ): Promise<PoolRewards[]> {
-    // Fetch V2 rewards (option 1 and option 3) and V3 rewards concurrently.
+    // Concurrently fetch rewards data for V2 (option 1 and/or 3) and V3.
+    const v2Promises: Array<Promise<Record<string, any> | null>> = [];
+  
+    // Fetch V2 rewards for option 1 if requested and if V2 is enabled, else resolve to null.
+    if (includeV2 && contractOptionTypes.includes(1)) {
+      v2Promises.push(V2.getAvailableRewards(client, checkAddress, 1, prettyPrint));
+    } else {
+      v2Promises.push(Promise.resolve(null));
+    }
+  
+    // Fetch V2 rewards for option 3 if requested and if V2 is enabled, else resolve to null.
+    if (includeV2 && contractOptionTypes.includes(3)) {
+      v2Promises.push(V2.getAvailableRewards(client, checkAddress, 3, prettyPrint));
+    } else {
+      v2Promises.push(Promise.resolve(null));
+    }
+  
+    // Fetch V3 rewards data.
+    const v3Promise = V3.getAvailableRewards(client, checkAddress, prettyPrint);
+  
     const [v2DataOpt1, v2DataOpt3, v3Data] = await Promise.all([
-      includeV2 ? V2.getAvailableRewards(client, checkAddress, 1, prettyPrint) : Promise.resolve(null),
-      includeV2 ? V2.getAvailableRewards(client, checkAddress, 3, prettyPrint) : Promise.resolve(null),
-      V3.getAvailableRewards(client, checkAddress, prettyPrint),
+      v2Promises[0],
+      v2Promises[1],
+      v3Promise
     ]);
   
-    // Type definitions
+    // Type definitions for V2 and V3 entries.
     type V2Entry = {
       asset_id: string;
       available: string;
@@ -452,57 +477,63 @@ export async function getAvailableRewards(
       reward_id: string;
       reward_coin_type: string;
       user_claimable_reward: number;
+      option: number;
     };
   
+    // Aggregation map; key format: `${assetId}-${rewardType}-${reward_coin_type}`
+    const agg = new Map<string, { assetId: number; rewardType: number; coinType: string; total: number }>();
   
-    // Aggregation map keyed by `${assetId}-${reward_id}-${reward_coin_type}`
-    const agg = new Map<string, { assetId: number; coinType: string; total: number }>();
-  
-    // Process V2 data if available.
-    const processV2Data = (v2Data: Record<string, V2Entry> | null) => {
+    // Process V2 data with the corresponding rewardType (option).
+    const processV2Data = (v2Data: Record<string, V2Entry> | null, rewardType: number) => {
       if (!v2Data) return;
-      for (const entry of Object.values(v2Data)) {
-        const assetId = parseInt(entry.asset_id, 10);
-        const key = `${assetId}-${entry.reward_id}-${entry.reward_coin_type}`;
+      for (const [assetIdKey, entry] of Object.entries(v2Data)) {
+        const assetId = parseInt(assetIdKey, 10); // assetId is taken from the key
+        const key = `${assetId}-${rewardType}-${entry.reward_coin_type}`;
         const value = parseFloat(entry.available);
         if (agg.has(key)) {
           agg.get(key)!.total += value;
         } else {
-          agg.set(key, { assetId, coinType: entry.reward_coin_type, total: value });
+          agg.set(key, { assetId, rewardType, coinType: entry.reward_coin_type, total: value });
         }
       }
     };
+    processV2Data(v2DataOpt1, 1);
+    processV2Data(v2DataOpt3, 3);
   
-    processV2Data(v2DataOpt1);
-    processV2Data(v2DataOpt3);
-  
-    // Process V3 data.
+    // Process V3 data, filtering based on contractOptionTypes.
     if (v3Data) {
       for (const entries of Object.values(v3Data)) {
-        for (const entry of entries) {
+        for (const entry of entries as V3Entry[]) {
+          // Skip entry if its option is not in the provided contractOptionTypes.
+          if (!contractOptionTypes.includes(entry.option)) continue;
           const assetId = parseInt(entry.assert_id, 10);
-          const key = `${assetId}-${entry.reward_id}-${entry.reward_coin_type}`;
+          const rewardType = entry.option;
+          const key = `${assetId}-${rewardType}-${entry.reward_coin_type}`;
           if (agg.has(key)) {
             agg.get(key)!.total += entry.user_claimable_reward;
           } else {
-            agg.set(key, { assetId, coinType: entry.reward_coin_type, total: entry.user_claimable_reward });
+            agg.set(key, { assetId, rewardType, coinType: entry.reward_coin_type, total: entry.user_claimable_reward });
           }
         }
       }
     }
   
-    // Group aggregated results by assetId and coin type.
-    const resultMap = new Map<number, Map<string, number>>();
-    for (const { assetId, coinType, total } of agg.values()) {
-      if (!resultMap.has(assetId)) resultMap.set(assetId, new Map<string, number>());
-      const coinMap = resultMap.get(assetId)!;
-      coinMap.set(coinType, (coinMap.get(coinType) || 0) + total);
+    // Group the rewards by assetId and rewardType. The group key is `${assetId}-${rewardType}`.
+    const groupMap = new Map<string, { assetId: number; rewardType: number; rewards: Map<string, number> }>();
+    for (const { assetId, rewardType, coinType, total } of agg.values()) {
+      const groupKey = `${assetId}-${rewardType}`;
+      if (!groupMap.has(groupKey)) {
+        groupMap.set(groupKey, { assetId, rewardType, rewards: new Map<string, number>() });
+      }
+      const rewardMap = groupMap.get(groupKey)!;
+      rewardMap.rewards.set(coinType, (rewardMap.rewards.get(coinType) || 0) + total);
     }
   
-    // Build final result.
-    return Array.from(resultMap.entries()).map(([assetId, coinMap]) => ({
-      assetId,
-      rewards: Array.from(coinMap.entries()).map(([coinType, available]) => ({
+    // Construct the final result array.
+    return Array.from(groupMap.values()).map(group => ({
+      assetId: group.assetId,
+      rewardType: group.rewardType,
+      rewards: Array.from(group.rewards.entries()).map(([coinType, available]) => ({
         coinType,
         available: available.toFixed(6),
       })),

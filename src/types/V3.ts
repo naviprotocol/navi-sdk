@@ -17,8 +17,9 @@ interface BaseRule {
 
 // Original Reward interface
 export interface Reward extends BaseRewardFields {
-  user_claimable_reward: string; 
-  user_claimed_reward: string; 
+  user_claimable_reward: string | number; 
+  user_claimed_reward?: string; 
+  option?: number;
 }
 
 // Original ClaimRewardInput interface
@@ -34,9 +35,10 @@ export interface ProcessedReward {
   assert_id: string;
   reward_id: string;
   reward_coin_type: string; // The coin type used for the reward.
+  option?: number;
   rule_ids: string[]; // An array of rule IDs associated with the reward.
   user_claimable_reward: number; 
-  user_claimed_reward: number; 
+  user_claimed_reward?: number; 
 }
 
 // Original GroupedRewards interface
