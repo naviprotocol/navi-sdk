@@ -514,6 +514,9 @@ export async function getAvailableRewards(client: SuiClient, checkAddress: strin
             if (assetId == '15' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
                 assetId = '15extra' //Means DEEP Rewards
             }
+            if (assetId == '21' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
+                assetId = '15extra' //Means DEEP Rewards
+            }
 
             const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
             
