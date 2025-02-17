@@ -36,7 +36,7 @@ export async function depositCoin(txb: Transaction, _pool: PoolConfig, coinObjec
             coinObject, // the object id of the Coin you own.
             amountObj, // The amount you want to deposit, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2),
-            txb.object(config.IncentiveV3), // The incentive object v2
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -63,7 +63,7 @@ export async function depositCoinWithAccountCap(txb: Transaction, _pool: PoolCon
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
             txb.object(config.IncentiveV2),
-            txb.object(config.IncentiveV3), // The incentive object v2
+            txb.object(config.IncentiveV3), // The incentive object v3
             txb.object(account)
         ],
         typeArguments: [_pool.type]
@@ -92,7 +92,7 @@ export async function withdrawCoin(txb: Transaction, _pool: PoolConfig, amount: 
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             txb.pure.u64(amount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2),
-            txb.object(config.IncentiveV3), // The incentive object v2
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -132,7 +132,7 @@ export async function withdrawCoinWithAccountCap(txb: Transaction, _pool: PoolCo
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             txb.pure.u64(withdrawAmount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2),
-            txb.object(config.IncentiveV3), // The incentive object v2
+            txb.object(config.IncentiveV3), // The incentive object v3
             txb.object(account)
         ],
         typeArguments: [_pool.type]
@@ -168,7 +168,7 @@ export async function borrowCoin(txb: Transaction, _pool: PoolConfig, borrowAmou
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             txb.pure.u64(borrowAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2), // The incentive object v2
-            txb.object(config.IncentiveV3), // The incentive object v2
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -212,7 +212,7 @@ export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject:
             coinObject, // the object id of the Coin you own.
             txb.pure.u64(repayAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2), // The incentive object v2 
-            txb.object(config.IncentiveV3), // The incentive object v2 
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -423,8 +423,8 @@ type PoolRewards = {
  * @param client - Sui client instance.
  * @param checkAddress - The address for which rewards are being checked.
  * @param contractOptionTypes - Array of contract option types to filter rewards (e.g., [1], [3], or [1,3]).
- *                              When passing [1], only option 1 rewards will be returned.
- *                              When passing [3], only option 3 rewards will be returned.
+ *                              When passing [1], only supply rewards will be returned.
+ *                              When passing [3], only borrow rewards will be returned.
  *                              When passing [1,3], rewards for both options will be returned.
  * @param prettyPrint - Flag to determine if the result should be pretty printed.
  * @param includeV2 - Feature flag to enable/disable V2 logic.
@@ -433,7 +433,7 @@ type PoolRewards = {
 export async function getAvailableRewards(
     client: SuiClient,
     checkAddress: string,
-    contractOptionTypes: number[], // Use ContractOptionType[] if you have a dedicated type
+    contractOptionTypes: OptionType[], // Use ContractOptionType[] if you have a dedicated type
     prettyPrint = true,
     includeV2: boolean = true // Feature flag to enable/disable V2 logic
   ): Promise<PoolRewards[]> {
@@ -472,8 +472,7 @@ export async function getAvailableRewards(
     };
   
     type V3Entry = {
-      // "assert_id" represents the asset id.
-      assert_id: string;
+      asset_id: string;
       reward_id: string;
       reward_coin_type: string;
       user_claimable_reward: number;
@@ -506,7 +505,7 @@ export async function getAvailableRewards(
         for (const entry of entries as V3Entry[]) {
           // Skip entry if its option is not in the provided contractOptionTypes.
           if (!contractOptionTypes.includes(entry.option)) continue;
-          const assetId = parseInt(entry.assert_id, 10);
+          const assetId = parseInt(entry.asset_id, 10);
           const rewardType = entry.option;
           const key = `${assetId}-${rewardType}-${entry.reward_coin_type}`;
           if (agg.has(key)) {

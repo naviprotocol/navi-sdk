@@ -7,6 +7,7 @@ import {
 } from "../../address";
 import { OptionType } from "../../types";
 import { SuiClient } from "@mysten/sui/client";
+import { normalizeStructTag } from '@mysten/sui/utils'
 import { moveInspect } from "../CallFunctions";
 import { registerStructs, updateOraclePTB } from "./commonFunctions";
 
@@ -99,7 +100,7 @@ export async function getAvailableRewards(
     const activePools = allPools.filter(
       (pool) => pool.available.trim() !== "0"
     );
-    const fundIds = activePools.map((item) => item.funds);
+    const fundIds = [...new Set(activePools.map((item) => item.funds))];
 
     // Fetch fund details
     const funds = await client.multiGetObjects({
@@ -349,7 +350,7 @@ export async function claimRewardResupplyFunction(
   });
   const foundPoolConfig = Object.values(pool).find(
     (poolConfig) =>
-      poolConfig.type === ProFundsPoolInfo[incentiveFundsPool].coinType
+      normalizeStructTag(poolConfig.type) === normalizeStructTag(ProFundsPoolInfo[incentiveFundsPool].coinType)
   );
   if (!foundPoolConfig) {
     throw new Error(

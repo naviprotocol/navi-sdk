@@ -1,5 +1,6 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
+import { normalizeStructTag } from '@mysten/sui/utils'
 import { bcs } from "@mysten/sui.js/bcs";
 
 import { moveInspect, getReserveData, getIncentiveAPY } from "../CallFunctions";
@@ -112,12 +113,18 @@ export async function getAvailableRewards(
     );
 
   const getPoolKey = (coinType: string): string | undefined =>
-    Object.keys(pool).find((key) => pool[key].type === `0x${coinType}`);
+    Object.keys(pool).find((key) => normalizeStructTag(pool[key].type) === `0x${coinType}`);
 
   // Group rewards by asset coin type.
   const groupedRewards: V3Type.GroupedRewards = {};
   for (const reward of rewardsList) {
-    const { asset_coin_type, reward_coin_type, option, rule_ids, user_claimable_reward } = reward;
+    const {
+      asset_coin_type,
+      reward_coin_type,
+      option,
+      rule_ids,
+      user_claimable_reward,
+    } = reward;
 
     // Retrieve configuration keys for asset and reward coin types.
     const assetPriceFeedKey = getPriceFeedKey(asset_coin_type);
@@ -126,7 +133,12 @@ export async function getAvailableRewards(
     const rewardPoolKey = getPoolKey(reward_coin_type);
 
     // Skip reward if any necessary configuration is missing.
-    if (!assetPriceFeedKey || !rewardPriceFeedKey || !assetPoolKey || !rewardPoolKey) {
+    if (
+      !assetPriceFeedKey ||
+      !rewardPriceFeedKey ||
+      !assetPoolKey ||
+      !rewardPoolKey
+    ) {
       continue;
     }
 
@@ -141,7 +153,7 @@ export async function getAvailableRewards(
       Number(user_claimable_reward) / Math.pow(10, decimalPrecision);
 
     groupedRewards[asset_coin_type].push({
-      assert_id: pool[assetPoolKey].assetId.toString(),
+      asset_id: pool[assetPoolKey].assetId.toString(),
       reward_id: pool[rewardPoolKey].assetId.toString(),
       reward_coin_type,
       option,
@@ -161,8 +173,9 @@ export async function getAvailableRewards(
         const rewardKey =
           getPriceFeedKey(reward.reward_coin_type) ?? reward.reward_coin_type;
         console.log(
-          `  ${idx + 1}. Reward Coin: ${rewardKey}, Option: ${reward.option}, ` +
-            `Claimable: ${reward.user_claimable_reward}`
+          `  ${idx + 1}. Reward Coin: ${rewardKey}, Option: ${
+            reward.option
+          }, ` + `Claimable: ${reward.user_claimable_reward}`
         );
       });
     }
@@ -170,7 +183,6 @@ export async function getAvailableRewards(
 
   return groupedRewards;
 }
-
 
 /**
  * Retrieves the available rewards for a specific user in the protocol.
@@ -237,7 +249,7 @@ export async function getAvailableRewardsWithoutOption(
 
   // Helper function: Retrieve the corresponding key from pool based on coin type.
   const getPoolKey = (coinType: string): string | undefined =>
-    Object.keys(pool).find((key) => pool[key].type === `0x${coinType}`);
+    Object.keys(pool).find((key) => normalizeStructTag(pool[key].type) === `0x${coinType}`);
 
   // Group the rewards by asset coin type.
   const groupedRewards: V3Type.GroupedRewards = rawRewards.reduce(
@@ -282,7 +294,7 @@ export async function getAvailableRewardsWithoutOption(
 
       // Append the reward details to the grouped rewards.
       acc[asset_coin_type].push({
-        assert_id: pool[assetPoolKey].assetId.toString(),
+        asset_id: pool[assetPoolKey].assetId.toString(),
         reward_id: pool[rewardPoolKey].assetId.toString(),
         reward_coin_type,
         user_claimable_reward: convertedClaimable,
@@ -334,9 +346,10 @@ export async function claimRewardFunction(
 
   for (const key of Object.keys(pool) as (keyof Pool)[]) {
     // e.g. "0x2::sui::SUI".slice(2) => "2::sui::SUI"
-    const coinTypeWithoutHex = pool[key].type.startsWith("0x")
-      ? pool[key].type.slice(2)
-      : pool[key].type;
+    const normalizedType = normalizeStructTag(pool[key].type);
+    const coinTypeWithoutHex = normalizedType.startsWith("0x") 
+      ? normalizedType.slice(2) 
+      : normalizedType;
 
     const rewardCoinTypeWithoutHex = rewardInfo.reward_coin_type.startsWith(
       "0x"
@@ -351,24 +364,24 @@ export async function claimRewardFunction(
   }
 
   if (!matchedRewardFund) {
-    throw new Error(
+    console.log(
       `No matching rewardFund found for reward_coin_type: ${rewardInfo.reward_coin_type}`
     );
+    return;
+  } else {
+    tx.moveCall({
+      target: `${config.ProtocolPackage}::incentive_v3::claim_reward_entry`,
+      arguments: [
+        tx.object("0x06"),
+        tx.object(config.IncentiveV3),
+        tx.object(config.StorageId),
+        tx.object(matchedRewardFund),
+        tx.pure.vector("string", rewardInfo.asset_vector),
+        tx.pure.vector("address", rewardInfo.rules_vector),
+      ],
+      typeArguments: [rewardInfo.reward_coin_type],
+    });
   }
-
-  // Construct the Move call
-  tx.moveCall({
-    target: `${config.ProtocolPackage}::incentive_v3::claim_reward_entry`,
-    arguments: [
-      tx.object("0x06"),
-      tx.object(config.IncentiveV3),
-      tx.object(config.StorageId),
-      tx.object(matchedRewardFund),
-      tx.pure.vector("string", rewardInfo.asset_vector),
-      tx.pure.vector("address", rewardInfo.rules_vector),
-    ],
-    typeArguments: [rewardInfo.reward_coin_type],
-  });
 }
 
 /**
@@ -444,17 +457,16 @@ export async function claimRewardResupplyFunction(
 ): Promise<void> {
   const config = await getConfig();
 
-  console.log("Claiming reward:", rewardInfo);
-
   // Find matching rewardFund from the pool config
   let matchedRewardFund: string | null = null;
   let toPoolConfig: PoolConfig | null = null;
 
   for (const key of Object.keys(pool) as (keyof Pool)[]) {
     // e.g. "0x2::sui::SUI".slice(2) => "2::sui::SUI"
-    const coinTypeWithoutHex = pool[key].type.startsWith("0x")
-      ? pool[key].type.slice(2)
-      : pool[key].type;
+    const normalizedType = normalizeStructTag(pool[key].type);
+    const coinTypeWithoutHex = normalizedType.startsWith("0x") 
+      ? normalizedType.slice(2) 
+      : normalizedType;
 
     const rewardCoinTypeWithoutHex = rewardInfo.reward_coin_type.startsWith(
       "0x"
@@ -592,11 +604,18 @@ function calculateRateSumAndCoins(
   return rules.reduce(
     (acc, rule) => {
       const ruleRate = Number(rule.rate) / 1e27; // Convert from large integer representation
-      const rewardPrice =
-        coinPriceMap[formatCoinType(rule.reward_coin_type)].value || 0;
+      const formattedRewardCoinType = formatCoinType(rule.reward_coin_type);
+      const rewardPrice = coinPriceMap[formattedRewardCoinType]?.value || 0;
       const rewardDecimal =
-        Number(coinPriceMap[formatCoinType(rule.reward_coin_type)].decimals) ||
-        0;
+        Number(coinPriceMap[formattedRewardCoinType]?.decimals) || 9;
+      if (rewardPrice === 0) {
+        console.log(
+          `No price data found for reward coin type: ${rule.reward_coin_type} (${formattedRewardCoinType})`
+        );
+      }
+      if (!coinPriceMap[formattedRewardCoinType]?.decimals) {
+        console.log(`No decimal data found for reward coin type: ${rule.reward_coin_type} (${formattedRewardCoinType})`);
+      }
       acc.rateSum += (ruleRate * rewardPrice) / Math.pow(10, rewardDecimal);
       acc.rewardCoins.push(rule.reward_coin_type);
       return acc;
@@ -745,24 +764,25 @@ export async function getPoolApy(
 ): Promise<V3Type.ApyResult[]> {
   // 1. Get configuration
   const config = await getConfig();
-  const userAddress = '0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2'
+  const userAddress =
+    "0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2";
 
-  // 2. Get ReserveData (this replaces the previous poolsInfo)
-  // 3. Get on-chain incentive data
-  const [reserves, rawData] = await Promise.all([
+  // 2. Fetch ReserveData, IncentiveV3 data, and APY calculations in parallel
+  const [reserves, rawData, v2SupplyApy, v2BorrowApy] = await Promise.all([
     getReserveData(config.StorageId, client),
     client.getObject({
       id: config.IncentiveV3,
       options: { showType: true, showOwner: true, showContent: true },
     }),
+    getIncentiveAPY(userAddress, client, 1),
+    getIncentiveAPY(userAddress, client, 3),
   ]);
-  const incentiveData = rawData as unknown as V3Type.IncentiveData;
 
-  // 4. Group incentive data by asset coin type
+  // 3. Process incentive data
+  const incentiveData = rawData as unknown as V3Type.IncentiveData;
   const groupedPools = groupByAssetCoinType(incentiveData);
 
-  // 5. Build a set of all coin types needed for price lookup.
-  //    This includes coin types from reserves, asset coin types, and reward coin types.
+  // 4. Build a set of all coin types needed for price lookup
   const coinTypeSet = new Set<string>();
   reserves.forEach((r: V3Type.ReserveData) => {
     coinTypeSet.add(formatCoinType(r.coin_type));
@@ -774,7 +794,8 @@ export async function getPoolApy(
     });
   });
   const coinTypes = Array.from(coinTypeSet);
-  // 6. Fetch coin price data
+
+  // 5. Fetch coin price data
   const coinPrices = await fetchCoinPrices(coinTypes);
   const coinPriceMap: Record<string, { value: number; decimals: string }> =
     coinPrices?.reduce((map, price) => {
@@ -784,12 +805,11 @@ export async function getPoolApy(
       };
       return map;
     }, {} as Record<string, { value: number; decimals: string }>) || {};
-  // 7. Calculate APY using grouped incentive data and reserve data with price info
+
+  // 6. Calculate APY using grouped incentive data and reserve data with price info
   const v3Apy = await calculateApy(groupedPools, reserves, coinPriceMap);
-  const [v2SupplyApy, v2BorrowApy] = await Promise.all([
-    getIncentiveAPY(userAddress, client, 1),
-    getIncentiveAPY(userAddress, client, 3),
-  ]);
+
+  // 7. Merge the APY results
   return mergeApyResults(v3Apy, v2SupplyApy, v2BorrowApy);
 }
 
@@ -806,11 +826,10 @@ interface V2Apy {
 
 // Function to merge APY results from V2 and V3
 async function mergeApyResults(
-  v3ApyResults: V3Type.ApyResult[],  // V3 APY results
-  v2SupplyApy: V2Apy[],              // V2 supply APY data
-  v2BorrowApy: V2Apy[]               // V2 borrow APY data
+  v3ApyResults: V3Type.ApyResult[], // V3 APY results
+  v2SupplyApy: V2Apy[], // V2 supply APY data
+  v2BorrowApy: V2Apy[] // V2 borrow APY data
 ): Promise<V3Type.ApyResult[]> {
-  
   // Helper function to calculate APY as a percentage
   const calculateApyPercentage = (apyStr: string): number =>
     (Number(apyStr) / 1e27) * 100;
@@ -820,7 +839,8 @@ async function mergeApyResults(
     const poolValues = Object.values(pool);
     const poolEntry = poolValues.find((entry) => entry.assetId === assetId);
     if (!poolEntry) return "";
-    return poolEntry.type.startsWith("0x") ? poolEntry.type.slice(2) : poolEntry.type;
+    const normalizedType = normalizeStructTag(poolEntry.type);
+    return normalizedType.startsWith("0x") ? normalizedType.slice(2) : normalizedType;
   };
 
   // Map to store merged V2 supply and borrow data by asset ID
@@ -864,9 +884,10 @@ async function mergeApyResults(
 
   // First, add V3 data to the final map (by asset ID)
   v3ApyResults.forEach((v3Data) => {
-    finalApyResultsMap.set(v3Data.asset, { 
+    finalApyResultsMap.set(v3Data.asset, {
       ...v3Data,
-      asset_coin_type: getFormattedCoinType(v3Data.asset) });
+      asset_coin_type: getFormattedCoinType(v3Data.asset),
+    });
   });
 
   // Then, merge the V2 data into the final map
@@ -887,7 +908,7 @@ async function mergeApyResults(
       finalApyResultsMap.set(assetId, {
         asset: assetId,
         // Ensure coin type is formatted correctly, regardless of whether it's a new asset or not
-        asset_coin_type: getFormattedCoinType(assetId),  
+        asset_coin_type: getFormattedCoinType(assetId),
         supplyIncentiveApyInfo: { ...v2Data.supply },
         borrowIncentiveApyInfo: { ...v2Data.borrow },
       });

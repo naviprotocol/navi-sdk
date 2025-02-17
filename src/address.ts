@@ -1,4 +1,4 @@
-import { Pool, CoinInfo,PoolConfig } from './types';
+import { Pool, CoinInfo, PoolConfig } from './types';
 import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
 
 
@@ -87,7 +87,7 @@ async function updateCacheIfNeeded() {
 export const getConfig = async () => {
   await updateCacheIfNeeded();
   // const protocolPackage = getPackageCache();
-  const protocolPackage = '0xacc64a324fc6f68b47fefd484419dedc4d620630665ead67f393c90d11b387b9';
+  const protocolPackage = '0x8200ce83e1bc0894b641f0a466694b4f6e25d3f9cc3093915a887ec9e7f3395e';
   return {
     ProtocolPackage: protocolPackage,
     StorageId:
@@ -118,14 +118,14 @@ export const pool: { [key: string]: PoolConfig}  = {
     assetId: 0,
     poolId:
       "0x68b420259e3adcdadf165350984f59dfdaf677c3d639aaa54c1d907dae2dd1a3",
-    type: "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+    type: "0x2::sui::SUI",
     reserveObjectId:
       "0x278cec0691f79d7ba7a4dfef5490d9419eb4e7a48d6cab88d9fa187952ee5462",
     borrowBalanceParentId:
       "0x040ee0bd51ff0adc3fff41d51a9b4d8e55213fee9b97324ee2ecfa76af1cdc55",
     supplyBalanceParentId:
       "0x0864aabbdcab5da56964b70fe6ad8fc592b01dfbb6254cb9bc2a965e517c1029",
-    rewardFundId: "",
+    rewardFundId: "0x5fdbd4ae16b58784bc898d81c732815c46f92b915ba3a188a520424482b6bdd9",
   },
   wUSDC: {
     name: "wUSDC",

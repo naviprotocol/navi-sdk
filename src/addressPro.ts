@@ -1,4 +1,4 @@
-import { Pool, CoinInfo } from './types';
+import { Pool, CoinInfo, PoolConfig } from './types';
 import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
 
 
@@ -78,25 +78,24 @@ async function updateCacheIfNeeded() {
 
 export const getConfig = async () => {
   await updateCacheIfNeeded();
-  // const protocolPackage = getPackageCache();
-  const protocolPackage = '0xacc64a324fc6f68b47fefd484419dedc4d620630665ead67f393c90d11b387b9';
+  const protocolPackage = getPackageCache();
   return {
     ProtocolPackage: protocolPackage,
     StorageId:
-      "0x111b9d70174462646e7e47e6fec5da9eb50cea14e6c5a55a910c8b0e44cd2913",
+      "0xbb4e2f4b6205c2e2a2db47aeb4f830796ec7c005f88537ee775986639bc442fe",
     IncentiveV2:
-      "0x952b6726bbcc08eb14f38a3632a3f98b823f301468d7de36f1d05faaef1bdd2a", // The new incentive version: V2
+      "0xf87a8acb8b81d14307894d12595541a73f19933f88e1326d5be349c7a6f7559c", // The new incentive version: V2
     IncentiveV3:
-      "0x5db4063954356f37ebdc791ec30f4cfd39734feff18820ee44dc2d2de96db899", // The new incentive version: V2
+      "0x5db4063954356f37ebdc791ec30f4cfd39734feff18820ee44dc2d2de96db899", // The new incentive version: V3
 
     PriceOracle:
-      // "0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef",
-      "0x25c718f494ff63021f75642ecaaeda826f44b2d9d59859a8ad45ef0fba9626f2",
+      "0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef",
     ReserveParentId:
       "0xe6d4c6610b86ce7735ea754596d71d72d10c7980b5052fc3c8cdf8d09fea9b4b", // get it from storage object id. storage.reserves
     uiGetter:
-      "0x7534e0ef352024d79bda0388bfc4af581b7eb006591ce63288182898af29d9b1",
-      // "0x1ee4061d3c78d6244b5f32eb4011d081e52f5f4b484ca4a84de48b1146a779f7",
+      "0x1ee4061d3c78d6244b5f32eb4011d081e52f5f4b484ca4a84de48b1146a779f7",
+    uiGetterV3:
+      "",
     flashloanConfig:
       "0x3672b2bf471a60c30a03325f104f92fb195c9d337ba58072dce764fe2aa5e2dc",
     flashloanSupportedAssets:
@@ -104,13 +103,12 @@ export const getConfig = async () => {
   };
 };
 
-export const pool: Pool = {
+export const pool: { [key: string]: PoolConfig} = {
   Sui: {
     name: "SUI",
     assetId: 0,
     poolId:
-      // "0x96df0fce3c471489f4debaaa762cf960b3d97820bd1f3f025ff8190730e958c5",
-      "0x68b420259e3adcdadf165350984f59dfdaf677c3d639aaa54c1d907dae2dd1a3",
+      "0x96df0fce3c471489f4debaaa762cf960b3d97820bd1f3f025ff8190730e958c5",
     type: "0x2::sui::SUI",
     reserveObjectId:
       "0xab644b5fd11aa11e930d1c7bc903ef609a9feaf9ffe1b23532ad8441854fbfaf",
@@ -125,17 +123,14 @@ export const pool: Pool = {
     assetId: 2,
     poolId:
       "0x0e060c3b5b8de00fb50511b7a45188c8e34b6995c01f69d98ea5a466fe10d103",
-    // TODO: change
-    // type: "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
-    type: "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
+    type: "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
     reserveObjectId:
       "0xb8c5eab02a0202f638958cc79a69a2d30055565caad1684b3c8bbca3bddcb322",
     borrowBalanceParentId:
       "0xc14d8292a7d69ae31164bafab7ca8a5bfda11f998540fe976a674ed0673e448f",
     supplyBalanceParentId:
       "0x7e2a49ff9d2edd875f82b76a9b21e2a5a098e7130abfd510a203b6ea08ab9257",
-    // TODO: change
-    rewardFundId: "0x619cc3b88a0901e972ae88bdfb51f901170a4b6276bde101e20b7eb852b92632",
+    rewardFundId: "",
   },
   WETH: {
     name: "WETH",
@@ -167,11 +162,9 @@ export const pool: Pool = {
   },
   vSui: {
     name: "VoloSui",
-    // assetId: 5,
-    assetId: 4,
+    assetId: 5,
     poolId:
-      // "0x9790c2c272e15b6bf9b341eb531ef16bcc8ed2b20dfda25d060bf47f5dd88d01",
-      "0xd386c359fd6295254d92022e902319e85c552bc5a8bd7af003ebe3074bd7f155",
+      "0x9790c2c272e15b6bf9b341eb531ef16bcc8ed2b20dfda25d060bf47f5dd88d01",
     type: "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
     reserveObjectId:
       "0xd4fd7e094af9819b06ea3136c13a6ae8da184016b78cf19773ac26d2095793e2",
@@ -179,14 +172,13 @@ export const pool: Pool = {
       "0x8fa5eccbca2c4ba9aae3b87fd44aa75aa5f5b41ea2d9be4d5321379384974984",
     supplyBalanceParentId:
       "0xe6457d247b6661b1cac123351998f88f3e724ff6e9ea542127b5dcb3176b3841",
-    rewardFundId: "0x4a1bf763bdf03c1fae15d7329db115ed37b8bf3c323938a3ddaa6b6e31a89789",
+    rewardFundId: "",
   },
   haSui: {
     name: "HaedalSui",
     assetId: 6,
     poolId:
-      // "0x6fd9cb6ebd76bc80340a9443d72ea0ae282ee20e2fd7544f6ffcd2c070d9557a",
-      "0x2e2fe883402d0b077fc000ab947192fc8c055ad9213bc6d4e8ebc73aaf315f5a",
+      "0x6fd9cb6ebd76bc80340a9443d72ea0ae282ee20e2fd7544f6ffcd2c070d9557a",
     type: "0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI",
     reserveObjectId:
       "0x0c9f7a6ca561dc566bd75744bcc71a6af1dc3caf7bd32c099cd640bb5f3bb0e3",
@@ -271,9 +263,7 @@ export const pool: Pool = {
     assetId: 11,
     poolId:
       "0x78ba01c21d8301be15690d3c30dc9f111871e38cfb0b2dd4b70cc6052fba41bb",
-    // TODO: change
-    // type: "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
-    type: "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
+    type: "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
     reserveObjectId:
       "0x376faea6dfbffab9ea808474cb751d91222b6d664f38c0f1d23de442a8edb1ce",
     borrowBalanceParentId:
@@ -667,9 +657,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     minimumEffectivePrice: 100000, // 0.1 = 0.1 * 1e6 = 100000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
     coinType:
-    // TODO: change
-      // "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
-      "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
+      "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
     feedId:
       "0xf72d8933873bb4e5bfa1edbfa9ff6443ec5fac25c1d99ba2ef37f50a125826f3", // TODO: value
     supraPairId: 48, // USDT_USD -> 48, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,USDT_USD,-48
@@ -867,9 +855,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
     coinType:
-    // TODO: change
-      // "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
-      "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
+      "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
     feedId:
       "0x9a6ffc707270286e98e8d0f654ce38f69efbc302ac98e2deb11fbad2211600f0", // TODO: value
     supraPairId: 1, // ETH_USDT -> 1, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,ETH_USDT,-1

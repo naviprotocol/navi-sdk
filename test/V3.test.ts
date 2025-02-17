@@ -5,7 +5,7 @@ import {
   getPoolApy,
   claimAllRewardsResupplyPTB,
   getBorrowFee
-} from "../src/libs/PTB/V3";
+} from "../src/libs/PTB/V3";    import { normalizeStructTag } from '@mysten/sui/utils'
 import * as V from "../src/libs/PTB";
 import {getReserveData,getIncentiveAPY} from "../src/libs/CallFunctions";
 import { getConfig, PriceFeedConfig, pool } from "../src/address";
@@ -37,7 +37,7 @@ const logToFile = (data: any, filePath: string) => {
   console.log(`Output written to ${filePath}`);
 };
 
-describe("NAVI SDK V3 test", async () => {
+describe.skip("NAVI SDK V3 test", async () => {
   const client = new NAVISDKClient({ networkType: rpcUrl, mnemonic: mnemonic });
   const account = client.accounts[0];
   it.skip("should success deposit Sui to NAVI protocol", async () => {
@@ -71,12 +71,12 @@ describe("NAVI SDK V3 test", async () => {
     let txb = new Transaction();
     txb.setSender(account.address);
     txb.setGasBudget(300_000_000);
-    const poolConfig: PoolConfig = pool["haSui" as keyof Pool];
+    const poolConfig: PoolConfig = pool["FDUSD" as keyof Pool];
     const hasuiObj =
-      txb.object("0xc13c5f026b7b78aa17da377d39c6f749d9625bdf87a3a3aa5b53d65edadf37b0");
+      txb.object("0x57c1d71495095908d733703045351861dffb5f21709408362335db8fa324acef");
 
     // const [toDeposit] = txb.splitCoins(txb.gas, [1e9]);
-    await V.depositCoin(txb, poolConfig, hasuiObj, txb.pure.u64(1e8));
+    await V.depositCoin(txb, poolConfig, hasuiObj, txb.pure.u64(1e6));
 
     // const result = await account.client.devInspectTransactionBlock({
     //     transactionBlock: txb,
@@ -170,14 +170,14 @@ describe("NAVI SDK V3 test", async () => {
     // console.log(JSON.stringify(txRes, null, 2));
     console.log(txRes);
   }, 50000);
-  it.skip("should success getAvailableRewards all ", async () => {
+  it("should success getAvailableRewards all ", async () => {
     const txRes = await V.getAvailableRewards(account.client, account.address, [3,1]);
     console.log(JSON.stringify(txRes, null, 2));
   }, 5000000);
   it.skip("should success getAvailableRewards all for user", async () => {
     const txRes = await V.getAvailableRewards(
       account.client,
-      "0x3be8db6ca4adf33387f16c86c443737e78fd14db85a4e1c68cc8f256ac68549c",
+      "0x400a533a4801f3905a25bd7edab4be6b54aeef41fe44971bd1e519d4f363d6b9",
       [3,1]
     );
     console.log(JSON.stringify(txRes, null, 2));
@@ -282,9 +282,16 @@ describe("NAVI SDK V3 test", async () => {
     }
   }, 50000);
 
-  it("should success cal apy V3", async () => {
+  it.skip("should success cal apy V3", async () => {
     const txRes = await getPoolApy(account.client);
     console.log(JSON.stringify(txRes, null, 2));
+  }, 50000);
+  it("should success cal apy V3", async () => {
+
+function normalizeCoinType(coinType: string): string {
+    return normalizeStructTag(coinType)
+}
+    console.log(JSON.stringify(normalizeStructTag("0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdc::USDC"), null, 2));
   }, 50000);
   it.skip("should success get v3 borrow fee", async () => {
     const txRes = await getBorrowFee(account.client);
@@ -438,6 +445,27 @@ describe("NAVI SDK V3 test", async () => {
     // console.log(JSON.stringify(rawData3, null, 2));
   }, 50000);
 
+    it.skip('should success withdraw Sui to NAVI protocol', async () => {
+        let txb = new Transaction();
+        txb.setSender(account.address);
+        const poolConfig: PoolConfig = pool["Sui" as keyof Pool];
+        // const [toDeposit] = txb.splitCoins(txb.gas, [1e9]);
+        // await depositCoin(txb, poolConfig, toDeposit, 1e9);
+        // const [withdrawCoind] = await V.withdrawCoin(txb, poolConfig, 1e9);
+        const [borrowCoind] = await V.borrowCoin(txb, poolConfig, 1e6);
+        // borrowCoind
+        txb.transferObjects([borrowCoind as any], account.address);
 
+        const txRes = await V.SignAndSubmitTXB(
+          txb,
+          account.client,
+          account.keypair
+        );
+        if (txRes.effects.status.status === "failure") {
+            throw new Error(txRes.effects.status.error)
+        }
+        expect(txRes.effects.status.status).toEqual("success");
+
+    });
 
 });
