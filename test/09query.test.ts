@@ -1,4 +1,4 @@
-import { getBorrowFee, getPoolApy } from "../src/libs/PTB";
+import { getBorrowFee, getPoolApy, getCurrentRules } from "../src/libs/PTB";
 import { getConfig, PriceFeedConfig, pool } from "../src/address";
 import { V3Type, PoolData, Pool, PoolConfig } from "../src/types";
 import { describe, it, expect } from "vitest";
@@ -14,6 +14,11 @@ describe("query test", () => {
 
   it("should success cal apy V3", async () => {
     const txRes = await getPoolApy(account.client);
+    console.log(JSON.stringify(txRes, null, 2));
+  }, 50000);
+
+  it.only("should success getCurrentRules", async () => {
+    const txRes = await getCurrentRules(account.client);
     console.log(JSON.stringify(txRes, null, 2));
   }, 50000);
 
@@ -35,7 +40,7 @@ describe("query test", () => {
     // expect(res).toBeLessThan(20);
 }, 50000);
 
-it.only('should get correct return all accounts\' Navi Portfolio', async () => {
+it('should get correct return all accounts\' Navi Portfolio', async () => {
 
   const res = await client.getAllNaviPortfolios();
   console.log(res);

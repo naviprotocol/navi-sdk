@@ -4,8 +4,6 @@ import {
 } from "../src/libs/PTB";
 import * as v2 from "../src/libs//PTB/V2";
 import * as v3 from "../src/libs//PTB/V3";
-import { getConfig, PriceFeedConfig, pool } from "../src/address";
-import { V3Type, PoolData, Pool, PoolConfig } from "../src/types";
 import { describe, it, expect } from "vitest";
 import { createTransaction, handleTransactionResult } from "./helper";
 import { client, account } from "./client";

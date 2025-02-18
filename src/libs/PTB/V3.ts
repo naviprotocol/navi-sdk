@@ -1,6 +1,6 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { normalizeStructTag } from '@mysten/sui/utils'
+import { normalizeStructTag } from "@mysten/sui/utils";
 import { bcs } from "@mysten/sui.js/bcs";
 
 import { moveInspect, getReserveData, getIncentiveAPY } from "../CallFunctions";
@@ -35,6 +35,25 @@ export function registerStructs() {
     rule_ids: "vector<address>",
   });
 }
+
+// Inline helper functions to retrieve configuration keys.
+const getPriceFeedKey = (coinType: string): string | undefined => {
+  const formattedCoinType = coinType.startsWith("0x")
+    ? coinType
+    : `0x${coinType}`;
+  return Object.keys(PriceFeedConfig).find(
+    (key) => PriceFeedConfig[key].coinType === formattedCoinType
+  );
+};
+
+const getPoolKey = (coinType: string): string | undefined => {
+  const formattedCoinType = coinType.startsWith("0x")
+    ? coinType
+    : `0x${coinType}`;
+  return Object.keys(pool).find(
+    (key) => normalizeStructTag(pool[key].type) === formattedCoinType
+  );
+};
 
 /**
  * Fetch and group available v3 rewards for a user.
@@ -105,15 +124,6 @@ export async function getAvailableRewards(
     console.log("No v3 rewards");
     return null;
   }
-
-  // Inline helper functions to retrieve configuration keys.
-  const getPriceFeedKey = (coinType: string): string | undefined =>
-    Object.keys(PriceFeedConfig).find(
-      (key) => PriceFeedConfig[key].coinType === `0x${coinType}`
-    );
-
-  const getPoolKey = (coinType: string): string | undefined =>
-    Object.keys(pool).find((key) => normalizeStructTag(pool[key].type) === `0x${coinType}`);
 
   // Group rewards by asset coin type.
   const groupedRewards: V3Type.GroupedRewards = {};
@@ -249,7 +259,9 @@ export async function getAvailableRewardsWithoutOption(
 
   // Helper function: Retrieve the corresponding key from pool based on coin type.
   const getPoolKey = (coinType: string): string | undefined =>
-    Object.keys(pool).find((key) => normalizeStructTag(pool[key].type) === `0x${coinType}`);
+    Object.keys(pool).find(
+      (key) => normalizeStructTag(pool[key].type) === `0x${coinType}`
+    );
 
   // Group the rewards by asset coin type.
   const groupedRewards: V3Type.GroupedRewards = rawRewards.reduce(
@@ -347,8 +359,8 @@ export async function claimRewardFunction(
   for (const key of Object.keys(pool) as (keyof Pool)[]) {
     // e.g. "0x2::sui::SUI".slice(2) => "2::sui::SUI"
     const normalizedType = normalizeStructTag(pool[key].type);
-    const coinTypeWithoutHex = normalizedType.startsWith("0x") 
-      ? normalizedType.slice(2) 
+    const coinTypeWithoutHex = normalizedType.startsWith("0x")
+      ? normalizedType.slice(2)
       : normalizedType;
 
     const rewardCoinTypeWithoutHex = rewardInfo.reward_coin_type.startsWith(
@@ -464,8 +476,8 @@ export async function claimRewardResupplyFunction(
   for (const key of Object.keys(pool) as (keyof Pool)[]) {
     // e.g. "0x2::sui::SUI".slice(2) => "2::sui::SUI"
     const normalizedType = normalizeStructTag(pool[key].type);
-    const coinTypeWithoutHex = normalizedType.startsWith("0x") 
-      ? normalizedType.slice(2) 
+    const coinTypeWithoutHex = normalizedType.startsWith("0x")
+      ? normalizedType.slice(2)
       : normalizedType;
 
     const rewardCoinTypeWithoutHex = rewardInfo.reward_coin_type.startsWith(
@@ -604,20 +616,22 @@ function calculateRateSumAndCoins(
   return rules.reduce(
     (acc, rule) => {
       const ruleRate = Number(rule.rate) / 1e27; // Convert from large integer representation
-      const formattedRewardCoinType = formatCoinType(rule.reward_coin_type);
+      const formattedRewardCoinType = formatCoinType(rule.rewardCoinType);
       const rewardPrice = coinPriceMap[formattedRewardCoinType]?.value || 0;
       const rewardDecimal =
         Number(coinPriceMap[formattedRewardCoinType]?.decimals) || 9;
       if (rewardPrice === 0) {
         console.log(
-          `No price data found for reward coin type: ${rule.reward_coin_type} (${formattedRewardCoinType})`
+          `No price data found for reward coin type: ${rule.rewardCoinType} (${formattedRewardCoinType})`
         );
       }
       if (!coinPriceMap[formattedRewardCoinType]?.decimals) {
-        console.log(`No decimal data found for reward coin type: ${rule.reward_coin_type} (${formattedRewardCoinType})`);
+        console.log(
+          `No decimal data found for reward coin type: ${rule.rewardCoinType} (${formattedRewardCoinType})`
+        );
       }
       acc.rateSum += (ruleRate * rewardPrice) / Math.pow(10, rewardDecimal);
-      acc.rewardCoins.push(rule.reward_coin_type);
+      acc.rewardCoins.push(rule.rewardCoinType);
       return acc;
     },
     { rateSum: 0, rewardCoins: [] as string[] }
@@ -653,22 +667,21 @@ export async function calculateApy(
   return groupedPools.map((group) => {
     // Find the matching reserve data based on formatted coin type
     const matchingReserve = reserves.find(
-      (r) =>
-        formatCoinType(r.coin_type) === formatCoinType(group.asset_coin_type)
+      (r) => formatCoinType(r.coin_type) === formatCoinType(group.assetCoinType)
     );
 
     // Return default result if no matching reserve data or rules exist
     if (!matchingReserve || !group.rules?.length) {
       return {
         asset: group.asset,
-        asset_coin_type: group.asset_coin_type,
+        assetCoinType: group.assetCoinType,
         supplyIncentiveApyInfo: { rewardCoin: [], apy: 0 },
         borrowIncentiveApyInfo: { rewardCoin: [], apy: 0 },
       };
     }
 
     // Get asset price from the price map
-    const assetPrice = coinPriceMap[group.asset_coin_type] || 0;
+    const assetPrice = coinPriceMap[group.assetCoinType] || 0;
     const totalSupplyAmount = Number(matchingReserve.total_supply || 0);
     const borrowedAmount = Number(matchingReserve.total_borrow || 0);
 
@@ -699,7 +712,7 @@ export async function calculateApy(
 
     return {
       asset: group.asset,
-      asset_coin_type: group.asset_coin_type,
+      assetCoinType: group.assetCoinType,
       supplyIncentiveApyInfo: {
         rewardCoin: supplyRewardCoins,
         apy: supplyApy,
@@ -727,13 +740,15 @@ export function groupByAssetCoinType(
   rawPools.forEach((poolEntry) => {
     const assetPool = poolEntry.fields.value.fields;
     const formattedCoinType = formatCoinType(assetPool.asset_coin_type);
+    const assetPoolKey = getPoolKey(formattedCoinType);
     const { asset } = assetPool;
     const rulesList = assetPool.rules.fields.contents;
 
     if (!groupedMap.has(formattedCoinType)) {
       groupedMap.set(formattedCoinType, {
         asset,
-        asset_coin_type: formattedCoinType,
+        assetSymbol: pool[assetPoolKey ?? ""]?.name || "",
+        assetCoinType: formattedCoinType,
         rules: [],
       });
     }
@@ -741,9 +756,16 @@ export function groupByAssetCoinType(
     const groupedPool = groupedMap.get(formattedCoinType)!;
     rulesList.forEach((ruleEntry) => {
       const rule = ruleEntry.fields.value.fields;
+      const formattedRewardCoinType = formatCoinType(rule.reward_coin_type);
+      const rewardPoolKey = getPoolKey(formattedRewardCoinType);
+
       groupedPool.rules.push({
+        ruleId: rule.id.id,
         option: rule.option,
-        reward_coin_type: rule.reward_coin_type,
+        optionType:
+          rule.option === 1 ? "supply" : rule.option === 3 ? "borrow" : "",
+        rewardCoinType: rule.reward_coin_type,
+        rewardSymbol: (rewardPoolKey && pool[rewardPoolKey]?.name) || "",
         rate: rule.rate,
         enable: rule.enable,
       });
@@ -788,15 +810,16 @@ export async function getPoolApy(
     coinTypeSet.add(formatCoinType(r.coin_type));
   });
   groupedPools.forEach((group) => {
-    coinTypeSet.add(group.asset_coin_type);
+    coinTypeSet.add(group.assetCoinType);
     group.rules.forEach((rule) => {
-      coinTypeSet.add(formatCoinType(rule.reward_coin_type));
+      coinTypeSet.add(formatCoinType(rule.rewardCoinType));
     });
   });
   const coinTypes = Array.from(coinTypeSet);
 
   // 5. Fetch coin price data
   const coinPrices = await fetchCoinPrices(coinTypes);
+
   const coinPriceMap: Record<string, { value: number; decimals: string }> =
     coinPrices?.reduce((map, price) => {
       map[formatCoinType(price.coinType)] = {
@@ -814,8 +837,14 @@ export async function getPoolApy(
 }
 
 // Merges two arrays of reward coins and ensures uniqueness
-const mergeRewardCoins = (coins1: string[], coins2: string[]): string[] =>
-  Array.from(new Set([...coins1, ...coins2]));
+const mergeRewardCoins = (coins1: string[], coins2: string[]): string[] => {
+  const addPrefix = (coin: string) =>
+    coin.startsWith("0x") ? coin : `0x${coin}`;
+
+  return Array.from(
+    new Set([...coins1.map(addPrefix), ...coins2.map(addPrefix)])
+  );
+};
 
 // Interface for V2 APY (Annual Percentage Yield) data structure
 interface V2Apy {
@@ -834,13 +863,12 @@ async function mergeApyResults(
   const calculateApyPercentage = (apyStr: string): number =>
     (Number(apyStr) / 1e27) * 100;
 
-  // Helper function to get the asset's coin type, removing the "0x" prefix if present
+  // Helper function to get the asset's coin type, keep the "0x" prefix if present
   const getFormattedCoinType = (assetId: number): string => {
     const poolValues = Object.values(pool);
     const poolEntry = poolValues.find((entry) => entry.assetId === assetId);
     if (!poolEntry) return "";
-    const normalizedType = normalizeStructTag(poolEntry.type);
-    return normalizedType.startsWith("0x") ? normalizedType.slice(2) : normalizedType;
+    return normalizeStructTag(poolEntry.type);
   };
 
   // Map to store merged V2 supply and borrow data by asset ID
@@ -884,9 +912,21 @@ async function mergeApyResults(
 
   // First, add V3 data to the final map (by asset ID)
   v3ApyResults.forEach((v3Data) => {
+    // Helper function to ensure '0x' prefix
+    const addPrefixToCoins = (coins: string[]): string[] =>
+      coins.map((coin) => (coin.startsWith("0x") ? coin : `0x${coin}`));
+
     finalApyResultsMap.set(v3Data.asset, {
       ...v3Data,
-      asset_coin_type: getFormattedCoinType(v3Data.asset),
+      supplyIncentiveApyInfo: {
+        ...v3Data.supplyIncentiveApyInfo,
+        rewardCoin: addPrefixToCoins(v3Data.supplyIncentiveApyInfo.rewardCoin),
+      },
+      borrowIncentiveApyInfo: {
+        ...v3Data.borrowIncentiveApyInfo,
+        rewardCoin: addPrefixToCoins(v3Data.borrowIncentiveApyInfo.rewardCoin),
+      },
+      assetCoinType: getFormattedCoinType(v3Data.asset),
     });
   });
 
@@ -908,7 +948,7 @@ async function mergeApyResults(
       finalApyResultsMap.set(assetId, {
         asset: assetId,
         // Ensure coin type is formatted correctly, regardless of whether it's a new asset or not
-        asset_coin_type: getFormattedCoinType(assetId),
+        assetCoinType: getFormattedCoinType(assetId),
         supplyIncentiveApyInfo: { ...v2Data.supply },
         borrowIncentiveApyInfo: { ...v2Data.borrow },
       });
@@ -917,4 +957,33 @@ async function mergeApyResults(
 
   // Return the final merged list of APY results
   return Array.from(finalApyResultsMap.values());
+}
+
+export async function getCurrentRules(
+  client: SuiClient
+): Promise<V3Type.GroupedAssetPool[]> {
+  const config = await getConfig();
+  const rawData = await client.getObject({
+    id: config.IncentiveV3,
+    options: { showType: true, showOwner: true, showContent: true },
+  });
+
+  const incentiveData = rawData as unknown as V3Type.IncentiveData;
+  const groupedPools = groupByAssetCoinType(incentiveData);
+  const modifiedGroupedPools = groupedPools.map((pool) => ({
+    asset: pool.asset,
+    assetSymbol: pool.assetSymbol,
+    assetCoinType: pool.assetCoinType, // Change from snake_case to camelCase
+    rules: pool.rules.map((rule) => ({
+      ruleId: rule.ruleId, // Change from snake_case to camelCase
+      option: rule.option, // Change from snake_case to camelCase
+      optionType: rule.optionType, // Change from snake_case to camelCase
+      rewardSymbol: rule.rewardSymbol, // Change from snake_case to camelCase
+      rewardCoinType: `0x${rule.rewardCoinType}`, // Add "0x" prefix
+      rate: rule.rate,
+      enable: rule.enable,
+    })),
+  }));
+
+  return modifiedGroupedPools;
 }

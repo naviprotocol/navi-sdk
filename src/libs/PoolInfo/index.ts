@@ -175,8 +175,7 @@ export async function getPoolsInfo(): Promise<PoolData[]> {
   
 
 export async function fetchCoinPrices(coinTypes: string[]): Promise<CoinPrice[] | null> {
-  // const API_URL = "https://open-aggregator-api.naviprotocol.io/coins/price";
-  const API_URL = "https://aggregator-api-stage-d18441a1781f.naviprotocol.io/coins/price";
+  const API_URL = "https://open-aggregator-api.naviprotocol.io/coins/price";
   if (coinTypes.length === 0) {
     console.warn("No coin types provided.");
     return null;

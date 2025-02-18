@@ -7,8 +7,11 @@ interface BaseRewardFields {
 
 // 2) This part is to enable reuse for GroupedAssetPool, ComputedDataItem, and ComputedRule interfaces.
 interface BaseRule {
+  ruleId: string;
   option: number; // supply：1， borrow: 3
-  reward_coin_type: string; 
+  optionType?: string; // supply：1， borrow: 3
+  rewardCoinType: string; 
+  rewardSymbol?: string; 
   rate: string;
   enable: boolean; // Indicates if the rule is enabled or active.
 }
@@ -53,7 +56,8 @@ export interface ProcessedRewardsList extends Array<ProcessedReward> {} // A lis
 // Original GroupedAssetPool interface
 export interface GroupedAssetPool {
   asset: number; // The asset amount or value.
-  asset_coin_type: string; // The coin type of the asset.
+  assetSymbol: string; // The coin type of the asset.
+  assetCoinType: string; // The coin type of the asset.
   rules: BaseRule[]; // An array of rules .
 }
 
@@ -78,7 +82,7 @@ export interface IncentiveApyInfo {
 // Original ApyResult interface
 export interface ApyResult {
   asset: number; 
-  asset_coin_type: string; 
+  assetCoinType: string; 
   supplyIncentiveApyInfo: IncentiveApyInfo; 
   borrowIncentiveApyInfo: IncentiveApyInfo; 
 }
