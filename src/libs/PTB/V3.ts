@@ -80,7 +80,7 @@ export async function getAvailableRewards(
     tx,
     client,
     checkAddress,
-    `${protocolConfig.uiGetterV3}::incentive_v3_getter::get_user_atomic_claimable_rewards`,
+    `${protocolConfig.uiGetter}::incentive_v3_getter::get_user_atomic_claimable_rewards`,
     [
       tx.object("0x06"),
       tx.object(protocolConfig.StorageId),
@@ -973,13 +973,13 @@ export async function getCurrentRules(
   const modifiedGroupedPools = groupedPools.map((pool) => ({
     asset: pool.asset,
     assetSymbol: pool.assetSymbol,
-    assetCoinType: pool.assetCoinType, // Change from snake_case to camelCase
+    assetCoinType: pool.assetCoinType,
     rules: pool.rules.map((rule) => ({
-      ruleId: rule.ruleId, // Change from snake_case to camelCase
-      option: rule.option, // Change from snake_case to camelCase
-      optionType: rule.optionType, // Change from snake_case to camelCase
-      rewardSymbol: rule.rewardSymbol, // Change from snake_case to camelCase
-      rewardCoinType: `0x${rule.rewardCoinType}`, // Add "0x" prefix
+      ruleId: rule.ruleId,
+      option: rule.option,
+      optionType: rule.optionType,
+      rewardSymbol: rule.rewardSymbol,
+      rewardCoinType: `0x${rule.rewardCoinType}`,
       rate: rule.rate,
       enable: rule.enable,
     })),

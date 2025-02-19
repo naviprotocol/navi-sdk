@@ -102,8 +102,6 @@ export const getConfig = async () => {
     ReserveParentId:
       "0x287399b936f75e810e460f3d70ddb21d804d2224f16d04e9f3be12fe80115175", // get it from storage object id. storage.reserves
     uiGetter:
-      "0x7534e0ef352024d79bda0388bfc4af581b7eb006591ce63288182898af29d9b1",
-    uiGetterV3:
       "0xa37cf08e27973bc437d1adc77d910aa7dc908f263a3378163fb929f7146a2973",
     flashloanConfig:
       "0x3672b2bf471a60c30a03325f104f92fb195c9d337ba58072dce764fe2aa5e2dc",
