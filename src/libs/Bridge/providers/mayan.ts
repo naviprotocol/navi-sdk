@@ -141,7 +141,7 @@ export async function swap(
         String(mayanQuote.effectiveAmountIn),
         fromToken.decimals
       );
-      if (currentAllowance.lt(REQUIRED_ALLOWANCE)) {
+      if (currentAllowance < REQUIRED_ALLOWANCE) {
         const approveTrx = await erc20Contract.approve(
           addresses.MAYAN_FORWARDER_CONTRACT,
           REQUIRED_ALLOWANCE
