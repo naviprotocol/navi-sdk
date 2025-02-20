@@ -8,14 +8,15 @@ import { client, account } from "./client";
 
 
 describe("withdraw test", () => {
-  it("should success deposit Sui to NAVI protocol", async () => {
+  it("should success withdraw Sui to NAVI protocol", async () => {
     const testCaseName = expect.getState().currentTestName || 'test_case';
 
     const txb = createTransaction(account);
         const poolConfig: PoolConfig = pool["Sui" as keyof Pool];
         const [toDeposit] = txb.splitCoins(txb.gas, [1e7]);
         await depositCoin(txb, poolConfig, toDeposit, 1e7);
-        await withdrawCoin(txb, poolConfig, 1e9);
+        const [withdrawCoins] = await withdrawCoin(txb, poolConfig, 1e9);
+        txb.transferObjects([withdrawCoins as any], account.address);
 
         const tsRes = await handleTransactionResult(txb,account,testCaseName)
         expect(tsRes).toEqual("success");

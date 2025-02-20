@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { pool } from '../../address';
+import { pool, getConfig } from '../../address';
 import { CoinInfo, Pool, PoolConfig, PoolsResponse, PoolData } from "../../types";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { getConfig } from "../../address";
 
 type FetchPoolDataArgs = { 
     poolId: string, 
@@ -174,8 +173,11 @@ export async function getPoolsInfo(): Promise<PoolData[]> {
 
   
 
-export async function fetchCoinPrices(coinTypes: string[]): Promise<CoinPrice[] | null> {
-  const API_URL = "https://open-aggregator-api.naviprotocol.io/coins/price";
+export async function fetchCoinPrices(coinTypes: string[], isInternal = false): Promise<CoinPrice[] | null> {
+  let API_URL = "https://open-aggregator-api.naviprotocol.io/coins/price";
+  if (isInternal) {
+    API_URL = "https://aggregator-api.naviprotocol.io/coins/price";
+  } 
   if (coinTypes.length === 0) {
     console.warn("No coin types provided.");
     return null;

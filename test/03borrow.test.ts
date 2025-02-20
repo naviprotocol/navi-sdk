@@ -13,7 +13,8 @@ describe("borrow test", () => {
     const poolConfig: PoolConfig = pool["Sui" as keyof Pool];
     const [toDeposit] = txb.splitCoins(txb.gas, [1e7]);
     await depositCoin(txb, poolConfig, toDeposit, 1e5);
-    await borrowCoin(txb, poolConfig, 0.1e9);
+    const [borrowCoins] =await borrowCoin(txb, poolConfig, 0.1e9);
+    txb.transferObjects([borrowCoins as any], account.address);
     const tsRes = await handleTransactionResult(txb, account, testCaseName);
     expect(tsRes).toEqual("success");
   });

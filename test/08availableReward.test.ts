@@ -11,7 +11,7 @@ describe("chain query test", () => {
   it("should success get v2 supply  available rewards ", async () => {
     const txRes = await v2.getAvailableRewards(
       account.client,
-      account.address,
+      '0xfaba86400d9cc1d144bbc878bc45c4361d53a16c942202b22db5d26354801e8e',
       1
     );
     console.log(JSON.stringify(txRes, null, 2));
@@ -20,13 +20,13 @@ describe("chain query test", () => {
   it("should success get v2 borrow  available rewards ", async () => {
     const txRes = await v2.getAvailableRewards(
       account.client,
-      account.address,
+      '0xfaba86400d9cc1d144bbc878bc45c4361d53a16c942202b22db5d26354801e8e',
       1
     );
     console.log(JSON.stringify(txRes, null, 2));
   }, 5000000);
 
-  it.only("should success get v3  available rewards ", async () => {
+  it("should success get v3  available rewards ", async () => {
     const txRes = await v3.getAvailableRewards(account.client, account.address);
     console.log(JSON.stringify(txRes, null, 2));
   }, 5000000);
@@ -50,10 +50,10 @@ describe("chain query test", () => {
     console.log(JSON.stringify(txRes, null, 2));
   }, 5000000);
 
-  it("should success get v2/v3 all available rewards ", async () => {
+  it.only("should success get v2/v3 all available rewards ", async () => {
     const txRes = await getAvailableRewards(
       account.client,
-      account.address,
+      '0xfaba86400d9cc1d144bbc878bc45c4361d53a16c942202b22db5d26354801e8e',
       [1, 3]
     );
     console.log(JSON.stringify(txRes, null, 2));

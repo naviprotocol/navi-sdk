@@ -126,7 +126,7 @@ export async function getAvailableRewards(
         reward_coin_oracle_id: matchedFund?.reward_coin_oracle_id ?? null,
       };
     });
-
+  
     // Build price feed map
     const priceFeedMap: Record<string, number> = Object.values(
       PriceFeedConfig
@@ -145,6 +145,7 @@ export async function getAvailableRewards(
         reward_coin_type: string;
       };
     }
+
     const processedData: ProcessedData = mergedPools.reduce((acc, pool) => {
       const priceDecimal = priceFeedMap[`0x${pool.reward_coin_type}`] ?? null;
       const availableDecimal =
@@ -153,14 +154,24 @@ export async function getAvailableRewards(
             10 ** priceDecimal
           : null;
 
-      const assetId = pool.asset_id.toString();
-      acc[assetId] = {
-        asset_id: assetId,
-        funds: pool.funds,
-        available: availableDecimal?.toFixed(6) ?? "0",
-        reward_id: pool.reward_coin_oracle_id?.toString() ?? "",
-        reward_coin_type: pool.reward_coin_type,
-      };
+      const assetId = parseInt(pool.asset_id, 10);
+      const key = `${assetId}-${option}-${pool.reward_coin_type}`;
+      if (acc[key]) {
+        
+        const existingAvailable = parseFloat(acc[key].available);
+        const newAvailable = parseFloat(availableDecimal?.toFixed(6) ?? "0");
+        acc[key].available = (existingAvailable + newAvailable).toFixed(6);
+      } else {
+        // if not existing
+        acc[key] = {
+          asset_id: assetId,
+          funds: pool.funds,
+          available: availableDecimal?.toFixed(6) ?? "0",
+          reward_id: pool.reward_coin_oracle_id?.toString() ?? "",
+          reward_coin_type: pool.reward_coin_type,
+        };
+      }
+
       return acc;
     }, {} as ProcessedData);
 

@@ -823,7 +823,7 @@ export async function getPoolApy(
   const coinTypes = Array.from(coinTypeSet);
 
   // 5. Fetch coin price data
-  const coinPrices = await fetchCoinPrices(coinTypes);
+  const coinPrices = await fetchCoinPrices(coinTypes, true);
 
   const coinPriceMap: Record<string, { value: number; decimals: string }> =
     coinPrices?.reduce((map, price) => {
@@ -999,4 +999,66 @@ export async function getCurrentRules(
   }));
 
   return modifiedGroupedPools;
+}
+
+
+/**
+ * Main function to fetch on-chain data and compute APY information.
+ *
+ * @param client - SuiClient instance used to fetch the raw data.
+ * @returns An array of final APY results for each pool.
+ */
+export async function getPoolsApy(
+  client: SuiClient
+): Promise<V3Type.ApyResult[]> {
+  // 1. Get configuration
+  const config = await getConfig();
+  const userAddress =
+    "0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2";
+
+  // 2. Fetch ReserveData, IncentiveV3 data, and APY calculations in parallel
+  const [reserves, rawData, v2SupplyApy, v2BorrowApy] = await Promise.all([
+    getReserveData(config.StorageId, client),
+    client.getObject({
+      id: config.IncentiveV3,
+      options: { showType: true, showOwner: true, showContent: true },
+    }),
+    getIncentiveAPY(userAddress, client, 1),
+    getIncentiveAPY(userAddress, client, 3),
+  ]);
+
+  // 3. Process incentive data
+  const incentiveData = rawData as unknown as V3Type.IncentiveData;
+  const groupedPools = groupByAssetCoinType(incentiveData);
+
+  // 4. Build a set of all coin types needed for price lookup
+  const coinTypeSet = new Set<string>();
+  reserves.forEach((r: V3Type.ReserveData) => {
+    coinTypeSet.add(formatCoinType(r.coin_type));
+  });
+  groupedPools.forEach((group) => {
+    coinTypeSet.add(group.assetCoinType);
+    group.rules.forEach((rule) => {
+      coinTypeSet.add(formatCoinType(rule.rewardCoinType));
+    });
+  });
+  const coinTypes = Array.from(coinTypeSet);
+
+  // 5. Fetch coin price data
+  const coinPrices = await fetchCoinPrices(coinTypes);
+
+  const coinPriceMap: Record<string, { value: number; decimals: string }> =
+    coinPrices?.reduce((map, price) => {
+      map[formatCoinType(price.coinType)] = {
+        value: price.value,
+        decimals: price.decimals,
+      };
+      return map;
+    }, {} as Record<string, { value: number; decimals: string }>) || {};
+
+  // 6. Calculate APY using grouped incentive data and reserve data with price info
+  const v3Apy = await calculateApy(groupedPools, reserves, coinPriceMap);
+
+  // 7. Merge the APY results
+  return mergeApyResults(v3Apy, v2SupplyApy, v2BorrowApy);
 }

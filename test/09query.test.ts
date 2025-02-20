@@ -1,4 +1,4 @@
-import { getBorrowFee, getPoolApy, getCurrentRules } from "../src/libs/PTB";
+import { getBorrowFee, getPoolApy, getCurrentRules, getPoolsApy } from "../src/libs/PTB";
 import { getConfig, PriceFeedConfig, pool } from "../src/address";
 import { V3Type, PoolData, Pool, PoolConfig } from "../src/types";
 import { describe, it, expect } from "vitest";
@@ -12,12 +12,12 @@ describe("query test", () => {
     expect(txRes).toEqual(3);
   }, 50000);
 
-  it("should success cal apy V3", async () => {
+  it.only("should success cal apy V3", async () => {
     const txRes = await getPoolApy(account.client);
     console.log(JSON.stringify(txRes, null, 2));
   }, 50000);
 
-  it.only("should success getCurrentRules", async () => {
+  it("should success getCurrentRules", async () => {
     const txRes = await getCurrentRules(account.client);
     console.log(JSON.stringify(txRes, null, 2));
   }, 50000);

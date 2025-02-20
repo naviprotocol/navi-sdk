@@ -52,7 +52,7 @@ export function writeLogToFile(data: any, filePath: string) {
 export const createTransaction = (
   account: any,
   userAddress?: string,
-  gasBudget = 300_000_000
+  gasBudget = 100_000_000
 ): Transaction => {
   const txb = new Transaction();
   if (userAddress) {

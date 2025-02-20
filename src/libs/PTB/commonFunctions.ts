@@ -486,13 +486,12 @@ export async function getAvailableRewards(
     const processV2Data = (v2Data: Record<string, V2Entry> | null, rewardType: number) => {
       if (!v2Data) return;
       for (const [assetIdKey, entry] of Object.entries(v2Data)) {
-        const assetId = parseInt(assetIdKey, 10); // assetId is taken from the key
-        const key = `${assetId}-${rewardType}-${entry.reward_coin_type}`;
+        const assetId = parseInt(entry.asset_id, 10); // assetId is taken from the key
         const value = parseFloat(entry.available);
-        if (agg.has(key)) {
-          agg.get(key)!.total += value;
+        if (agg.has(assetIdKey)) {
+          agg.get(assetIdKey)!.total += value;
         } else {
-          agg.set(key, { assetId, rewardType, coinType: entry.reward_coin_type, total: value });
+          agg.set(assetIdKey, { assetId, rewardType, coinType: entry.reward_coin_type, total: value });
         }
       }
     };
