@@ -188,7 +188,7 @@ export async function getAvailableRewards(
       (acc, assetId) => {
         acc[assetId] = {
           ...processedData[assetId],
-          asset_symbol: assetSymbolMap[assetId] ?? null,
+          asset_symbol: assetSymbolMap[processedData[assetId].asset_id] ?? null,
         };
         return acc;
       },

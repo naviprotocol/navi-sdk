@@ -13,10 +13,10 @@ describe("repay test", () => {
       account,
     );
     const poolConfig: PoolConfig = pool["Sui" as keyof Pool];
-    const [toDeposit] = txb.splitCoins(txb.gas, [1e7]);
-    await depositCoin(txb, poolConfig, toDeposit, 1e5);
-    const [borrowedCoin] = await borrowCoin(txb, poolConfig, 0.1e6);
-    await repayDebt(txb, poolConfig, borrowedCoin, 0.1e6);
+    const [toDeposit] = txb.splitCoins(txb.gas, [1e9]);
+    await depositCoin(txb, poolConfig, toDeposit, 1e9);
+    const [borrowedCoin] = await borrowCoin(txb, poolConfig, 0.12e9);
+    await repayDebt(txb, poolConfig, borrowedCoin, 0.1e9);
 
     const tsRes = await handleTransactionResult(txb, account, testCaseName);
     expect(tsRes).toEqual("success");

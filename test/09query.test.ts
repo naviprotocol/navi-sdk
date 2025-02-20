@@ -9,11 +9,11 @@ import { client, account } from "./client";
 describe("query test", () => {
   it("should success get V3 borrow fee", async () => {
     const txRes = await getBorrowFee(account.client);
-    expect(txRes).toEqual(3);
+    expect(txRes).toEqual(0.3);
   }, 50000);
 
-  it.only("should success cal apy V3", async () => {
-    const txRes = await getPoolApy(account.client);
+  it("should success cal apy V3", async () => {
+    const txRes = await getPoolsApy(account.client);
     console.log(JSON.stringify(txRes, null, 2));
   }, 50000);
 
