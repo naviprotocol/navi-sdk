@@ -19,31 +19,32 @@ import {
  * @param coin - The target coin information.
  * @returns The flashloan fee rate (e.g., 0.003 represents 0.3%).
  */
-async function getFlashloanFee(coin: CoinInfo): Promise<number> {
-    const flashloanFeeUrl = "https://open-api.naviprotocol.io/api/navi/flashloan";
+export async function getFlashloanFee(coin: CoinInfo): Promise<number> {
+  const flashloanFeeUrl = "https://open-api.naviprotocol.io/api/navi/flashloan";
 
-    try {
-        const response = await fetch(flashloanFeeUrl);
-        const feeData = await response.json();
+  try {
+    const response = await fetch(flashloanFeeUrl);
+    const feeData = await response.json();
 
-        // Define the key for SUI based on its address format
-        const suiKey = "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI";
+    // Define the key for SUI based on its address format
+    const suiKey =
+      "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI";
 
-        if (coin.address === Sui.address) {
-            if (!feeData.data[suiKey]) {
-                throw new TypeError("Unable to retrieve flashloan fee for SUI.");
-            }
-            return Number(feeData.data[suiKey].flashloanFee);
-        } else {
-            if (!feeData.data[coin.address]) {
-                throw new TypeError(`Unsupported coin: ${coin.symbol}`);
-            }
-            return feeData.data[coin.address].flashloanFee || 0;
-        }
-    } catch (error) {
-        console.error(`Error fetching flashloan fee: ${(error as Error).message}`);
-        throw error;
+    if (coin.address === Sui.address) {
+      if (!feeData.data[suiKey]) {
+        throw new TypeError("Unable to retrieve flashloan fee for SUI.");
+      }
+      return Number(feeData.data[suiKey].flashloanFee);
+    } else {
+      if (!feeData.data[coin.address]) {
+        throw new TypeError(`Unsupported coin: ${coin.symbol}`);
+      }
+      return feeData.data[coin.address].flashloanFee || 0;
     }
+  } catch (error) {
+    console.error(`Error fetching flashloan fee: ${(error as Error).message}`);
+    throw error;
+  }
 }
 
 /**
