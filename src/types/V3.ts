@@ -12,7 +12,9 @@ interface BaseRule {
   optionType?: string; // supply：1， borrow: 3
   rewardCoinType: string; 
   rewardSymbol?: string; 
+  rewardDecimal?: number;  // -1 means not found decimal in PriceFeedConfig
   rate: string;
+  ratePerWeek?: number | null; // if reward coin decimal is not supported, default is null
   enable: boolean; // Indicates if the rule is enabled or active.
 }
 

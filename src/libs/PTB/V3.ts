@@ -758,6 +758,7 @@ export function groupByAssetCoinType(
       const rule = ruleEntry.fields.value.fields;
       const formattedRewardCoinType = formatCoinType(rule.reward_coin_type);
       const rewardPoolKey = getPoolKey(formattedRewardCoinType);
+      const rewardPriceFeedKey = getPriceFeedKey(formattedRewardCoinType);
 
       groupedPool.rules.push({
         ruleId: rule.id.id,
@@ -766,6 +767,10 @@ export function groupByAssetCoinType(
           rule.option === 1 ? "supply" : rule.option === 3 ? "borrow" : "",
         rewardCoinType: rule.reward_coin_type,
         rewardSymbol: (rewardPoolKey && pool[rewardPoolKey]?.name) || "",
+        rewardDecimal:
+          (rewardPriceFeedKey &&
+            PriceFeedConfig[rewardPriceFeedKey]?.priceDecimal) ||
+          -1,
         rate: rule.rate,
         enable: rule.enable,
       });
@@ -981,6 +986,14 @@ export async function getCurrentRules(
       rewardSymbol: rule.rewardSymbol,
       rewardCoinType: `0x${rule.rewardCoinType}`,
       rate: rule.rate,
+      ratePerWeek:
+        rule.rewardDecimal === -1
+          ? null
+          : ((Number(rule.rate) / 1e27) *
+              RATE_MULTIPLIER *
+              SECONDS_PER_DAY *
+              7) /
+            Math.pow(10, Number(rule.rewardDecimal)),
       enable: rule.enable,
     })),
   }));
