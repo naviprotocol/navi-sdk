@@ -2,15 +2,11 @@ import { Transaction } from "@mysten/sui/transactions";
 import { getConfig, flashloanConfig, pool, vSuiConfig, PriceFeedConfig, OracleProConfig, IPriceFeed, AddressMap } from '../../address'
 import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
 import { bcs } from '@mysten/sui.js/bcs';
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { moveInspect } from "../CallFunctions";
+import { SuiClient } from "@mysten/sui/client";
 import { SuiPriceServiceConnection, SuiPythClient } from '@pythnetwork/pyth-sui-js'
+import * as V3 from  './V3';
+import * as V2 from  './V2';
 
-interface Reward {
-    asset_id: string;
-    funds: string;
-    available: string;
-}
 
 /**
  * Deposits a specified amount of a coin into a pool.
@@ -31,7 +27,7 @@ export async function depositCoin(txb: Transaction, _pool: PoolConfig, coinObjec
         amountObj = amount;
     }
     txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::entry_deposit`,
+        target: `${config.ProtocolPackage}::incentive_v3::entry_deposit`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.StorageId), // object id of storage
@@ -39,8 +35,8 @@ export async function depositCoin(txb: Transaction, _pool: PoolConfig, coinObjec
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
             amountObj, // The amount you want to deposit, decimals must be carried, like 1 sui => 1000000000
-            txb.object(config.Incentive),
-            txb.object(config.IncentiveV2), // The incentive object v2
+            txb.object(config.IncentiveV2),
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -59,15 +55,15 @@ export async function depositCoinWithAccountCap(txb: Transaction, _pool: PoolCon
     const config = await getConfig();
 
     txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::deposit_with_account_cap`,
+        target: `${config.ProtocolPackage}::incentive_v3::deposit_with_account_cap`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.StorageId), // object id of storage
             txb.object(_pool.poolId), // pool id of the asset
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
-            txb.object(config.Incentive),
-            txb.object(config.IncentiveV2), // The incentive object v2
+            txb.object(config.IncentiveV2),
+            txb.object(config.IncentiveV3), // The incentive object v3
             txb.object(account)
         ],
         typeArguments: [_pool.type]
@@ -87,7 +83,7 @@ export async function withdrawCoin(txb: Transaction, _pool: PoolConfig, amount: 
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::withdraw`,
+        target: `${config.ProtocolPackage}::incentive_v3::withdraw`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -95,8 +91,8 @@ export async function withdrawCoin(txb: Transaction, _pool: PoolConfig, amount: 
             txb.object(_pool.poolId), // pool id of the asset
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             txb.pure.u64(amount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
-            txb.object(config.Incentive),
-            txb.object(config.IncentiveV2), // The incentive object v2
+            txb.object(config.IncentiveV2),
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -123,7 +119,7 @@ export async function withdrawCoinWithAccountCap(txb: Transaction, _pool: PoolCo
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::withdraw_with_account_cap`,
+        target: `${config.ProtocolPackage}::incentive_v3::withdraw_with_account_cap`,
         arguments: [
             txb.sharedObjectRef({
                 objectId: '0x06',
@@ -135,8 +131,8 @@ export async function withdrawCoinWithAccountCap(txb: Transaction, _pool: PoolCo
             txb.object(_pool.poolId), // pool id of the asset
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             txb.pure.u64(withdrawAmount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
-            txb.object(config.Incentive),
-            txb.object(config.IncentiveV2), // The incentive object v2
+            txb.object(config.IncentiveV2),
+            txb.object(config.IncentiveV3), // The incentive object v3
             txb.object(account)
         ],
         typeArguments: [_pool.type]
@@ -163,7 +159,7 @@ export async function borrowCoin(txb: Transaction, _pool: PoolConfig, borrowAmou
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::borrow`,
+        target: `${config.ProtocolPackage}::incentive_v3::borrow`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -172,6 +168,7 @@ export async function borrowCoin(txb: Transaction, _pool: PoolConfig, borrowAmou
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             txb.pure.u64(borrowAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2), // The incentive object v2
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -194,11 +191,18 @@ export async function borrowCoin(txb: Transaction, _pool: PoolConfig, borrowAmou
  * @param repayAmount - The amount you want to repay.
  * @returns The updated transaction block object.
  */
-export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject: any, repayAmount: number) {
+export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject: any, repayAmount: any) {
     const config = await getConfig();
+    let amountObj;
+    if (typeof repayAmount === 'number') {
+        amountObj = txb.pure.u64(repayAmount);
+    }
+    else {
+        amountObj = repayAmount;
+    }
 
     txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::entry_repay`,
+        target: `${config.ProtocolPackage}::incentive_v3::entry_repay`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -207,7 +211,8 @@ export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject:
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
             txb.pure.u64(repayAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
-            txb.object(config.IncentiveV2), // The incentive object v2
+            txb.object(config.IncentiveV2), // The incentive object v2 
+            txb.object(config.IncentiveV3), // The incentive object v3
         ],
         typeArguments: [_pool.type]
     })
@@ -324,7 +329,7 @@ export async function liquidateFunction(txb: Transaction, payCoinType: CoinInfo,
     const config = await getConfig();
 
     const [collateralBalance, remainDebtBalance] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::liquidation`,
+        target: `${config.ProtocolPackage}::incentive_v3::liquidation`,
         arguments: [
             txb.object('0x06'),
             txb.object(config.PriceOracle),
@@ -335,8 +340,8 @@ export async function liquidateFunction(txb: Transaction, payCoinType: CoinInfo,
             txb.pure.u8(collateral_pool.assetId),
             txb.object(collateral_pool.poolId),
             txb.pure.address(to_liquidate_address),
-            txb.object(config.Incentive),
             txb.object(config.IncentiveV2),
+            txb.object(config.IncentiveV3),
         ],
         typeArguments: [pool_to_pay.type, collateral_pool.type],
     })
@@ -344,47 +349,6 @@ export async function liquidateFunction(txb: Transaction, payCoinType: CoinInfo,
     return [collateralBalance, remainDebtBalance];
 }
 
-/**
- * Claims the reward for a transaction block.
- * @param txb - The transaction block.
- * @param incentiveFundsPool - The incentive funds pool.
- * @param assetId - The asset ID.
- * @param option - The option type.
- */
-export async function claimRewardFunction(txb: Transaction, incentiveFundsPool: string, assetId: string, option: OptionType) {
-    const config = await getConfig();
-
-    const ProFundsPoolInfo: any = {
-        'f975bc2d4cca10e3ace8887e20afd77b46c383b4465eac694c4688344955dea4': {
-            coinType: '0x2::sui::SUI',
-            oracleId: 0,
-        },
-        'e2b5ada45273676e0da8ae10f8fe079a7cec3d0f59187d3d20b1549c275b07ea': {
-            coinType: '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT',
-            oracleId: 5,
-        },
-        'a20e18085ce04be8aa722fbe85423f1ad6b1ae3b1be81ffac00a30f1d6d6ab51': {
-            coinType: '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI',
-            oracleId: 6,
-        },
-        '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09': {
-            coinType: '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX',
-            oracleId: 7,
-        },
-    }
-    txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v2::claim_reward`,
-        arguments: [
-            txb.object('0x06'),
-            txb.object(config.IncentiveV2),
-            txb.object(`0x${incentiveFundsPool}`),
-            txb.object(config.StorageId),
-            txb.pure.u8(Number(assetId)),
-            txb.pure.u8(option),
-        ],
-        typeArguments: [ProFundsPoolInfo[incentiveFundsPool].coinType],
-    })
-}
 
 /**
  * Signs and submits a transaction block using the provided client and keypair.
@@ -448,212 +412,155 @@ export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
     return coin;
 }
 
+type PoolRewards = {
+    assetId: number;
+    rewardType: number;
+    rewards: { coinType: string; available: string }[];
+  };
 /**
- * Retrieves the incentive pools for a given asset and option.
- * @param assetId - The ID of the asset.
- * @param option - The option type.
- * @param user - (Optional) The user's address. If provided, the rewards claimed by the user and the total rewards will be returned.
- * @returns The incentive pools information.
+ * Retrieves available rewards for the given address.
+ *
+ * @param client - Sui client instance.
+ * @param checkAddress - The address for which rewards are being checked.
+ * @param contractOptionTypes - Array of contract option types to filter rewards (e.g., [1], [3], or [1,3]).
+ *                              When passing [1], only supply rewards will be returned.
+ *                              When passing [3], only borrow rewards will be returned.
+ *                              When passing [1,3], rewards for both options will be returned.
+ * @param prettyPrint - Flag to determine if the result should be pretty printed.
+ * @param includeV2 - Feature flag to enable/disable V2 logic.
+ * @returns Promise resolving to an array of aggregated PoolRewards.
  */
-export async function getIncentivePools(client: SuiClient, assetId: number, option: OptionType, user: string) {
-    const config = await getConfig();
-    const tx = new Transaction();
-    const result: any = await moveInspect(
-        tx,
-        client,
-        user,
-        `${config.uiGetter}::incentive_getter::get_incentive_pools`,
-        [
-            tx.object('0x06'), // clock object id
-            tx.object(config.IncentiveV2), // the incentive object v2
-            tx.object(config.StorageId), // object id of storage
-            tx.pure.u8(assetId),
-            tx.pure.u8(option),
-            tx.pure.address(user), // If you provide your address, the rewards that have been claimed by your address and the total rewards will be returned.
-        ],
-        [], // type arguments is null
-        'vector<IncentivePoolInfo>' // parse type
-    );
-    return result[0];
-}
-
-/**
- * Retrieves the available rewards for a given address.
- * 
- * @param checkAddress - The address to check for rewards. Defaults to the current address.
- * @param option - The option type. Defaults to 1.
- * @param prettyPrint - Whether to print the rewards in a pretty format. Defaults to true.
- * @returns An object containing the summed rewards for each asset.
- * @throws If there is an error retrieving the available rewards.
- */
-export async function getAvailableRewards(client: SuiClient, checkAddress: string, option: OptionType = 1, prettyPrint = true) {
-
-    registerStructs();
-    const assetIds = Array.from({ length: Number(Object.keys(pool).length) }, (_, i) => i);
-    try {
-        const allResults = await Promise.all(
-            assetIds.map(assetId => getIncentivePools(client, assetId, option, checkAddress))
-        );
-
-        const allPools = allResults.flat();
-        const activePools = allPools.filter(pool => pool.available.trim() != '0');
-        const summedRewards = activePools.reduce((acc, pool) => {
-            let assetId = pool.asset_id.toString();
-            if (assetId == '0' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
-                assetId = '0extra' //Means Sui Rewards
-            }
-            if (assetId == '5' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
-                assetId = '5extra' //Means NAVX Rewards
-            }
-            if (assetId == '10' && pool.funds == '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09') {
-                assetId = '10extra' //Means NAVX Rewards
-            }
-            if (assetId == '13' && pool.funds == 'bc14736bbe4ac59a4e3af6835a98765c15c5f7dbf9e7ba9b36679ce7ff00dc19') {
-                assetId = '13extra' //Means NS Rewards
-            }
-            if (assetId == '15' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
-                assetId = '15extra' //Means DEEP Rewards
-            }
-            if (assetId == '21' && pool.funds == '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e') {
-                assetId = '15extra' //Means DEEP Rewards
-            }
-
-            const availableDecimal = (BigInt(pool.available) / BigInt(10 ** 27)).toString();
-            
-            let availableFixed = (Number(availableDecimal) / 10 ** 9).toFixed(5); // Adjust for 5 decimal places
-            if (assetId == '13extra' || assetId == '15extra' || assetId == '16') {
-                availableFixed = (Number(availableDecimal) / 10 ** 6).toFixed(5); // coin for Decimals 6
-            }
-            if (!acc[assetId]) {
-
-                acc[assetId] = { asset_id: assetId, funds: pool.funds, available: availableFixed };
-                if (assetId == '0extra') {
-                    acc[assetId] = { asset_id: '0', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '5extra') {
-                    acc[assetId] = { asset_id: '5', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '10extra') {
-                    acc[assetId] = { asset_id: '10', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '13extra') {
-                    acc[assetId] = { asset_id: '13', funds: pool.funds, available: availableFixed };
-                }
-                if (assetId == '15extra') {
-                    acc[assetId] = { asset_id: '15', funds: pool.funds, available: availableFixed };
-                }
-            } else {
-                acc[assetId].available = (parseFloat(acc[assetId].available) + parseFloat(availableFixed)).toFixed(5);
-            }
-
-            return acc;
-        }, {} as { [key: string]: { asset_id: string, funds: string, available: string } });
-
-        if (prettyPrint) {
-            const coinDictionary: { [key: string]: string } = {
-              "0": "Sui",
-              "0extra": "Sui",
-              "1": "wUSDC",
-              "2": "USDT",
-              "3": "WETH",
-              "4": "CETUS",
-              "5": "vSui",
-              "5extra": "vSui",
-              "6": "haSui",
-              "7": "NAVX",
-              "8": "WBTC",
-              "9": "AUSD",
-              "10": "nUSDC",
-              "10extra": "nUSDC",
-              "11": "ETH",
-              "12": "USDY",
-              "13": "NS",
-              "13extra": "NS",
-              "14": "stBTC",
-              "15": "DEEP",
-              "15extra": "DEEP",
-              "16": "FDUSD",
-              "17": "BLUE",
-              "18": "BUCK",
-              "19": "suiUSDT",
-              "20": "stSUI",
-              "21": "suiBTC",
-            };
-            console.log(checkAddress, " available rewards:");
-            Object.keys(summedRewards).forEach((key) => {
-              if (
-                key == "0extra" ||
-                key == "5extra" ||
-                key == "10extra" ||
-                key == "13extra" ||
-                key == "7"
-              ) {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} NAVX`
-                );
-              } else if (key == "13extra") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} NS`
-                );
-              } else if (key == "15extra") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} DEEP`
-                );
-              } else if (key == "16") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} FDUSD`
-                );
-              } else if (key == "17") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} BLUE`
-                );
-              } else if (key == "20") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} stSUI`
-                );
-              } else if (key == "21") {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} Deep`
-                );
-              } else {
-                console.log(
-                  `${coinDictionary[key]}: ${summedRewards[key].available} vSui`
-                );
-              }
-            });
-        }
-
-        return summedRewards;
-    } catch (error) {
-        console.error('Failed to get available rewards:', error);
-        throw error;
+export async function getAvailableRewards(
+    client: SuiClient,
+    checkAddress: string,
+    contractOptionTypes: OptionType[], // Use ContractOptionType[] if you have a dedicated type
+    prettyPrint = true,
+    includeV2: boolean = true // Feature flag to enable/disable V2 logic
+  ): Promise<PoolRewards[]> {
+    // Concurrently fetch rewards data for V2 (option 1 and/or 3) and V3.
+    const v2Promises: Array<Promise<Record<string, any> | null>> = [];
+  
+    // Fetch V2 rewards for option 1 if requested and if V2 is enabled, else resolve to null.
+    if (includeV2 && contractOptionTypes.includes(1)) {
+      v2Promises.push(V2.getAvailableRewards(client, checkAddress, 1, prettyPrint));
+    } else {
+      v2Promises.push(Promise.resolve(null));
     }
+  
+    // Fetch V2 rewards for option 3 if requested and if V2 is enabled, else resolve to null.
+    if (includeV2 && contractOptionTypes.includes(3)) {
+      v2Promises.push(V2.getAvailableRewards(client, checkAddress, 3, prettyPrint));
+    } else {
+      v2Promises.push(Promise.resolve(null));
+    }
+  
+    // Fetch V3 rewards data.
+    const v3Promise = V3.getAvailableRewards(client, checkAddress, prettyPrint);
+  
+    const [v2DataOpt1, v2DataOpt3, v3Data] = await Promise.all([
+      v2Promises[0],
+      v2Promises[1],
+      v3Promise
+    ]);
+  
+    // Type definitions for V2 and V3 entries.
+    type V2Entry = {
+      asset_id: string;
+      available: string;
+      reward_id: string;
+      reward_coin_type: string;
+    };
+  
+    type V3Entry = {
+      asset_id: string;
+      reward_id: string;
+      reward_coin_type: string;
+      user_claimable_reward: number;
+      option: number;
+    };
+  
+    // Aggregation map; key format: `${assetId}-${rewardType}-${reward_coin_type}`
+    const agg = new Map<string, { assetId: number; rewardType: number; coinType: string; total: number }>();
+  
+    // Process V2 data with the corresponding rewardType (option).
+    const processV2Data = (v2Data: Record<string, V2Entry> | null, rewardType: number) => {
+      if (!v2Data) return;
+      for (const [assetIdKey, entry] of Object.entries(v2Data)) {
+        const assetId = parseInt(entry.asset_id, 10); // assetId is taken from the key
+        const value = parseFloat(entry.available);
+        if (agg.has(assetIdKey)) {
+          agg.get(assetIdKey)!.total += value;
+        } else {
+          agg.set(assetIdKey, { assetId, rewardType, coinType: entry.reward_coin_type, total: value });
+        }
+      }
+    };
+    processV2Data(v2DataOpt1, 1);
+    processV2Data(v2DataOpt3, 3);
+  
+    // Process V3 data, filtering based on contractOptionTypes.
+    if (v3Data) {
+      for (const entries of Object.values(v3Data)) {
+        for (const entry of entries as V3Entry[]) {
+          // Skip entry if its option is not in the provided contractOptionTypes.
+          if (!contractOptionTypes.includes(entry.option)) continue;
+          const assetId = parseInt(entry.asset_id, 10);
+          const rewardType = entry.option;
+          const key = `${assetId}-${rewardType}-${entry.reward_coin_type}`;
+          if (agg.has(key)) {
+            agg.get(key)!.total += entry.user_claimable_reward;
+          } else {
+            agg.set(key, { assetId, rewardType, coinType: entry.reward_coin_type, total: entry.user_claimable_reward });
+          }
+        }
+      }
+    }
+  
+    // Group the rewards by assetId and rewardType. The group key is `${assetId}-${rewardType}`.
+    const groupMap = new Map<string, { assetId: number; rewardType: number; rewards: Map<string, number> }>();
+    for (const { assetId, rewardType, coinType, total } of agg.values()) {
+      const groupKey = `${assetId}-${rewardType}`;
+      if (!groupMap.has(groupKey)) {
+        groupMap.set(groupKey, { assetId, rewardType, rewards: new Map<string, number>() });
+      }
+      const rewardMap = groupMap.get(groupKey)!;
+      rewardMap.rewards.set(coinType, (rewardMap.rewards.get(coinType) || 0) + total);
+    }
+  
+    // Construct the final result array.
+    return Array.from(groupMap.values()).map(group => ({
+      assetId: group.assetId,
+      rewardType: group.rewardType,
+      rewards: Array.from(group.rewards.entries()).map(([coinType, available]) => ({
+        coinType,
+        available: available.toFixed(6),
+      })),
+    }));
+  }
+
+/**
+   * Claims all available rewards for the specified account.
+   * @returns PTB result
+   */
+export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string, existingTx?: Transaction) {
+    let tx = existingTx || new Transaction();
+    await V2.claimAllRewardsPTB(client, userToCheck, tx)
+    await V3.claimAllRewardsPTB(client, userToCheck, tx)
+
+    return tx
 }
 
 /**
    * Claims all available rewards for the specified account.
    * @returns PTB result
    */
-export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string, tx?: Transaction) {
-    let txb = tx || new Transaction();
+export async function claimAllRewardsResupplyPTB(client: SuiClient, userToCheck: string, existingTx?: Transaction) {
+    let tx = existingTx || new Transaction();
+    await V2.claimAllRewardsResupplyPTB(client, userToCheck, tx)
+    await V3.claimAllRewardsResupplyPTB(client, userToCheck, tx)
 
-    const rewardsSupply: { [key: string]: Reward } = await getAvailableRewards(client, userToCheck, 1, false);
-    // Convert the rewards object to an array of its values
-    const rewardsArray: Reward[] = Object.values(rewardsSupply);
-    for (const reward of rewardsArray) {
-        await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
-    }
-
-    const rewardsBorrow: { [key: string]: Reward } = await getAvailableRewards(client, userToCheck, 3, false);
-    // Convert the rewards object to an array of its values
-    const rewardsBorrowArray: Reward[] = Object.values(rewardsBorrow);
-    for (const reward of rewardsBorrowArray) {
-        await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
-    }
-
-    return txb;
+    return tx
 }
-
 
 /**
  * Represents a connection to the SuiPriceService.
