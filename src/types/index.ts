@@ -100,6 +100,7 @@ export type SwapOptions = {
   byAmountIn?: boolean;
   depth?: number;
   feeOption?: FeeOption;
+  ifPrint?: boolean;
 };
 
 export type MigrateOptions = {
