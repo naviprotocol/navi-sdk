@@ -7,16 +7,17 @@ import {
 } from "../../address";
 import { OptionType } from "../../types";
 import { SuiClient } from "@mysten/sui/client";
-import { normalizeStructTag } from '@mysten/sui/utils'
-import { moveInspect } from "../CallFunctions";
+import { normalizeStructTag } from "@mysten/sui/utils";
+import { moveInspect, getCoinOracleInfo } from "../CallFunctions";
 import { registerStructs, updateOraclePTB } from "./commonFunctions";
 
 import { depositCoin } from "./commonFunctions";
 
 interface Reward {
-  asset_id: string;
+  asset_id: number;
   funds: string;
   available: string;
+  reward_id: string;
 }
 
 /**
@@ -57,7 +58,7 @@ export async function getIncentivePools(
 // Attach asset symbols
 interface FormattedData {
   [key: string]: {
-    asset_id: string;
+    asset_id: number;
     funds: string;
     available: string;
     reward_id: string;
@@ -111,7 +112,8 @@ export async function getAvailableRewards(
     // Extract relevant data
     const fundDetails = funds.map((item) => ({
       funds: item?.data?.objectId,
-      reward_coin_type: (item.data?.content as any)?.fields?.coin_type?.fields?.name,
+      reward_coin_type: (item.data?.content as any)?.fields?.coin_type?.fields
+        ?.name,
       reward_coin_oracle_id: (item.data?.content as any)?.fields?.oracle_id,
     }));
 
@@ -126,7 +128,7 @@ export async function getAvailableRewards(
         reward_coin_oracle_id: matchedFund?.reward_coin_oracle_id ?? null,
       };
     });
-  
+
     // Build price feed map
     const priceFeedMap: Record<string, number> = Object.values(
       PriceFeedConfig
@@ -138,7 +140,7 @@ export async function getAvailableRewards(
     // Compute available rewards with decimal conversion
     interface ProcessedData {
       [key: string]: {
-        asset_id: string;
+        asset_id: number;
         funds: string;
         available: string;
         reward_id: string;
@@ -157,7 +159,6 @@ export async function getAvailableRewards(
       const assetId = parseInt(pool.asset_id, 10);
       const key = `${assetId}-${option}-${pool.reward_coin_type}`;
       if (acc[key]) {
-        
         const existingAvailable = parseFloat(acc[key].available);
         const newAvailable = parseFloat(availableDecimal?.toFixed(6) ?? "0");
         acc[key].available = (existingAvailable + newAvailable).toFixed(6);
@@ -228,28 +229,94 @@ export async function claimAllRewardsPTB(
 ) {
   let txb = tx || new Transaction();
 
-  const rewardsSupply: { [key: string]: Reward } = await getAvailableRewards(
-    client,
-    userToCheck,
-    1,
-    false
-  );
+  const [rewardsBorrow, rewardsSupply]: [
+    { [key: string]: Reward },
+    { [key: string]: Reward }
+  ] = await Promise.all([
+    getAvailableRewards(client, userToCheck, 3, false),
+    getAvailableRewards(client, userToCheck, 1, false),
+  ]);
+
+  const borrowFunds = Object.values(rewardsBorrow).map((item) => item.funds);
+  const supplyFunds = Object.values(rewardsSupply).map((item) => item.funds);
+  const fundsIds = Array.from(new Set([...borrowFunds, ...supplyFunds]));
+
+  let oracleIds: number[] = [];
+
+  fundsIds.forEach((fundId) => {
+    if (ProFundsPoolInfo[fundId]) {
+      oracleIds.push(ProFundsPoolInfo[fundId].oracleId);
+    }
+  });
+  oracleIds = Array.from(new Set([...oracleIds]));
+  const coinPrice = await getCoinOracleInfo(client, oracleIds);
+
+  const coinPriceMap: { [key: number]: { price: number; decimals: number } } =
+    {};
+  for (const item of coinPrice) {
+    coinPriceMap[item.oracle_id] = {
+      price: parseFloat(item.price) / Math.pow(10, item.decimals),
+      decimals: item.decimals,
+    };
+  }
+
   // Convert the rewards object to an array of its values
   const rewardsArray: Reward[] = Object.values(rewardsSupply);
   for (const reward of rewardsArray) {
-    await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
+    const coinInfo = coinPriceMap[Number(reward.reward_id)];
+    if (coinInfo) {
+      const availableAmount = parseFloat(reward.available) * coinInfo.price;
+      if (availableAmount >= 0.01) {
+        await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
+      }
+    }
   }
 
-  const rewardsBorrow: { [key: string]: Reward } = await getAvailableRewards(
-    client,
-    userToCheck,
-    3,
-    false
-  );
   // Convert the rewards object to an array of its values
   const rewardsBorrowArray: Reward[] = Object.values(rewardsBorrow);
   for (const reward of rewardsBorrowArray) {
-    await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
+    const coinInfo = coinPriceMap[Number(reward.reward_id)];
+    if (coinInfo) {
+      const availableAmount = parseFloat(reward.available) * coinInfo.price;
+      if (availableAmount >= 0.01) {
+        await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
+      }
+    }
+  }
+
+  return txb;
+}
+
+export async function claimRewardsByAssetIdPTB(
+  client: SuiClient,
+  userToCheck: string,
+  assetId: number,
+  tx?: Transaction
+) {
+  let txb = tx || new Transaction();
+
+  const [rewardsBorrow, rewardsSupply]: [
+    { [key: string]: Reward },
+    { [key: string]: Reward }
+  ] = await Promise.all([
+    getAvailableRewards(client, userToCheck, 3, false),
+    getAvailableRewards(client, userToCheck, 1, false),
+  ]);
+
+  // Convert the rewards object to an array of its values
+  const rewardsArray: Reward[] = Object.values(rewardsSupply);
+  for (const reward of rewardsArray) {
+    if ( reward.asset_id === assetId) {
+      await claimRewardFunction(txb, reward.funds, reward.asset_id, 1);
+    }
+  }
+
+  // Convert the rewards object to an array of its values
+  const rewardsBorrowArray: Reward[] = Object.values(rewardsBorrow);
+  for (const reward of rewardsBorrowArray) {
+    if ( reward.asset_id === assetId) {
+      await claimRewardFunction(txb, reward.funds, reward.asset_id, 3);
+    }
   }
 
   return txb;
@@ -265,7 +332,7 @@ export async function claimAllRewardsPTB(
 export async function claimRewardFunction(
   txb: Transaction,
   incentiveFundsPool: string,
-  assetId: string,
+  assetId: number,
   option: OptionType
 ) {
   const config = await getConfig();
@@ -277,7 +344,7 @@ export async function claimRewardFunction(
       txb.object(config.IncentiveV2),
       txb.object(`0x${incentiveFundsPool}`),
       txb.object(config.StorageId),
-      txb.pure.u8(Number(assetId)),
+      txb.pure.u8(assetId),
       txb.pure.u8(option),
     ],
     typeArguments: [ProFundsPoolInfo[incentiveFundsPool].coinType],
@@ -295,28 +362,59 @@ export async function claimAllRewardsResupplyPTB(
 ) {
   let txb = tx || new Transaction();
 
-  const rewardsSupply: { [key: string]: Reward } = await getAvailableRewards(
-    client,
-    userToCheck,
-    1,
-    false
-  );
+  const [rewardsBorrow, rewardsSupply]: [
+    { [key: string]: Reward },
+    { [key: string]: Reward }
+  ] = await Promise.all([
+    getAvailableRewards(client, userToCheck, 3, false),
+    getAvailableRewards(client, userToCheck, 1, false),
+  ]);
+
+  const borrowFunds = Object.values(rewardsBorrow).map((item) => item.funds);
+  const supplyFunds = Object.values(rewardsSupply).map((item) => item.funds);
+  const fundsIds = Array.from(new Set([...borrowFunds, ...supplyFunds]));
+
+  let oracleIds: number[] = [];
+
+  fundsIds.forEach((fundId) => {
+    if (ProFundsPoolInfo[fundId]) {
+      oracleIds.push(ProFundsPoolInfo[fundId].oracleId);
+    }
+  });
+  oracleIds = Array.from(new Set([...oracleIds]));
+  const coinPrice = await getCoinOracleInfo(client, oracleIds);
+
+  const coinPriceMap: { [key: number]: { price: number; decimals: number } } =
+    {};
+  for (const item of coinPrice) {
+    coinPriceMap[item.oracle_id] = {
+      price: parseFloat(item.price) / Math.pow(10, item.decimals),
+      decimals: item.decimals,
+    };
+  }
+
   // Convert the rewards object to an array of its values
   const rewardsArray: Reward[] = Object.values(rewardsSupply);
   for (const reward of rewardsArray) {
-    await claimRewardResupplyFunction(txb, reward.funds, reward.asset_id, 1);
+    const coinInfo = coinPriceMap[Number(reward.reward_id)];
+    if (coinInfo) {
+      const availableAmount = parseFloat(reward.available) * coinInfo.price;
+      if (availableAmount >= 0.01) {
+        await claimRewardResupplyFunction(txb, reward.funds, reward.asset_id, 1);
+      }
+    }
   }
 
-  const rewardsBorrow: { [key: string]: Reward } = await getAvailableRewards(
-    client,
-    userToCheck,
-    3,
-    false
-  );
   // Convert the rewards object to an array of its values
   const rewardsBorrowArray: Reward[] = Object.values(rewardsBorrow);
   for (const reward of rewardsBorrowArray) {
-    await claimRewardResupplyFunction(txb, reward.funds, reward.asset_id, 3);
+    const coinInfo = coinPriceMap[Number(reward.reward_id)];
+    if (coinInfo) {
+      const availableAmount = parseFloat(reward.available) * coinInfo.price;
+      if (availableAmount >= 0.01) {
+        await claimRewardResupplyFunction(txb, reward.funds, reward.asset_id, 3);
+      }
+    }
   }
 
   return txb;
@@ -332,7 +430,7 @@ export async function claimAllRewardsResupplyPTB(
 export async function claimRewardResupplyFunction(
   txb: Transaction,
   incentiveFundsPool: string,
-  assetId: string,
+  assetId: number,
   option: OptionType
 ) {
   const config = await getConfig();
@@ -361,7 +459,8 @@ export async function claimRewardResupplyFunction(
   });
   const foundPoolConfig = Object.values(pool).find(
     (poolConfig) =>
-      normalizeStructTag(poolConfig.type) === normalizeStructTag(ProFundsPoolInfo[incentiveFundsPool].coinType)
+      normalizeStructTag(poolConfig.type) ===
+      normalizeStructTag(ProFundsPoolInfo[incentiveFundsPool].coinType)
   );
   if (!foundPoolConfig) {
     throw new Error(
@@ -371,4 +470,31 @@ export async function claimRewardResupplyFunction(
     );
   }
   await depositCoin(txb, foundPoolConfig, reward_coin, reward_coin_value);
+}
+
+export async function getIncentivePoolsByPhase(
+  client: SuiClient,
+  option: OptionType,
+  user: string
+) {
+  const config = await getConfig();
+  const tx = new Transaction();
+  // await updateOraclePTB(client, tx);
+  const result: any = await moveInspect(
+    tx,
+    client,
+    user,
+    `${config.uiGetter}::incentive_getter::get_incentive_pools_group_by_phase`,
+    [
+      tx.object("0x06"), // clock object id
+      tx.object(config.IncentiveV2), // the incentive object v2
+      tx.object(config.StorageId), // object id of storage
+      tx.pure.u8(1),
+      tx.pure.u8(option),
+      tx.pure.address(user), // If you provide your address, the rewards that have been claimed by your address and the total rewards will be returned.
+    ],
+    [], // type arguments is null
+    "vector<IncentivePoolInfoByPhase>" // parse type
+  );
+  return result[0];
 }

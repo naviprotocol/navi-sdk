@@ -551,6 +551,19 @@ export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string,
 }
 
 /**
+   * Claims available rewards by asset ID for the specified account.
+   * @returns PTB result
+   */
+export async function claimRewardsByAssetIdPTB(client: SuiClient, userToCheck: string, assetId: number, existingTx?: Transaction) {
+    let tx = existingTx || new Transaction();
+    await V2.claimRewardsByAssetIdPTB(client, userToCheck, assetId, tx)
+    await V3.claimRewardsByAssetIdPTB(client, userToCheck, assetId, tx)
+
+    return tx
+}
+
+
+/**
    * Claims all available rewards for the specified account.
    * @returns PTB result
    */
@@ -822,4 +835,11 @@ export function registerStructs() {
         liquidation_bonus: 'u256',
         liquidation_threshold: 'u256',
     });
+
+    bcs.registerStructType('OracleInfo', {
+        oracle_id: 'u8',
+        price: 'u256',
+        decimals: 'u8',
+        valid: 'bool',
+      })
 }
