@@ -457,6 +457,84 @@ export async function claimAllRewardsPTB(
   return tx;
 }
 
+function filterRewardsByAssetId(groupedRewards: V3Type.GroupedRewards, assetId: string): V3Type.GroupedRewards {
+  const result: V3Type.GroupedRewards = {};
+
+  for (const assetCoinType in groupedRewards) {
+    if (groupedRewards.hasOwnProperty(assetCoinType)) {
+      const processedRewardsList = groupedRewards[assetCoinType];
+
+
+      const filteredRewards = processedRewardsList.filter(
+        (reward) => reward.asset_id === assetId
+      );
+
+      if (filteredRewards.length > 0) {
+        result[assetCoinType] = filteredRewards;
+      }
+    }
+  }
+
+  return result;
+}
+
+export async function claimRewardsByAssetIdPTB(
+  client: SuiClient,
+  userAddress: string,
+  assetId: number,
+  existingTx?: Transaction
+): Promise<Transaction> {
+  // Initialize the transaction object, use existingTx if provided
+  const tx = existingTx ?? new Transaction();
+
+  // Fetch the available grouped rewards for the user
+  const groupedRewards = await getAvailableRewardsWithoutOption(
+    client,
+    userAddress,
+    false
+  );
+
+  if (!groupedRewards) {
+    return tx;
+  }
+  const filterGroupedRewards = filterRewardsByAssetId(groupedRewards, assetId.toString())
+
+  // Object to store aggregated rewards by coin type
+  const rewardMap = new Map<
+    string,
+    { assetIds: string[]; ruleIds: string[] }
+  >();
+
+  // Single-pass aggregation using Map for O(1) lookups
+  for (const [poolId, rewards] of Object.entries(filterGroupedRewards)) {
+    for (const reward of rewards) {
+      const { reward_coin_type: coinType, rule_ids: ruleIds } = reward;
+
+      for (const ruleId of ruleIds) {
+        if (!rewardMap.has(coinType)) {
+          rewardMap.set(coinType, { assetIds: [], ruleIds: [] });
+        }
+
+        const group = rewardMap.get(coinType)!;
+        group.assetIds.push(poolId);
+        group.ruleIds.push(ruleId);
+      }
+    }
+  }
+
+  // Asynchronously create claim transaction instructions for each reward coin type
+  Array.from(rewardMap).map(async ([coinType, { assetIds, ruleIds }]) => {
+    const claimInput: V3Type.ClaimRewardInput = {
+      reward_coin_type: coinType,
+      asset_vector: assetIds,
+      rules_vector: ruleIds,
+    };
+    await claimRewardFunction(tx, claimInput);
+  });
+
+  return tx;
+}
+
 /**
  * Claim a specific reward by calling the Move entry function.
  * @param tx The Transaction object.

@@ -168,3 +168,23 @@ export async function getIncentiveAPY(address: string, client: SuiClient, option
 
     return result[0];
 }
+
+export async function getCoinOracleInfo(client: SuiClient, oracleIds: number[]) {
+    registerStructs()
+    const config = await getConfig();
+    const tx = new Transaction();
+
+    const result: any = await moveInspect(
+        tx, client, '0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2',
+        `${config.uiGetter}::getter::get_oracle_info`,
+        [
+            tx.object('0x06'), // clock object id
+            tx.object(config.PriceOracle), // The price oracle object
+            tx.pure.vector("u8", oracleIds)
+        ],
+        [], // type arguments is null
+        'vector<OracleInfo>' // parse type
+    );
+
+    return result[0];
+}
