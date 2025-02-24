@@ -171,7 +171,7 @@ export const pool: { [key: string]: PoolConfig} = {
       "0x8fa5eccbca2c4ba9aae3b87fd44aa75aa5f5b41ea2d9be4d5321379384974984",
     supplyBalanceParentId:
       "0xe6457d247b6661b1cac123351998f88f3e724ff6e9ea542127b5dcb3176b3841",
-    rewardFundId: "",
+    rewardFundId: "0x7093cf7549d5e5b35bfde2177223d1050f71655c7f676a5e610ee70eb4d93b5c",
   },
   haSui: {
     name: "HaedalSui",
@@ -297,7 +297,7 @@ export const pool: { [key: string]: PoolConfig} = {
       "0x2c7b7e6d323ca8f63908bb03191225a2ecf177bf0c4602ccd21d7ac121d52fa4",
     supplyBalanceParentId:
       "0x071dc718b1e579d476d088456979e30d142ecdde6a6eec875477b5b4786530f0",
-      rewardFundId: "",
+      rewardFundId: "0xc6b14b4eda9015ca69ec5f6a9688faa4f760259ce285dafe902ebe6700f5838f",
   },
   LorenzoBTC: {
     name: "stBTC",
@@ -325,7 +325,7 @@ export const pool: { [key: string]: PoolConfig} = {
       "0xba03bb3e0167e1ec355926dfe0c130866857b062b93fb5d9cfba20824ad9f1d5",
     supplyBalanceParentId:
       "0x3fdd91f32dcea2af6e16ae66a7220f6439530ef6238deafe5a72026b3e7aa5f5",
-      rewardFundId: "",
+      rewardFundId: "0xc889d78b634f954979e80e622a2ae0fece824c0f6d9590044378a2563035f32f",
   },
   FDUSD: {
     name: "FDUSD",
@@ -339,7 +339,7 @@ export const pool: { [key: string]: PoolConfig} = {
       "0x4a4bb401f011c104083f56e3ee154266f1a88cad10b8acc9c993d4da304ebf00",
     supplyBalanceParentId:
       "0x6dffc3d05e79b055749eae1c27e93a47b5a9999214ce8a2f6173574151d120bf",
-      rewardFundId: "",
+      rewardFundId: "0x958dd7ad70755b10f96693bcd591d7a2cb9830a6c523baf43b3b5897664aa788",
   },
   BLUE: {
     name: "BLUE",

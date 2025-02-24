@@ -774,8 +774,7 @@ export async function calculateApy(
       calculateRateSumAndCoins(supplyRules, coinPriceMap);
     const supplyApy = apyFormula(
       supplyRateSum,
-      (totalSupplyAmount * assetPrice.value) /
-        Math.pow(10, Number(assetPrice.decimals))
+      (totalSupplyAmount / Math.pow(10, Number(9)) * assetPrice.value )
     );
 
     // Calculate Borrow APY (option === 3)
@@ -784,8 +783,7 @@ export async function calculateApy(
       calculateRateSumAndCoins(borrowRules, coinPriceMap);
     const borrowApy = apyFormula(
       borrowRateSum,
-      (borrowedAmount * assetPrice.value) /
-        Math.pow(10, Number(assetPrice.decimals))
+      (borrowedAmount / Math.pow(10, Number(9)) * assetPrice.value)
     );
 
     return {
@@ -1136,7 +1134,6 @@ export async function getPoolsApy(
 
   // 6. Calculate APY using grouped incentive data and reserve data with price info
   const v3Apy = await calculateApy(groupedPools, reserves, coinPriceMap);
-
   // 7. Merge the APY results
   return mergeApyResults(v3Apy, v2SupplyApy, v2BorrowApy);
 }
