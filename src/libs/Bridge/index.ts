@@ -93,7 +93,11 @@ export async function getTransaction(hash: string) {
   return res.data.data.transaction;
 }
 
-export async function getWalletTransactions(address: string) {
+export async function getWalletTransactions(
+  address: string,
+  page: number = 1,
+  limit: number = 10
+) {
   const res = await apiInstance.get<{
     data: {
       transactions: BridgeSwapTransaction[];
@@ -101,6 +105,8 @@ export async function getWalletTransactions(address: string) {
   }>(`/bridge-swap/transactions/list`, {
     params: {
       address,
+      page,
+      limit,
     },
   });
   return res.data.data;
