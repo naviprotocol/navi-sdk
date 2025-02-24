@@ -1103,7 +1103,7 @@ export interface IOracleProConfig {
 
 export const OracleProConfig: IOracleProConfig = {
     PackageId: '0xc2d49bf5e75d2258ee5563efa527feb6155de7ac6f6bf025a23ee88cd12d5a83', // TODO: value
-    PriceOracle: '0x25c718f494ff63021f75642ecaaeda826f44b2d9d59859a8ad45ef0fba9626f2', // TODO: value
+    PriceOracle: '0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef', // TODO: value
     OracleAdminCap: '0x7204e37882baf10f31b66cd1ac78ac65b3b8ad29c265d1e474fb4b24ccd6d5b7', // TODO: value
 
     OracleConfig: '0x1afe1cb83634f581606cc73c4487ddd8cc39a944b951283af23f7d69d5589478', // TODO: value
