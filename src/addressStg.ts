@@ -58,6 +58,8 @@ export const AddressMap: Record<string, string> = {
     "stSUI",
   "0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b::btc::BTC":
     "suiBTC",
+  "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN":
+    "SOL",
 };
 
 export function getPackageCache(): string | undefined {
@@ -461,6 +463,20 @@ export const pool: { [key: string]: PoolConfig}  = {
       "0x0e2717209650d4eb7b3a0cf85e014840982c6605c4772310fdead9e858bf5375",
       rewardFundId: "",
   },
+  SOL: {
+    name: "SOL",
+    assetId: 25,
+    poolId:
+      "0x026d8c51bbdbbc0438148ab8a21570f47cc4a5e1087014648af03fa2981936a1",
+    type: "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN",
+    reserveObjectId:
+      "0xcf020fdd93f47c63c2d8e853492b442f792d2203a51034ecea22e325e7ea8206",
+    borrowBalanceParentId:
+      "0x9ead83e3c40c81d41892d9196bf0a7ca83a9114b4f0c77c9cd4a796bc536edd6",
+    supplyBalanceParentId:
+      "0xdbb2f6a5503195d7c113321702d1d1d389c84ce1a0413eb440ca20a35af7cdf9",
+      rewardFundId: "",
+  },
 };
 
 export const flashloanConfig = {
@@ -647,6 +663,14 @@ export const nUSDC: CoinInfo = {
     "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC",
   decimal: 6,
 };
+
+export const SOL: CoinInfo = {
+  symbol: "SOL",
+  address:
+    "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN",
+  decimal: 8,
+};
+
 export const vSuiConfig = {
   ProtocolPackage:
     "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",

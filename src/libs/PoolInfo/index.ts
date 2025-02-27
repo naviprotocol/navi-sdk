@@ -160,53 +160,78 @@ export async function getUserRewardHistory(userAddress: string, page: number = 1
     }
 }
 
-export async function getPoolsInfo(): Promise<PoolData[]> {
-    const poolInfoUrl = `https://open-api.naviprotocol.io/api/navi/pools`;
+export async function getPoolsInfo(): Promise<PoolData[] | null> {
+    // const poolInfoUrl = `https://open-api.naviprotocol.io/api/navi/pools`;
+    const poolInfoUrl = `http://localhost:3000/api/navi/pools`;
     try {
       const response = await axios.get<PoolsResponse>(poolInfoUrl);
-      return response.data.data;
+      if (response.data.code === 0){
+        return response.data.data;
+      } else {
+        return null
+      }
     } catch (error) {
       console.error('Error fetching pools information:', error);
-      throw error;
+      return null
     }
   }
 
   
 
-export async function fetchCoinPrices(coinTypes: string[], isInternal = false): Promise<CoinPrice[] | null> {
-  let API_URL = "https://open-aggregator-api.naviprotocol.io/coins/price";
-  if (isInternal) {
-    API_URL = "https://aggregator-api.naviprotocol.io/coins/price";
-  } 
-  if (coinTypes.length === 0) {
-    console.warn("No coin types provided.");
-    return null;
-  }
-  
-  try {
-    const url = `${API_URL}?coinType=${coinTypes.join(",")}`;
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+  export async function fetchCoinPrices(coinTypes: string[], isInternal = false, Token?: string, maxRetries = 3, delayTime = 1000): Promise<CoinPrice[] | null> {
+    let API_URL = "https://open-aggregator-api.naviprotocol.io/coins/price";
+    if (isInternal) {
+      API_URL = "https://aggregator-api.naviprotocol.io/coins/price";
     }
-
-    const jsonData: ApiResponse = await response.json();
-    // Adjust coinType: if coinType is '0x2::sui::SUI', replace with the full version.
-    const adjustedPrices = jsonData.data.list.map((price) => {
-      if (price.coinType === "0x2::sui::SUI") {
-        return {
-          ...price,
-          coinType:
-            "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
-        };
+  
+    if (coinTypes.length === 0) {
+      console.warn("No coin types provided.");
+      return null;
+    }
+  
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+    const attemptFetch = async (retries: number): Promise<CoinPrice[] | null> => {
+      try {
+        const url = `${API_URL}?coinType=${coinTypes.join(",")}`;
+  
+        const headers: HeadersInit = {};
+        if (!isInternal && Token) {
+          headers['x-navi-token'] = Token;
+        }
+  
+        const response = await fetch(url, { method: 'GET', headers });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+  
+        const jsonData: ApiResponse = await response.json();
+  
+        // Adjust coinType: if coinType is '0x2::sui::SUI', replace with the full version.
+        const adjustedPrices = jsonData.data.list.map((price) => {
+          if (price.coinType === "0x2::sui::SUI") {
+            return {
+              ...price,
+              coinType:
+                "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+            };
+          }
+          return price;
+        });
+  
+        return adjustedPrices;
+      } catch (error) {
+        if (retries <= 0) {
+          console.error("Failed to fetch coin prices after multiple attempts:", error);
+          return null;
+        }
+  
+        console.warn(`Attempt failed, retrying... (${maxRetries - retries + 1}/${maxRetries})`);
+        await delay(delayTime);
+        return attemptFetch(retries - 1);
       }
-      return price;
-    });
-
-    return adjustedPrices;
-  } catch (error) {
-    console.error("Failed to fetch coin prices:", error);
-    return null;
+    };
+  
+    return attemptFetch(maxRetries);
   }
-}
