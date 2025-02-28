@@ -11,6 +11,10 @@ export type initializeParams = {
 
 export interface Pool {
   Sui: PoolConfig;
+  // AFSUI: PoolConfig;
+  // USDYS: PoolConfig;
+  // TDAI: PoolConfig;
+  // AUSDs: PoolConfig;
   USDT: PoolConfig;
   WETH: PoolConfig;
   CETUS: PoolConfig;
@@ -31,6 +35,7 @@ export interface Pool {
   BUCK: PoolConfig;
   suiUSDT: PoolConfig;
   stSUI: PoolConfig;
+  suiBTC: PoolConfig;
 }
 
 export interface PoolConfig {
@@ -41,6 +46,7 @@ export interface PoolConfig {
   reserveObjectId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::ReserveData
   borrowBalanceParentId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::TokenBalance
   supplyBalanceParentId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::TokenBalance
+  rewardFundId: string; // Get it from dynamic object, type must be ${ProtocolPackage}::storage::TokenBalance
 }
 
 export interface CoinInfo {
@@ -94,6 +100,7 @@ export type SwapOptions = {
   byAmountIn?: boolean;
   depth?: number;
   feeOption?: FeeOption;
+  ifPrint?: boolean;
 };
 
 export type Chain = {
@@ -134,6 +141,7 @@ export type BridgeSwapQuote = {
   provider: string;
   amount_in: string;
   amount_out: string;
+  slippage_bps: number;
   min_amount_out: string;
   from_token: Token;
   to_token: Token;
@@ -199,3 +207,58 @@ export type MigrateOptions = {
   baseUrl?: string;
   slippage?: number;
 };
+
+// TypeScript Interface Definitions
+interface OracleInfo {
+  decimal: number;
+  value: string;
+  price: string;
+  oracleId: number;
+  valid: boolean;
+}
+
+interface IncentiveApyInfo {
+  vaultApr: string;
+  boostedApr: string;
+  stakingYieldApy: string;
+  rewardCoin: string[];
+  apy: string;
+}
+
+export interface PoolData {
+  borrowCapCeiling: string;
+  coinType: string;
+  currentBorrowIndex: string;
+  currentBorrowRate: string;
+  currentSupplyIndex: string;
+  currentSupplyRate: string;
+  id: number;
+  isIsolated: boolean;
+  lastUpdateTimestamp: string;
+  ltv: string;
+  oracleId: number;
+  reserveFieldA: string;
+  reserveFieldB: string;
+  reserveFieldC: string;
+  supplyCapCeiling: string;
+  treasuryBalance: string;
+  treasuryFactor: string;
+  totalSupplyAmount: string;
+  minimumAmount: string;
+  leftSupply: string;
+  validBorrowAmount: string;
+  borrowedAmount: string;
+  leftBorrowAmount: string;
+  availableBorrow: string;
+  oracle: OracleInfo;
+  supplyIncentiveApyInfo: IncentiveApyInfo;
+  borrowIncentiveApyInfo: IncentiveApyInfo;
+}
+
+export interface PoolsResponse {
+  data: PoolData[];
+  code: number;
+}
+
+
+export * as V3Type from './V3'

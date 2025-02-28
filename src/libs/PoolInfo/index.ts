@@ -1,8 +1,7 @@
 import axios from 'axios';
-import { pool } from '../../address';
-import { CoinInfo, Pool, PoolConfig } from "../../types";
+import { pool, getConfig } from '../../address';
+import { CoinInfo, Pool, PoolConfig, PoolsResponse, PoolData } from "../../types";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { getConfig } from "../../address";
 
 type FetchPoolDataArgs = { 
     poolId: string, 
@@ -10,6 +9,22 @@ type FetchPoolDataArgs = {
     reserveParentId: string, 
     poolInfo: any
 }
+
+type CoinPrice = {
+  coinType: string;
+  value: number;
+  decimals: string;
+  updateUnixTime: number;
+  v24hChangePercent: number;
+  updateHumanTime: string;
+  priceChangePercent: number;
+};
+
+type ApiResponse = {
+  data: {
+    list: CoinPrice[];
+  };
+};
 
 export const fetchPoolData = async ({ poolId, client, reserveParentId, poolInfo }: FetchPoolDataArgs ) => {
     const poolData = poolInfo[poolId];
@@ -143,4 +158,55 @@ export async function getUserRewardHistory(userAddress: string, page: number = 1
         console.error('Error fetching user reward history:', error);
         throw error;
     }
+}
+
+export async function getPoolsInfo(): Promise<PoolData[]> {
+    const poolInfoUrl = `https://open-api.naviprotocol.io/api/navi/pools`;
+    try {
+      const response = await axios.get<PoolsResponse>(poolInfoUrl);
+      return response.data.data;
+    } catch (error) {
+      console.error('Error fetching pools information:', error);
+      throw error;
+    }
+  }
+
+  
+
+export async function fetchCoinPrices(coinTypes: string[], isInternal = false): Promise<CoinPrice[] | null> {
+  let API_URL = "https://open-aggregator-api.naviprotocol.io/coins/price";
+  if (isInternal) {
+    API_URL = "https://aggregator-api.naviprotocol.io/coins/price";
+  } 
+  if (coinTypes.length === 0) {
+    console.warn("No coin types provided.");
+    return null;
+  }
+  
+  try {
+    const url = `${API_URL}?coinType=${coinTypes.join(",")}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const jsonData: ApiResponse = await response.json();
+    // Adjust coinType: if coinType is '0x2::sui::SUI', replace with the full version.
+    const adjustedPrices = jsonData.data.list.map((price) => {
+      if (price.coinType === "0x2::sui::SUI") {
+        return {
+          ...price,
+          coinType:
+            "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+        };
+      }
+      return price;
+    });
+
+    return adjustedPrices;
+  } catch (error) {
+    console.error("Failed to fetch coin prices:", error);
+    return null;
+  }
 }

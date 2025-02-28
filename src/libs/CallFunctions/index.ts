@@ -3,7 +3,8 @@ import { Transaction } from '@mysten/sui/transactions';
 import { bcs } from '@mysten/sui.js/bcs';
 import { DevInspectResults, SuiClient } from '@mysten/sui/client';
 import { getConfig, pool } from '../../address';
-import { Pool, PoolConfig } from '../../types';
+import { Pool, PoolConfig,OptionType } from '../../types';
+import { registerStructs } from '../PTB';
 
 /**
  * Parses and prints the inspection results.
@@ -17,7 +18,10 @@ function inspectResultParseAndPrint(data: DevInspectResults, funName: string, pa
         if (data.results[0].returnValues && data.results[0].returnValues.length > 0) {
             let values: any[] = [];
             for (let v of data.results[0].returnValues) {
-                const _type = parseType ? parseType : v[1];
+                let _type = parseType ? parseType : v[1];
+                if (_type == 'vector<0x1::ascii::String>') {
+                    _type = 'vector<string>';
+                }
                 let result = bcs.de(_type, Uint8Array.from(v[0]));
                 values.push(result);
             }
@@ -26,6 +30,7 @@ function inspectResultParseAndPrint(data: DevInspectResults, funName: string, pa
     } else if (data.error) {
         console.log(`Get an error, msg: ${data.error}`);
     }
+    return [];
 }
 
 /**
@@ -126,4 +131,60 @@ export async function getHealthFactorCall(address: string, client: SuiClient) {
     ]);
 
     return result;
+}
+
+
+export async function getReserveData(address: string, client: SuiClient) {
+    registerStructs()
+    const config = await getConfig();
+    const tx = new Transaction();
+
+    const result: any = await moveInspect(tx, client, address, `${config.uiGetter}::getter::get_reserve_data`, [
+        tx.object(config.StorageId)
+    ],[],'vector<ReserveDataInfo>'
+);
+    return result[0];
+}
+
+
+export async function getIncentiveAPY(address: string, client: SuiClient, option: OptionType) {
+    registerStructs()
+    const config = await getConfig();
+    const tx = new Transaction();
+
+    const result: any = await moveInspect(
+        tx, client, address,
+        `${config.uiGetter}::incentive_getter::get_incentive_apy`,
+        [
+            tx.object('0x06'), // clock object id
+            tx.object(config.IncentiveV2), // the incentive object v2
+            tx.object(config.StorageId), // object id of storage
+            tx.object(config.PriceOracle), // The price oracle object
+            tx.pure.u8(option),
+        ],
+        [], // type arguments is null
+        'vector<IncentiveAPYInfo>' // parse type
+    );
+
+    return result[0];
+}
+
+export async function getCoinOracleInfo(client: SuiClient, oracleIds: number[]) {
+    registerStructs()
+    const config = await getConfig();
+    const tx = new Transaction();
+
+    const result: any = await moveInspect(
+        tx, client, '0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2',
+        `${config.uiGetter}::getter::get_oracle_info`,
+        [
+            tx.object('0x06'), // clock object id
+            tx.object(config.PriceOracle), // The price oracle object
+            tx.pure.vector("u8", oracleIds)
+        ],
+        [], // type arguments is null
+        'vector<OracleInfo>' // parse type
+    );
+
+    return result[0];
 }
