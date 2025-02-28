@@ -11,7 +11,7 @@ import dotenv from 'dotenv';
 import { AccountManager } from '../src/libs/AccountManager';
 import { migrateBorrowPTB, migrateSupplyPTB } from '../src/libs/PTB/migrate';
 import { SuiClient } from '@mysten/sui/client';
-import { haSui } from 'navi-sdk';
+import { haSui } from "../src/address";
 import { generateRefId } from '../src/libs/Aggregator/utils';
 dotenv.config();
 

@@ -5,4 +5,5 @@ export * from './libs/PoolInfo';
 export * from './libs/PTB';
 export * from './libs/CallFunctions';
 export * from './libs/Coins';
+export * from "./types";
 export * from './address';
