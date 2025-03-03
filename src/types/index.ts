@@ -200,6 +200,7 @@ export type BridgeSwapTransaction = {
   bridgeSourceTxHash: string;
   bridgeDestTxHash?: string;
   bridgeRefundTxHash?: string;
+  explorerLink?: string;
   mayan?: any;
 };
 export type MigrateOptions = {

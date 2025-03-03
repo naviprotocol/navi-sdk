@@ -1,6 +1,6 @@
 {
   "name": "navi-sdk",
-  "version": "1.5.4",
+  "version": "1.5.9",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
@@ -18,7 +18,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@mayanfinance/swap-sdk": "^10.1.0",
+    "@mayanfinance/swap-sdk": "10.2.0",
     "@mysten/sui": "^1.16.0",
     "@mysten/sui.js": "^0.54.1",
     "@pythnetwork/pyth-sui-js": "^2.1.0",
