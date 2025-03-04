@@ -18,14 +18,17 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@mayanfinance/swap-sdk": "10.2.0",
     "@mysten/sui": "^1.16.0",
     "@mysten/sui.js": "^0.54.1",
     "@pythnetwork/pyth-sui-js": "^2.1.0",
+    "@solana/web3.js": "^1.98.0",
     "axios": "^1.7.7",
     "bignumber.js": "^9.1.2",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.7",
     "esrun": "^3.2.26",
+    "ethers": "^6.13.5",
     "tsconfig-paths": "^4.2.0",
     "vitest": "^1.6.0"
   }
