@@ -856,66 +856,6 @@ export function groupByAssetCoinType(
   return Array.from(groupedMap.values());
 }
 
-/**
- * Main function to fetch on-chain data and compute APY information.
- *
- * @param client - SuiClient instance used to fetch the raw data.
- * @returns An array of final APY results for each pool.
- */
-export async function getPoolApy(
-  client: SuiClient
-): Promise<V3Type.ApyResult[]> {
-  // 1. Get configuration
-  const config = await getConfig();
-  const userAddress =
-    "0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2";
-
-  // 2. Fetch ReserveData, IncentiveV3 data, and APY calculations in parallel
-  const [reserves, rawData, v2SupplyApy, v2BorrowApy] = await Promise.all([
-    getReserveData(config.StorageId, client),
-    client.getObject({
-      id: config.IncentiveV3,
-      options: { showType: true, showOwner: true, showContent: true },
-    }),
-    getIncentiveAPY(userAddress, client, 1),
-    getIncentiveAPY(userAddress, client, 3),
-  ]);
-
-  // 3. Process incentive data
-  const incentiveData = rawData as unknown as V3Type.IncentiveData;
-  const groupedPools = groupByAssetCoinType(incentiveData);
-
-  // 4. Build a set of all coin types needed for price lookup
-  const coinTypeSet = new Set<string>();
-  reserves.forEach((r: V3Type.ReserveData) => {
-    coinTypeSet.add(formatCoinType(r.coin_type));
-  });
-  groupedPools.forEach((group) => {
-    coinTypeSet.add(group.assetCoinType);
-    group.rules.forEach((rule) => {
-      coinTypeSet.add(formatCoinType(rule.rewardCoinType));
-    });
-  });
-  const coinTypes = Array.from(coinTypeSet);
-
-  // 5. Fetch coin price data
-  const coinPrices = await fetchCoinPrices(coinTypes, true);
-
-  const coinPriceMap: Record<string, { value: number; decimals: string }> =
-    coinPrices?.reduce((map, price) => {
-      map[formatCoinType(price.coinType)] = {
-        value: price.value,
-        decimals: price.decimals,
-      };
-      return map;
-    }, {} as Record<string, { value: number; decimals: string }>) || {};
-
-  // 6. Calculate APY using grouped incentive data and reserve data with price info
-  const v3Apy = await calculateApy(groupedPools, reserves, coinPriceMap);
-
-  // 7. Merge the APY results
-  return mergeApyResults(v3Apy, v2SupplyApy, v2BorrowApy);
-}
 
 // Merges two arrays of reward coins and ensures uniqueness
 const mergeRewardCoins = (coins1: string[], coins2: string[]): string[] => {
@@ -1001,10 +941,12 @@ async function mergeApyResults(
       ...v3Data,
       supplyIncentiveApyInfo: {
         ...v3Data.supplyIncentiveApyInfo,
+        apy: Number(v3Data.supplyIncentiveApyInfo.apy.toFixed(4)),
         rewardCoin: addPrefixToCoins(v3Data.supplyIncentiveApyInfo.rewardCoin),
       },
       borrowIncentiveApyInfo: {
         ...v3Data.borrowIncentiveApyInfo,
+        apy: Number(v3Data.borrowIncentiveApyInfo.apy.toFixed(4)),
         rewardCoin: addPrefixToCoins(v3Data.borrowIncentiveApyInfo.rewardCoin),
       },
       assetCoinType: getFormattedCoinType(v3Data.asset),
@@ -1015,12 +957,14 @@ async function mergeApyResults(
   v2DataMap.forEach((v2Data, assetId) => {
     if (finalApyResultsMap.has(assetId)) {
       const existingApyData = finalApyResultsMap.get(assetId)!;
-      existingApyData.supplyIncentiveApyInfo.apy += v2Data.supply.apy;
+  
+      existingApyData.supplyIncentiveApyInfo.apy = Number((existingApyData.supplyIncentiveApyInfo.apy + v2Data.supply.apy).toFixed(4));
       existingApyData.supplyIncentiveApyInfo.rewardCoin = mergeRewardCoins(
         existingApyData.supplyIncentiveApyInfo.rewardCoin,
         v2Data.supply.rewardCoin
       );
-      existingApyData.borrowIncentiveApyInfo.apy += v2Data.borrow.apy;
+  
+      existingApyData.borrowIncentiveApyInfo.apy = Number((existingApyData.borrowIncentiveApyInfo.apy + v2Data.borrow.apy).toFixed(4));
       existingApyData.borrowIncentiveApyInfo.rewardCoin = mergeRewardCoins(
         existingApyData.borrowIncentiveApyInfo.rewardCoin,
         v2Data.borrow.rewardCoin
@@ -1030,8 +974,14 @@ async function mergeApyResults(
         asset: assetId,
         // Ensure coin type is formatted correctly, regardless of whether it's a new asset or not
         assetCoinType: getFormattedCoinType(assetId),
-        supplyIncentiveApyInfo: { ...v2Data.supply },
-        borrowIncentiveApyInfo: { ...v2Data.borrow },
+        supplyIncentiveApyInfo: {
+          ...v2Data.supply,
+          apy: Number(v2Data.supply.apy.toFixed(4)),
+        },
+        borrowIncentiveApyInfo: {
+          ...v2Data.borrow,
+          apy: Number(v2Data.borrow.apy.toFixed(4)),
+        },
       });
     }
   });
@@ -1077,14 +1027,13 @@ export async function getCurrentRules(
   return modifiedGroupedPools;
 }
 
-
 /**
- * Main function to fetch on-chain data and compute APY information.
+ * Main function to fetch on-chain data and compute APY information for inter used.
  *
  * @param client - SuiClient instance used to fetch the raw data.
  * @returns An array of final APY results for each pool.
  */
-export async function getPoolsApy(
+async function getPoolApyInter(
   client: SuiClient
 ): Promise<V3Type.ApyResult[]> {
   // 1. Get configuration
@@ -1121,7 +1070,68 @@ export async function getPoolsApy(
   const coinTypes = Array.from(coinTypeSet);
 
   // 5. Fetch coin price data
-  const coinPrices = await fetchCoinPrices(coinTypes);
+  const coinPrices = await fetchCoinPrices(coinTypes, true);
+
+  const coinPriceMap: Record<string, { value: number; decimals: string }> =
+    coinPrices?.reduce((map, price) => {
+      map[formatCoinType(price.coinType)] = {
+        value: price.value,
+        decimals: price.decimals,
+      };
+      return map;
+    }, {} as Record<string, { value: number; decimals: string }>) || {};
+
+  // 6. Calculate APY using grouped incentive data and reserve data with price info
+  const v3Apy = await calculateApy(groupedPools, reserves, coinPriceMap);
+
+  // 7. Merge the APY results
+  return mergeApyResults(v3Apy, v2SupplyApy, v2BorrowApy);
+}
+
+/**
+ * Main function to fetch on-chain data and compute APY information for third party.
+ *
+ * @param client - SuiClient instance used to fetch the raw data.
+ * @returns An array of final APY results for each pool.
+ */
+export async function getPoolsApyOuter(
+  client: SuiClient,
+  Token?: string
+): Promise<V3Type.ApyResult[]> {
+  // 1. Get configuration
+  const config = await getConfig();
+  const userAddress =
+    "0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2";
+
+  // 2. Fetch ReserveData, IncentiveV3 data, and APY calculations in parallel
+  const [reserves, rawData, v2SupplyApy, v2BorrowApy] = await Promise.all([
+    getReserveData(config.StorageId, client),
+    client.getObject({
+      id: config.IncentiveV3,
+      options: { showType: true, showOwner: true, showContent: true },
+    }),
+    getIncentiveAPY(userAddress, client, 1),
+    getIncentiveAPY(userAddress, client, 3),
+  ]);
+  // 3. Process incentive data
+  const incentiveData = rawData as unknown as V3Type.IncentiveData;
+  const groupedPools = groupByAssetCoinType(incentiveData);
+
+  // 4. Build a set of all coin types needed for price lookup
+  const coinTypeSet = new Set<string>();
+  reserves.forEach((r: V3Type.ReserveData) => {
+    coinTypeSet.add(formatCoinType(r.coin_type));
+  });
+  groupedPools.forEach((group) => {
+    coinTypeSet.add(group.assetCoinType);
+    group.rules.forEach((rule) => {
+      coinTypeSet.add(formatCoinType(rule.rewardCoinType));
+    });
+  });
+  const coinTypes = Array.from(coinTypeSet);
+
+  // 5. Fetch coin price data
+  const coinPrices = await fetchCoinPrices(coinTypes,false,Token);
 
   const coinPriceMap: Record<string, { value: number; decimals: string }> =
     coinPrices?.reduce((map, price) => {
@@ -1136,4 +1146,58 @@ export async function getPoolsApy(
   const v3Apy = await calculateApy(groupedPools, reserves, coinPriceMap);
   // 7. Merge the APY results
   return mergeApyResults(v3Apy, v2SupplyApy, v2BorrowApy);
+}
+
+function addPrefixIfNeeded(address: string): string {
+  if (!address.startsWith("0x")) {
+    return "0x" + address;
+  }
+  return address;
+}
+
+
+const transformPoolData = (data: PoolData[]): V3Type.ApyResult[] => {
+    return data.map(pool => ({
+      asset: pool.id,
+      assetCoinType: addPrefixIfNeeded(pool.coinType),
+      supplyIncentiveApyInfo: {
+        rewardCoin: pool.supplyIncentiveApyInfo?.rewardCoin || [],
+        apy: parseFloat(pool.supplyIncentiveApyInfo.boostedApr),
+      },
+      borrowIncentiveApyInfo: {
+        rewardCoin: pool.borrowIncentiveApyInfo?.rewardCoin || [],
+        apy: parseFloat(pool.borrowIncentiveApyInfo.boostedApr),
+      },
+    }));
+  
+};
+
+export async function getPoolApy(client: SuiClient): Promise<V3Type.ApyResult[]> {
+  return getPoolsInfo()
+    .then(data => {
+      if (data) {
+        return transformPoolData(data);
+      } else {
+        return getPoolApyInter(client);
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      throw error;
+    });
+}
+
+export async function getPoolsApy(client: SuiClient, Token?: string): Promise<V3Type.ApyResult[]> {
+  return getPoolsInfo()
+    .then(data => {
+      if (data) {
+        return transformPoolData(data);
+      } else {
+        return getPoolsApyOuter(client, Token);
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      throw error;
+    });
 }
