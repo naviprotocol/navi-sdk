@@ -1161,11 +1161,11 @@ const transformPoolData = (data: PoolData[]): V3Type.ApyResult[] => {
       asset: pool.id,
       assetCoinType: addPrefixIfNeeded(pool.coinType),
       supplyIncentiveApyInfo: {
-        rewardCoin: pool.supplyIncentiveApyInfo.rewardCoin,
+        rewardCoin: pool.supplyIncentiveApyInfo?.rewardCoin || [],
         apy: parseFloat(pool.supplyIncentiveApyInfo.boostedApr),
       },
       borrowIncentiveApyInfo: {
-        rewardCoin: pool.borrowIncentiveApyInfo.rewardCoin,
+        rewardCoin: pool.borrowIncentiveApyInfo?.rewardCoin || [],
         apy: parseFloat(pool.borrowIncentiveApyInfo.boostedApr),
       },
     }));

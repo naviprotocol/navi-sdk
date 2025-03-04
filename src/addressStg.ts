@@ -59,7 +59,9 @@ export const AddressMap: Record<string, string> = {
   "0xaafb102dd0902f5055cadecd687fb5b71ca82ef0e0285d90afde828ec58ca96b::btc::BTC":
     "suiBTC",
   "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN":
-    "SOL",
+    "WSOL",
+  "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC":
+    "LBTC",
 };
 
 export function getPackageCache(): string | undefined {
@@ -463,8 +465,8 @@ export const pool: { [key: string]: PoolConfig}  = {
       "0x0e2717209650d4eb7b3a0cf85e014840982c6605c4772310fdead9e858bf5375",
       rewardFundId: "",
   },
-  SOL: {
-    name: "SOL",
+  WSOL: {
+    name: "WSOL",
     assetId: 25,
     poolId:
       "0x026d8c51bbdbbc0438148ab8a21570f47cc4a5e1087014648af03fa2981936a1",
@@ -475,6 +477,20 @@ export const pool: { [key: string]: PoolConfig}  = {
       "0x9ead83e3c40c81d41892d9196bf0a7ca83a9114b4f0c77c9cd4a796bc536edd6",
     supplyBalanceParentId:
       "0xdbb2f6a5503195d7c113321702d1d1d389c84ce1a0413eb440ca20a35af7cdf9",
+      rewardFundId: "",
+  },
+  LBTC: {
+    name: "LBTC",
+    assetId: 26,
+    poolId:
+      "0x79bbc465a041d13cf82c33567d6b6e5ad3a09743145b6cc418700506c07717e5",
+    type: "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
+    reserveObjectId:
+      "0xe4ceb4a1ff88768f0efeef0c3867adff577e593f6b4c78a8b5530456f36d8ffd",
+    borrowBalanceParentId:
+      "0x9a29792a2c3bb22000da2640c9a9903fdc8ac76f0f170447c945639c05b00536",
+    supplyBalanceParentId:
+      "0x017c91c2a61152ebdc135c0574d286911308166d08c2934bb94fa9f693682346",
       rewardFundId: "",
   },
 };
@@ -664,10 +680,16 @@ export const nUSDC: CoinInfo = {
   decimal: 6,
 };
 
-export const SOL: CoinInfo = {
-  symbol: "SOL",
+export const WSOL: CoinInfo = {
+  symbol: "WSOL",
   address:
     "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN",
+  decimal: 8,
+};
+export const LBTC: CoinInfo = {
+  symbol: "LBTC",
+  address:
+    "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
   decimal: 8,
 };
 
@@ -1258,6 +1280,42 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     priceDecimal: 8,
     expiration: 30,
   },
+  WSOL: {
+    oracleId: 26,
+    maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 100000000000, // 1000 * 1e8 = 100000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+    coinType: '0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN',
+    feedId: '0x9a7d68cd26885be09472b2cc140cd53d73a42ea112a9d15511ca41894951ddef',
+    supraPairId: 10, // SOL_USDT -> 10
+    pythPriceFeedId: '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d', // **fixed value: Crypto.SOL/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject: '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+    priceDecimal: 8,
+    expiration: 30,
+  },
+  LBTC: {
+      oracleId: 27,
+      maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+      priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+      priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+      maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+      maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+      maximumEffectivePrice: 15000000000000, // 150000 = 150000 * 1e8 = 15000000000000
+      minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+      historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+      coinType: '0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC',
+      feedId: '0x33bad24fd78655cf4f1703072f78e5b56b9e940d7b331f9edd41ba261ca22d07', // TODO: value
+      supraPairId: 0, // BTC_USDT -> 0, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Pair%20Category-,BTC_USDT,-0
+      pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43', // Crypto.BTC/USD -> https://pyth.network/developers/price-feed-ids
+      pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      priceDecimal: 8,
+      expiration: 30,
+  }
 };
 
 export interface IOracleProConfig {

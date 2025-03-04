@@ -161,8 +161,7 @@ export async function getUserRewardHistory(userAddress: string, page: number = 1
 }
 
 export async function getPoolsInfo(): Promise<PoolData[] | null> {
-    // const poolInfoUrl = `https://open-api.naviprotocol.io/api/navi/pools`;
-    const poolInfoUrl = `http://localhost:3000/api/navi/pools`;
+    const poolInfoUrl = `https://open-api.naviprotocol.io/api/navi/pools`;
     try {
       const response = await axios.get<PoolsResponse>(poolInfoUrl);
       if (response.data.code === 0){
