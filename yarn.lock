@@ -304,10 +304,10 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.0.tgz#3188bcb273a414b0d215fd22a58540b989b9409a"
   integrity sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==
 
-"@mayanfinance/swap-sdk@10.2.0":
-  version "10.2.0"
-  resolved "https://registry.yarnpkg.com/@mayanfinance/swap-sdk/-/swap-sdk-10.2.0.tgz#09d59a57b1b8ed4e58ee89866bb49b55877d79c2"
-  integrity sha512-Zpp2k6F96oKqvXLtAby5PuHtH3UTBB/jw4iOJChmHLSVLVdxUvvFDIxDbyyeVNGFE7Wp0L9WSmXqrJtbngc1EA==
+"@mayanfinance/swap-sdk@10.3.0":
+  version "10.3.0"
+  resolved "https://registry.yarnpkg.com/@mayanfinance/swap-sdk/-/swap-sdk-10.3.0.tgz#8cb0d359e87388385056677cdf104f56f27e8a65"
+  integrity sha512-6wAfjRYQL9726DIUKcsT+hdUURI8QDJVXQ11yhX1IVknK0ypiFpPrFdAY2KcpifhVOE2osFUMZ+YqO95Y5LJ1A==
   dependencies:
     "@mysten/sui" "^1.16.2"
     "@solana/buffer-layout" "^4 || ^3"
