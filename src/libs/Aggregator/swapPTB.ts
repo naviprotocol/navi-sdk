@@ -16,6 +16,7 @@ import { generateRefId } from "./utils";
 import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
+import { makeMAGMAPTB } from "./Dex/magma";
 
 export async function getCoins(
   client: SuiClient,
@@ -384,6 +385,42 @@ export async function buildSwapPTBFromQuote(
             txb.transferObjects([coinBOut], userAddress);
             pathTempCoin = coinAOut;
           }
+          break;
+        }
+        case Dex.MAGMA: {
+          const coinA = a2b
+            ? pathTempCoin
+            : txb.moveCall({
+                target: "0x2::coin::zero",
+                typeArguments: [tempTokenB],
+              });
+          const coinB = a2b
+            ? txb.moveCall({
+                target: "0x2::coin::zero",
+                typeArguments: [tempTokenB],
+              })
+            : pathTempCoin;
+
+          const coinABs = await makeMAGMAPTB(
+            txb,
+            poolId,
+            true,
+            coinA,
+            coinB,
+            amountInPTB,
+            a2b,
+            typeArguments
+          );
+
+          console.log(coinABs);
+
+          // if (a2b) {
+          //   txb.transferObjects(coinABs, userAddress);
+          //   pathTempCoin = coinBOut;
+          // } else {
+          //   txb.transferObjects([coinBOut], userAddress);
+          //   pathTempCoin = coinAOut;
+          // }
           break;
         }
         case Dex.VSUI: {
