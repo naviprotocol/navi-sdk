@@ -35,12 +35,19 @@ export class AccountManager {
   /**
    * AccountManager class for managing user accounts.
    */
-  constructor({ mnemonic = "", network = "mainnet", accountIndex = 0, privateKey = "" } = {}) {
-
+  constructor({
+    mnemonic = "",
+    network = "mainnet",
+    accountIndex = 0,
+    privateKey = "",
+  } = {}) {
     if (privateKey && privateKey !== "") {
       this.keypair = Ed25519Keypair.fromSecretKey(privateKey);
     } else {
-      this.keypair = Ed25519Keypair.deriveKeypair(mnemonic, this.getDerivationPath(accountIndex));
+      this.keypair = Ed25519Keypair.deriveKeypair(
+        mnemonic,
+        this.getDerivationPath(accountIndex)
+      );
     }
 
     const validNetworkTypes = ["mainnet", "testnet", "devnet", "localnet"];
@@ -52,8 +59,7 @@ export class AccountManager {
       } else {
         this.client = new SuiClient({ url: network });
       }
-    }
-    catch (e) {
+    } catch (e) {
       console.log("Invalid network type or RPC", e);
     }
 
@@ -61,17 +67,15 @@ export class AccountManager {
     registerStructs();
   }
 
-
-
   /**
    * Returns the derivation path for a given address index.
-   * 
+   *
    * @param addressIndex - The index of the address.
    * @returns The derivation path as a string.
    */
   getDerivationPath(addressIndex: number) {
     return `m/44'/784'/0'/0'/${addressIndex}'`;
-  };
+  }
 
   /**
    * Retrieves the public key associated with the account.
@@ -84,14 +88,17 @@ export class AccountManager {
   /**
    * fetchAllCoins is a helper function that recursively retrieves all coin data for the given account.
    * It handles pagination by utilizing the cursor provided in the response.
-   * Recursion is necessary because a single request cannot retrieve all data 
+   * Recursion is necessary because a single request cannot retrieve all data
    * if the user's data exceeds QUERY_MAX_RESULT_LIMIT_CHECKPOINTS (50).
    *
    * @param account - The account address to retrieve coin data for.
    * @param cursor - An optional cursor for pagination. Default is null.
    * @returns A Promise that resolves to an array containing all the coins owned by the account.
    */
-  async fetchAllCoins(account: string, cursor: string | null = null): Promise<ReadonlyArray<CoinStruct>> {
+  async fetchAllCoins(
+    account: string,
+    cursor: string | null = null
+  ): Promise<ReadonlyArray<CoinStruct>> {
     const { data, nextCursor, hasNextPage } = await this.client.getAllCoins({
       owner: account,
       cursor,
@@ -111,12 +118,21 @@ export class AccountManager {
    * @param prettyPrint - A boolean indicating whether to print the coin data in a formatted manner. Default is true.
    * @returns A Promise that resolves to an array containing all the coins owned by the account.
    */
-  async getAllCoins(prettyPrint: boolean = true): Promise<ReadonlyArray<CoinStruct>> {
+  async getAllCoins(
+    prettyPrint: boolean = true
+  ): Promise<ReadonlyArray<CoinStruct>> {
     const allData = await this.fetchAllCoins(this.address);
 
     if (prettyPrint) {
       allData.forEach(({ coinType, coinObjectId, balance }) => {
-        console.log("Coin Type: ", coinType, "| Obj id: ", coinObjectId, " | Balance: ", balance);
+        console.log(
+          "Coin Type: ",
+          coinType,
+          "| Obj id: ",
+          coinObjectId,
+          " | Balance: ",
+          balance
+        );
       });
     }
 
@@ -125,12 +141,16 @@ export class AccountManager {
 
   /**
    * getWalletBalance is an asynchronous function that retrieves the balance of all coins in the wallet.
-   * 
+   *
    * @param prettyPrint - A boolean indicating whether to print the data in a pretty format. Default is false.
    * @returns A Promise that resolves to an object containing the balance of each coin in the wallet. Record<string, number>
    */
-  async getWalletBalance(prettyPrint: boolean = true): Promise<Record<string, number>> {
-    const allBalances = await this.client.getAllBalances({ owner: this.address })
+  async getWalletBalance(
+    prettyPrint: boolean = true
+  ): Promise<Record<string, number>> {
+    const allBalances = await this.client.getAllBalances({
+      owner: this.address,
+    });
     const coinBalances: Record<string, number> = {};
 
     for (const { coinType, totalBalance } of allBalances) {
@@ -140,14 +160,15 @@ export class AccountManager {
 
     if (prettyPrint) {
       Object.entries(coinBalances).forEach(([coinType, balance]) => {
-        const coinName = AddressMap[coinType] ? `Coin Type: ${AddressMap[coinType]}` : `Unknown Coin Type: ${coinType}`;
+        const coinName = AddressMap[coinType]
+          ? `Coin Type: ${AddressMap[coinType]}`
+          : `Unknown Coin Type: ${coinType}`;
         console.log(coinName, "| Balance: ", balance);
       });
     }
 
     return coinBalances;
   }
-
 
   /**
    * fetchCoins is a helper function that recursively retrieves coin objects for the given account and coin type.
@@ -158,7 +179,11 @@ export class AccountManager {
    * @param cursor - An optional cursor for pagination. Default is null.
    * @returns A Promise that resolves to an array containing all the coin objects of the specified type owned by the account.
    */
-  async fetchCoins(account: string, coinType: string, cursor: string | null = null): Promise<ReadonlyArray<CoinStruct>> {
+  async fetchCoins(
+    account: string,
+    coinType: string,
+    cursor: string | null = null
+  ): Promise<ReadonlyArray<CoinStruct>> {
     const { data, nextCursor, hasNextPage } = await this.client.getCoins({
       owner: account,
       coinType,
@@ -179,7 +204,9 @@ export class AccountManager {
    * @param coinType - The coin type to retrieve coin objects for. Defaults to "0x2::sui::SUI".
    * @returns A Promise that resolves to the retrieved coin objects.
    */
-  async getCoins(coinType: any = "0x2::sui::SUI"): Promise<{ data: CoinStruct[] }> {
+  async getCoins(
+    coinType: any = "0x2::sui::SUI"
+  ): Promise<{ data: CoinStruct[] }> {
     const coinAddress = coinType.address ? coinType.address : coinType;
     const data = [...(await this.fetchCoins(this.address, coinAddress))];
     return { data };
@@ -206,7 +233,7 @@ export class AccountManager {
 
   /**
    * Sends coins to multiple recipients.
-   * 
+   *
    * @param coinType - The type of coin to send.
    * @param recipients - An array of recipient addresses.
    * @param amounts - An array of amounts to send to each recipient.
@@ -221,14 +248,12 @@ export class AccountManager {
     const coinAddress = coinType.address ? coinType.address : coinType;
 
     // Check if any recipient address is an empty string
-    if (recipients.some(address => address.trim() === "")) {
+    if (recipients.some((address) => address.trim() === "")) {
       throw new Error("Recipient list contains an empty address string.");
     }
 
     if (recipients.length !== amounts.length) {
-      throw new Error(
-        "recipients.length !== amounts.length"
-      );
+      throw new Error("recipients.length !== amounts.length");
     }
     let sender = this.getPublicKey();
     const coinBalance = await getCoinAmount(
@@ -237,10 +262,7 @@ export class AccountManager {
       coinAddress
     );
 
-    if (
-      coinBalance > 0 &&
-      coinBalance >= amounts.reduce((a, b) => a + b, 0)
-    ) {
+    if (coinBalance > 0 && coinBalance >= amounts.reduce((a, b) => a + b, 0)) {
       const txb = new Transaction();
       txb.setSender(sender);
       let coinInfo = await this.getCoins(coinAddress);
@@ -250,7 +272,7 @@ export class AccountManager {
       } else {
         if (coinInfo.data.length >= 2) {
           let baseObj = coinInfo.data[0].coinObjectId;
-          let allList = coinInfo.data.slice(1).map(coin => coin.coinObjectId);
+          let allList = coinInfo.data.slice(1).map((coin) => coin.coinObjectId);
 
           txb.mergeCoins(baseObj, allList);
         }
@@ -270,23 +292,15 @@ export class AccountManager {
 
   /**
    * Sends a specified amount of coins to a recipient.
-   * 
+   *
    * @param coinType - The type of coin to send.
    * @param recipient - The address of the recipient.
    * @param amount - The amount of coins to send.
    * @returns A promise that resolves when the coins are sent.
    */
-  async sendCoin(
-    coinType: any,
-    recipient: string,
-    amount: number
-  ) {
+  async sendCoin(coinType: any, recipient: string, amount: number) {
     const coinAddress = coinType.address ? coinType.address : coinType;
-    return await this.sendCoinsToMany(
-      coinAddress,
-      [recipient],
-      [amount]
-    );
+    return await this.sendCoinsToMany(coinAddress, [recipient], [amount]);
   }
 
   /**
@@ -296,12 +310,11 @@ export class AccountManager {
    * @returns A promise that resolves with the result of the transfer.
    * @throws An error if the length of objects and recipient arrays are not the same.
    */
-  async transferObjectsToMany(
-    objects: string[],
-    recipients: string[]
-  ) {
+  async transferObjectsToMany(objects: string[], recipients: string[]) {
     if (objects.length !== recipients.length) {
-      throw new Error("The length of objects and recipients should be the same");
+      throw new Error(
+        "The length of objects and recipients should be the same"
+      );
     } else {
       let sender = this.getPublicKey();
       const txb = new Transaction();
@@ -331,10 +344,7 @@ export class AccountManager {
    * @returns A promise that resolves to the result of the deposit transaction.
    * @throws An error if there is insufficient balance for the coin.
    */
-  async depositToNavi(
-    coinType: CoinInfo,
-    amount: number
-  ) {
+  async depositToNavi(coinType: CoinInfo, amount: number) {
     const coinSymbol = coinType.symbol;
 
     let txb = new Transaction();
@@ -386,7 +396,12 @@ export class AccountManager {
     }
     if (coinSymbol == "Sui") {
       const [toDeposit] = txb.splitCoins(txb.gas, [amount]);
-      await depositCoinWithAccountCap(txb, poolConfig, toDeposit, accountCapAddress);
+      await depositCoinWithAccountCap(
+        txb,
+        poolConfig,
+        toDeposit,
+        accountCapAddress
+      );
     } else {
       const mergedCoinObject = returnMergedCoins(txb, coinInfo);
       const mergedCoinObjectWithAmount = txb.splitCoins(mergedCoinObject, [
@@ -410,8 +425,11 @@ export class AccountManager {
    * @param updateOracle - A boolean indicating whether to update the oracle. Default is true. Set to false to save gas.
    * @returns A promise that resolves to the result of the withdrawal.
    */
-  async withdraw(coinType: CoinInfo, amount: number, updateOracle: boolean = true) {
-
+  async withdraw(
+    coinType: CoinInfo,
+    amount: number,
+    updateOracle: boolean = true
+  ) {
     const coinSymbol = coinType.symbol ? coinType.symbol : coinType;
     let txb = new Transaction();
     if (updateOracle) {
@@ -430,7 +448,7 @@ export class AccountManager {
 
   /**
    * Withdraws a specified amount of coins with an account cap.
-   * 
+   *
    * @param coinType - The type of coin to withdraw.
    * @param withdrawAmount - The amount of coins to withdraw.
    * @param accountCapAddress - The address of the account cap.
@@ -468,7 +486,7 @@ export class AccountManager {
 
   /**
    * Borrows a specified amount of a given coin.
-   * 
+   *
    * @param coinType - The type of coin to borrow.
    * @param borrowAmount - The amount of the coin to borrow.
    * @returns A promise that resolves to the result of the borrowing operation.
@@ -496,7 +514,7 @@ export class AccountManager {
 
   /**
    * Repays a specified amount of a given coin type.
-   * 
+   *
    * @param coinType - The coin type or coin symbol to repay.
    * @param repayAmount - The amount to repay.
    * @returns A promise that resolves to the result of the repayment transaction.
@@ -532,7 +550,7 @@ export class AccountManager {
 
   /**
    * Liquidates a specified amount of coins.
-   * 
+   *
    * @param payCoinType - The coin type to be paid for liquidation.
    * @param liquidationAddress - The address to which the liquidated coins will be transferred.
    * @param collateralCoinType - The coin type to be used as collateral for liquidation.
@@ -540,8 +558,13 @@ export class AccountManager {
    * @param updateOracle - A boolean indicating whether to update the oracle. Default is true. Set to false to save gas.
    * @returns PtbResult - The result of the liquidation transaction.
    */
-  async liquidate(payCoinType: CoinInfo, liquidationAddress: string, collateralCoinType: CoinInfo, liquidationAmount: number = 0, updateOracle: boolean = true) {
-
+  async liquidate(
+    payCoinType: CoinInfo,
+    liquidationAddress: string,
+    collateralCoinType: CoinInfo,
+    liquidationAmount: number = 0,
+    updateOracle: boolean = true
+  ) {
     let txb = new Transaction();
     if (updateOracle) {
       await updateOraclePTB(this.client, txb);
@@ -549,18 +572,28 @@ export class AccountManager {
     txb.setSender(this.address);
 
     let coinInfo = await this.getCoins(payCoinType.address);
-    let allBalance = await this.client.getBalance({ owner: this.address, coinType: payCoinType.address });
+    let allBalance = await this.client.getBalance({
+      owner: this.address,
+      coinType: payCoinType.address,
+    });
     let { totalBalance } = allBalance;
     if (liquidationAmount != 0) {
-      assert(liquidationAmount * Math.pow(10, payCoinType.decimal) <= Number(totalBalance), "Insufficient balance for this Coin, please don't apply decimals to liquidationAmount");
-      totalBalance = (liquidationAmount * Math.pow(10, payCoinType.decimal)).toString();
+      assert(
+        liquidationAmount * Math.pow(10, payCoinType.decimal) <=
+          Number(totalBalance),
+        "Insufficient balance for this Coin, please don't apply decimals to liquidationAmount"
+      );
+      totalBalance = (
+        liquidationAmount * Math.pow(10, payCoinType.decimal)
+      ).toString();
     }
 
     if (payCoinType.symbol == "Sui") {
-
       totalBalance = (Number(totalBalance) - 1 * 1e9).toString(); //You need to keep some Sui for gas
 
-      let [mergedCoin] = txb.splitCoins(txb.gas, [txb.pure.u64(Number(totalBalance))]);
+      let [mergedCoin] = txb.splitCoins(txb.gas, [
+        txb.pure.u64(Number(totalBalance)),
+      ]);
 
       const [mergedCoinBalance] = txb.moveCall({
         target: `0x2::coin::into_balance`,
@@ -568,7 +601,14 @@ export class AccountManager {
         typeArguments: [payCoinType.address],
       });
 
-      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(txb, payCoinType, mergedCoinBalance, collateralCoinType, liquidationAddress, totalBalance);
+      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(
+        txb,
+        payCoinType,
+        mergedCoinBalance,
+        collateralCoinType,
+        liquidationAddress,
+        totalBalance
+      );
 
       const [collateralCoin] = txb.moveCall({
         target: `0x2::coin::from_balance`,
@@ -583,13 +623,12 @@ export class AccountManager {
       });
 
       txb.transferObjects([collateralCoin, leftDebtCoin], this.address);
-    }
-    else {
+    } else {
       if (coinInfo.data.length >= 2) {
         const txbMerge = new Transaction();
         txbMerge.setSender(this.address);
         let baseObj = coinInfo.data[0].coinObjectId;
-        let allList = coinInfo.data.slice(1).map(coin => coin.coinObjectId);
+        let allList = coinInfo.data.slice(1).map((coin) => coin.coinObjectId);
 
         txb.mergeCoins(baseObj, allList);
 
@@ -602,7 +641,14 @@ export class AccountManager {
         arguments: [mergedCoin],
         typeArguments: [payCoinType.address],
       });
-      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(txb, payCoinType, collateralCoinBalance, collateralCoinType, liquidationAddress, totalBalance);
+      const [collateralBalance, remainingDebtBalance] = await liquidateFunction(
+        txb,
+        payCoinType,
+        collateralCoinBalance,
+        collateralCoinType,
+        liquidationAddress,
+        totalBalance
+      );
 
       const [collateralCoin] = txb.moveCall({
         target: `0x2::coin::from_balance`,
@@ -629,7 +675,10 @@ export class AccountManager {
    * @returns The health factor as a number.
    */
   async getHealthFactor(address: string = this.address, client?: SuiClient) {
-    const result = await getHealthFactorCall(address, client ? client : this.client);
+    const result = await getHealthFactorCall(
+      address,
+      client ? client : this.client
+    );
     const healthFactor = Number(result[0]) / Math.pow(10, 27);
 
     return healthFactor;
@@ -645,35 +694,65 @@ export class AccountManager {
    * @returns The health factor for the user in the pool.
    * @throws Error if the pool does not exist.
    */
-  async getDynamicHealthFactor(userAddress: string, coinType: CoinInfo, estimatedSupply: number = 0, estimatedBorrow: number = 0, isIncrease: boolean = true) {
+  async getDynamicHealthFactor(
+    userAddress: string,
+    coinType: CoinInfo,
+    estimatedSupply: number = 0,
+    estimatedBorrow: number = 0,
+    isIncrease: boolean = true
+  ) {
     const poolConfig: PoolConfig = pool[coinType.symbol as keyof Pool];
     if (!poolConfig) {
       throw new Error("Pool does not exist");
     }
     const config = await getConfig();
     const tx = new Transaction();
-    const result: any = await moveInspect(tx, this.client, this.getPublicKey(), `${config.ProtocolPackage}::dynamic_calculator::dynamic_health_factor`, [
-      tx.object('0x06'), // clock object id
-      tx.object(config.StorageId), // object id of storage
-      tx.object(config.PriceOracle), // object id of price oracle
-      tx.object(poolConfig.poolId),
-      tx.pure.address(userAddress), // user address,
-      tx.pure.u8(poolConfig.assetId),
-      tx.pure.u64(estimatedSupply),
-      tx.pure.u64(estimatedBorrow),
-      tx.pure.bool(isIncrease)
-    ], [poolConfig.type]);
+    const result: any = await moveInspect(
+      tx,
+      this.client,
+      this.getPublicKey(),
+      `${config.ProtocolPackage}::dynamic_calculator::dynamic_health_factor`,
+      [
+        tx.object("0x06"), // clock object id
+        tx.object(config.StorageId), // object id of storage
+        tx.object(config.PriceOracle), // object id of price oracle
+        tx.object(poolConfig.poolId),
+        tx.pure.address(userAddress), // user address,
+        tx.pure.u8(poolConfig.assetId),
+        tx.pure.u64(estimatedSupply),
+        tx.pure.u64(estimatedBorrow),
+        tx.pure.bool(isIncrease),
+      ],
+      [poolConfig.type]
+    );
 
     const healthFactor = Number(result[0]) / Math.pow(10, 27);
 
     if (estimatedSupply > 0) {
-      console.log('With EstimateSupply Change: ', `${estimatedSupply}`, ' address: ', `${userAddress}`, ' health factor is: ', healthFactor.toString());
-    }
-    else if (estimatedBorrow > 0) {
-      console.log('With EstimateBorrow Change: ', `${estimatedBorrow}`, ' address: ', `${userAddress}`, ' health factor is: ', healthFactor.toString());
-    }
-    else {
-      console.log('address: ', `${userAddress}`, ' health factor is: ', healthFactor.toString());
+      console.log(
+        "With EstimateSupply Change: ",
+        `${estimatedSupply}`,
+        " address: ",
+        `${userAddress}`,
+        " health factor is: ",
+        healthFactor.toString()
+      );
+    } else if (estimatedBorrow > 0) {
+      console.log(
+        "With EstimateBorrow Change: ",
+        `${estimatedBorrow}`,
+        " address: ",
+        `${userAddress}`,
+        " health factor is: ",
+        healthFactor.toString()
+      );
+    } else {
+      console.log(
+        "address: ",
+        `${userAddress}`,
+        " health factor is: ",
+        healthFactor.toString()
+      );
     }
     return healthFactor.toString();
   }
@@ -681,7 +760,7 @@ export class AccountManager {
   /**
    * Retrieves the decimal value for a given coin type.
    * If the coin type has an address property, it uses that address. Otherwise, it uses the coin type itself.
-   * 
+   *
    * @param coinType - The coin type or coin object.
    * @returns The decimal value of the coin.
    */
@@ -709,10 +788,12 @@ export class AccountManager {
    * @param prettyPrint - A boolean indicating whether to print the portfolio in a pretty format. Default is true.
    * @returns A Promise that resolves to a Map containing the borrow and supply balances for each reserve.
    */
-  async getNAVIPortfolio(address: string = this.address, prettyPrint: boolean = true): Promise<Map<string, { borrowBalance: number, supplyBalance: number }>> {
+  async getNAVIPortfolio(
+    address: string = this.address,
+    prettyPrint: boolean = true
+  ): Promise<Map<string, { borrowBalance: number; supplyBalance: number }>> {
     return getAddressPortfolio(address, prettyPrint, this.client);
   }
-
 
   /**
    * Claims all available rewards for the specified account.
@@ -720,7 +801,6 @@ export class AccountManager {
    * @returns PTB result
    */
   async claimAllRewards(updateOracle: boolean = true) {
-
     let txb = await claimAllRewardsPTB(this.client, this.address);
     txb.setSender(this.address);
 
@@ -750,7 +830,7 @@ export class AccountManager {
   /**
    * Unstakes a specified amount of SUI from VOLO SUI.
    * If no amount is provided, unstakes all available vSUI. Must be greater than 1vSui.
-   * 
+   *
    * @param unstakeAmount - The amount of SUI to unstake. If not provided, all available vSUI will be unstaked.
    * @returns PTB result
    */
@@ -764,7 +844,7 @@ export class AccountManager {
       const txbMerge = new Transaction();
       txbMerge.setSender(this.address);
       let baseObj = coinInfo.data[0].coinObjectId;
-      let allList = coinInfo.data.slice(1).map(coin => coin.coinObjectId);
+      let allList = coinInfo.data.slice(1).map((coin) => coin.coinObjectId);
 
       txbMerge.mergeCoins(baseObj, allList);
       await SignAndSubmitTXB(txbMerge, this.client, this.keypair);
@@ -786,7 +866,7 @@ export class AccountManager {
 
   /**
    * Updates the Oracle.
-   * 
+   *
    * @returns The result of the transaction submission.
    */
   async updateOracle() {
@@ -804,14 +884,35 @@ export class AccountManager {
     amountIn: number | string | bigint,
     minAmountOut: number,
     apiKey?: string,
-    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 }
+    swapOptions: SwapOptions = {
+      baseUrl: undefined,
+      dexList: [],
+      byAmountIn: true,
+      depth: 3,
+    }
   ) {
     const txb = new Transaction();
     txb.setSender(this.address);
 
-    const coinA = await getCoinPTB(this.address, fromCoinAddress, amountIn, txb, this.client);
+    const coinA = await getCoinPTB(
+      this.address,
+      fromCoinAddress,
+      amountIn,
+      txb,
+      this.client
+    );
 
-    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions);
+    const finalCoinB = await swapPTB(
+      this.address,
+      txb,
+      fromCoinAddress,
+      toCoinAddress,
+      coinA,
+      amountIn,
+      minAmountOut,
+      apiKey,
+      swapOptions
+    );
     txb.transferObjects([finalCoinB], this.address);
 
     const result = await SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -823,21 +924,45 @@ export class AccountManager {
     toCoinAddress: string,
     amountIn: number | string | bigint,
     minAmountOut: number,
+    sender?: string,
     apiKey?: string,
-    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 }
+    swapOptions: SwapOptions = {
+      baseUrl: undefined,
+      dexList: [],
+      byAmountIn: true,
+      depth: 3,
+    }
   ) {
     const txb = new Transaction();
-    txb.setSender(this.address);
+    txb.setSender(sender ?? this.address);
 
-    const coinA = await getCoinPTB(this.address, fromCoinAddress, amountIn, txb, this.client);
+    const coinA = await getCoinPTB(
+      sender ?? this.address,
+      fromCoinAddress,
+      amountIn,
+      txb,
+      this.client
+    );
 
-    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions);
+    const finalCoinB = await swapPTB(
+      sender ?? this.address,
+      txb,
+      fromCoinAddress,
+      toCoinAddress,
+      coinA,
+      amountIn,
+      minAmountOut,
+      apiKey,
+      swapOptions
+    );
     txb.transferObjects([finalCoinB], this.address);
 
     const dryRunTxBytes: Uint8Array = await txb.build({
-      client: this.client
+      client: this.client,
     });
-    const dryRunResult = await this.client.dryRunTransactionBlock({ transactionBlock: dryRunTxBytes });
+    const dryRunResult = await this.client.dryRunTransactionBlock({
+      transactionBlock: dryRunTxBytes,
+    });
 
     return dryRunResult;
   }
