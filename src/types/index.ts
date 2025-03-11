@@ -79,6 +79,7 @@ export enum Dex {
   BLUEFIN = "bluefin",
   VSUI = "vSui",
   HASUI = "haSui",
+  MAGMA = "magma",
 }
 
 export type Quote = {
