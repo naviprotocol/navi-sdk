@@ -1,8 +1,10 @@
-import { AggregatorConfig } from "./config";
-import { Dex, FeeOption, Quote, SwapOptions } from '../../types';
-import { returnMergedCoins } from "../PTB/commonFunctions";
+import BigNumber from "bignumber.js";
 
+import { AggregatorConfig } from "./config";
+import { Dex, FeeOption, Quote, SwapOptions } from "../../types";
+import { returnMergedCoins } from "../PTB/commonFunctions";
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
+import { getCoinDecimal } from "../Coins";
 import { makeCETUSPTB } from "./Dex/cetus";
 import { makeTurbosPTB } from "./Dex/turbos";
 import { makeKriyaV3PTB } from "./Dex/kriyaV3";
@@ -16,6 +18,7 @@ import { generateRefId } from "./utils";
 import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
+import { fetchCoinPrices } from "../PoolInfo";
 
 export async function getCoins(
   client: SuiClient,
@@ -64,7 +67,8 @@ export async function buildSwapPTBFromQuote(
   coinIn: TransactionResult,
   quote: Quote,
   referral: number = 0,
-  ifPrint: boolean = true // Set ifPrint to be optional with a default value
+  ifPrint: boolean = true, // Set ifPrint to be optional with a default value
+  options?: FeeOption
 ): Promise<TransactionResult> {
   if (!quote.routes || quote.routes.length === 0) {
     throw new Error("No routes found in data");
@@ -87,6 +91,145 @@ export async function buildSwapPTBFromQuote(
     throw new Error(
       "Outer amount_in does not match the sum of route amount_in values"
     );
+  }
+
+  // Calculate fee amounts if options provided
+  if (options) {
+    const swapOptions = {
+      dexList: [
+        Dex.CETUS,
+        Dex.TURBOS,
+        Dex.AFTERMATH,
+        Dex.KRIYA_V2,
+        Dex.KRIYA_V3,
+        Dex.DEEPBOOK,
+        Dex.BLUEFIN,
+      ],
+      byAmountIn: true,
+      depth: 3,
+      baseUrl: AggregatorConfig.aggregatorBaseUrl,
+    };
+
+    const totalAmount = quote.amount_in;
+    const serviceFeeAmount = new BigNumber(totalAmount)
+      .multipliedBy(options.fee)
+      .dividedBy(10000)
+      .toFixed(0);
+    const newAmountIn = new BigNumber(totalAmount)
+      .minus(serviceFeeAmount)
+      .toFixed(0);
+
+    // get router
+    const [router, serviceFeeRouter] = await Promise.all([
+      getQuote(tokenA, tokenB, newAmountIn, "", swapOptions),
+      new Promise<Quote | null>((resolve, reject) => {
+        if (serviceFeeAmount === "0") {
+          resolve(null);
+          return;
+        }
+        if (
+          tokenA ===
+          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT"
+        ) {
+          resolve({
+            routes: [],
+            amount_in: serviceFeeAmount,
+            amount_out: serviceFeeAmount,
+            from: tokenA,
+            target: tokenA,
+            dexList: [],
+          });
+          return;
+        }
+        getQuote(
+          tokenA,
+          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+          serviceFeeAmount,
+          "",
+          swapOptions
+        )
+          .then((router: Quote) => {
+            resolve(router);
+          })
+          .catch(reject);
+      }),
+    ]);
+
+    if (!router.amount_out) {
+      router.amount_out = "0";
+    }
+    if (serviceFeeRouter && !serviceFeeRouter.amount_out) {
+      serviceFeeRouter.amount_out = "0";
+    }
+
+    // split coins
+    let coinIn;
+    let serviceFeeCoinIn;
+    const splitList = [router!.amount_in];
+    if (serviceFeeRouter) {
+      splitList.push(serviceFeeRouter?.amount_in || "0");
+    }
+    const splitResult = txb.splitCoins(txb.gas, splitList);
+    coinIn = splitResult[0];
+    serviceFeeCoinIn = splitResult[1];
+
+    const [coinOut, feeCoinOut] = await Promise.all([
+      buildSwapPTBFromQuote(
+        userAddress,
+        txb,
+        minAmountOut,
+        coinIn as any,
+        router as any,
+        referral
+      ),
+      !!serviceFeeRouter && serviceFeeCoinIn
+        ? serviceFeeRouter.from === serviceFeeRouter.target
+          ? serviceFeeCoinIn
+          : buildSwapPTBFromQuote(
+              userAddress,
+              txb,
+              0,
+              serviceFeeCoinIn as any,
+              serviceFeeRouter as any,
+              referral
+            )
+        : new Promise((resolve) => {
+            resolve(null);
+          }),
+    ]);
+
+    if (feeCoinOut) {
+      const client = new SuiClient({
+        url: AggregatorConfig.fullnodeUrl,
+      });
+      const receiverAddress = options.receiverAddress;
+      txb.moveCall({
+        package: AggregatorConfig.aggregatorContract,
+        module: "slippage",
+        function: "emit_referral_event",
+        arguments: [
+          coinOut,
+          feeCoinOut as any,
+          txb.pure.address(receiverAddress),
+          txb.pure.u8(await getCoinDecimal(client, router.from)),
+          txb.pure.u8(await getCoinDecimal(client, router.target)),
+          txb.pure.u8(9),
+          txb.pure.u64(router.amount_in),
+          txb.pure.u64((await fetchCoinPrices([router.from]))?.[0]?.value || 0),
+          txb.pure.u64((await fetchCoinPrices([router.target]))?.[0]?.value || 0),
+          txb.pure.u64(BigNumber(options.fee).multipliedBy(1e4).toFixed(0)),
+          txb.pure.u64(referral),
+        ],
+        typeArguments: [
+          router.from,
+          router.target,
+          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+        ],
+      });
+      txb.transferObjects([feeCoinOut as any], receiverAddress);
+    }
+
+    return coinOut;
   }
 
   const finalCoinB = txb.moveCall({
@@ -417,7 +560,17 @@ export async function swapPTB(
   return finalCoinB;
 }
 
-export async function checkIfNAVIIntegrated(digest: string, client: SuiClient): Promise<boolean> {
-    const results = await client.getTransactionBlock({ digest, options: { showEvents: true } });
-    return results.events?.some(event => event.type.includes(`${AggregatorConfig.aggregatorContract}::slippage`)) ?? false;
+export async function checkIfNAVIIntegrated(
+  digest: string,
+  client: SuiClient
+): Promise<boolean> {
+  const results = await client.getTransactionBlock({
+    digest,
+    options: { showEvents: true },
+  });
+  return (
+    results.events?.some((event) =>
+      event.type.includes(`${AggregatorConfig.aggregatorContract}::slippage`)
+    ) ?? false
+  );
 }
