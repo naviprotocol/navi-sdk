@@ -412,15 +412,13 @@ export async function buildSwapPTBFromQuote(
             typeArguments
           );
 
-          console.log(coinABs);
-
-          // if (a2b) {
-          //   txb.transferObjects(coinABs, userAddress);
-          //   pathTempCoin = coinBOut;
-          // } else {
-          //   txb.transferObjects([coinBOut], userAddress);
-          //   pathTempCoin = coinAOut;
-          // }
+          if (a2b) {
+            txb.transferObjects([coinABs[0]], userAddress);
+            pathTempCoin = coinABs[1];
+          } else {
+            txb.transferObjects([coinABs[1]], userAddress);
+            pathTempCoin = coinABs[0];
+          }
           break;
         }
         case Dex.VSUI: {
