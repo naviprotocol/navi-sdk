@@ -83,10 +83,24 @@ export async function getReservesDetail(assetId: number, client: SuiClient) {
     return result;
 }
 
-export async function getAddressPortfolio(address: string, prettyPrint: boolean = true, client: SuiClient, decimals?: boolean) {
+export async function getAddressPortfolio(address: string, prettyPrint: boolean = true, client: SuiClient, decimals?: boolean, tokenFilter?: (keyof Pool)[]) {
     const balanceMap = new Map<string, { borrowBalance: number, supplyBalance: number }>();
 
-    await Promise.all(Object.keys(pool).map(async (poolKey) => {
+    const validTokens = Object.keys(pool) as (keyof Pool)[];
+
+    const filteredTokens = tokenFilter
+    ? tokenFilter.filter(token => validTokens.includes(token))
+    : validTokens;
+
+    if (tokenFilter) {
+        const invalidTokens = tokenFilter.filter(token => !validTokens.includes(token));
+        if (invalidTokens.length > 0) {
+          console.warn(`Some tokens passed in do not exist and have been ignored: ${invalidTokens.join(', ')}`);
+        }
+      }
+
+
+    await Promise.all(filteredTokens.map(async (poolKey) => {
         const reserve: PoolConfig = pool[poolKey as keyof Pool];
         const borrowBalance: any = await client.getDynamicFieldObject({ parentId: reserve.borrowBalanceParentId, name: { type: 'address', value: address } });
         const supplyBalance: any = await client.getDynamicFieldObject({ parentId: reserve.supplyBalanceParentId, name: { type: 'address', value: address } });
@@ -184,6 +198,25 @@ export async function getCoinOracleInfo(client: SuiClient, oracleIds: number[]) 
         ],
         [], // type arguments is null
         'vector<OracleInfo>' // parse type
+    );
+
+    return result[0];
+}
+
+export async function getUserState(client: SuiClient, address: string) {
+    registerStructs()
+    const config = await getConfig();
+    const tx = new Transaction();
+
+    const result: any = await moveInspect(
+        tx, client, '0xcda879cde94eeeae2dd6df58c9ededc60bcf2f7aedb79777e47d95b2cfb016c2',
+        `${config.uiGetter}::getter::get_user_state`,
+        [
+            tx.object(config.StorageId), 
+            tx.pure.address(address)
+        ],
+        [], // type arguments is null
+        'vector<UserStateInfo>' 
     );
 
     return result[0];
