@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const BridgeConfig = {
-  baseUrl: "https://open-aggregator-api.naviprotocol.io/find_routes",
+  baseUrl: "https://open-aggregator-api.naviprotocol.io",
   apiKey: "",
 };
 
