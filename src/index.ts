@@ -7,3 +7,4 @@ export * from './libs/CallFunctions';
 export * from './libs/Coins';
 export * from "./types";
 export * from './address';
+export * as Bridge from './libs/Bridge';
