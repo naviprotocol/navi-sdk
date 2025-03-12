@@ -52,8 +52,8 @@ export const AddressMap: Record<string, string> = {
     "suiBTC",
   "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN":
     "WSOL",
-  // "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC":
-  //   "LBTC",
+  "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC":
+    "LBTC",
 };
 
 export function getPackageCache(): string | undefined {
@@ -82,8 +82,8 @@ async function updateCacheIfNeeded() {
 
 export const getConfig = async () => {
   await updateCacheIfNeeded();
-  // const protocolPackage = getPackageCache();
-  const protocolPackage = '0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f';
+  const protocolPackage = getPackageCache();
+  // const protocolPackage = '0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f';
   return {
     ProtocolPackage: protocolPackage,
     StorageId:
@@ -429,20 +429,20 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xca1ec4793c0d1ec3ab58fbb5ccb2366c962dc5b903ff9ce809c6384c6e07aeb6",
     rewardFundId: "",
   },
-  // LBTC: {
-  //   name: "LBTC",
-  //   assetId: 23,
-  //   poolId:
-  //     "",
-  //   type: "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
-  //   reserveObjectId:
-  //     "",
-  //   borrowBalanceParentId:
-  //     "",
-  //   supplyBalanceParentId:
-  //     "",
-  //     rewardFundId: "",
-  // },
+  LBTC: {
+    name: "LBTC",
+    assetId: 23,
+    poolId:
+      "0x377b8322c0d349b44b5873d418192eefe871b9372bb3a86f288cafe97317de04",
+    type: "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
+    reserveObjectId:
+      "0x1acee7192fe5dd422ee6e0376417f80a709172d67cec1bf0e660666eee6eb627",
+    borrowBalanceParentId:
+      "0x81b4063de499c8fba76523fde33b3dc4579047e7b815ffbf2f1eb82510314daa",
+    supplyBalanceParentId:
+      "0x71b90679af894cd5f0fdefee87a228e4bdacc8a1ad444e39011476208a1eb9d4",
+      rewardFundId: "",
+  },
 };
 
 export const flashloanConfig = {
@@ -609,12 +609,12 @@ export const WSOL: CoinInfo = {
   decimal: 8,
 };
 
-// export const LBTC: CoinInfo = {
-//   symbol: "LBTC",
-//   address:
-//     "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
-//   decimal: 8,
-// };
+export const LBTC: CoinInfo = {
+  symbol: "LBTC",
+  address:
+    "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
+  decimal: 8,
+};
 
 export const vSuiConfig = {
   ProtocolPackage:
@@ -1148,7 +1148,25 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     pythPriceInfoObject: '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
     priceDecimal: 8,
     expiration: 30,
-  }
+  },
+  LBTC: {
+    oracleId: 23,
+    maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 20000000000000, // 200000 = 200000 * 1e8 = 20000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+    coinType: '0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC',
+    feedId: '0x8ee4d9d61d0bfa342cdb3ee8b7f047c91f0b586e0ff66fd6e8fc761e235e5409', // TODO: value
+    supraPairId: 99999, // none
+    pythPriceFeedId: '0x8f257aab6e7698bb92b15511915e593d6f8eae914452f781874754b03d0c612b', // Crypto.LBTC/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject: '0xeba15840ddf425dacb5ff0990334fc03d034487f4ad416280859b96bf2af89f8',
+    priceDecimal: 8,
+    expiration: 30,
+}
 };
 
 export interface IOracleProConfig {

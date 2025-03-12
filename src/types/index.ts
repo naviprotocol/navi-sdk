@@ -37,6 +37,7 @@ export interface Pool {
   stSUI: PoolConfig;
   suiBTC: PoolConfig;
   WSOL: PoolConfig;
+  LBTC: PoolConfig;
 }
 
 export interface PoolConfig {
@@ -262,5 +263,10 @@ export interface PoolsResponse {
   code: number;
 }
 
+export type PoolRewards = {
+  assetId: number;
+  rewardType: number;
+  rewards: { coinType: string; available: string }[];
+};
 
 export * as V3Type from './V3'

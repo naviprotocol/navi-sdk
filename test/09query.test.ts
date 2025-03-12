@@ -1,4 +1,4 @@
-import { getBorrowFee, getPoolApy, getCurrentRules, getPoolsApy } from "../src/libs/PTB";
+import { getBorrowFee, getPoolApy, getCurrentRules, getPoolsApy, updateOraclePTB } from "../src/libs/PTB";
 import { getConfig, PriceFeedConfig, pool } from "../src/address";
 import { V3Type, PoolData, Pool, PoolConfig } from "../src/types";
 import { describe, it, expect } from "vitest";
@@ -50,4 +50,14 @@ it('should get correct return all accounts\' Navi Portfolio', async () => {
   // expect(haSui.supplyBalance).toBe(0);
 
 }, 50000);
+
+  it.only("should success update oracle", async () => {
+    const testCaseName = expect.getState().currentTestName || "test_case";
+
+    const txb = createTransaction(account);
+    await updateOraclePTB(account.client, txb)
+
+    const tsRes = await handleTransactionResult(txb, account, testCaseName, false);
+    expect(tsRes).toEqual("success");
+  }, 500000);
 });

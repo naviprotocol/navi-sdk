@@ -1,6 +1,6 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { getConfig, flashloanConfig, pool, vSuiConfig, PriceFeedConfig, OracleProConfig, IPriceFeed, AddressMap } from '../../address'
-import { CoinInfo, Pool, PoolConfig, OptionType } from '../../types';
+import { CoinInfo, Pool, PoolConfig, OptionType, PoolRewards } from '../../types';
 import { bcs } from '@mysten/sui.js/bcs';
 import { SuiClient } from "@mysten/sui/client";
 import { SuiPriceServiceConnection, SuiPythClient } from '@pythnetwork/pyth-sui-js'
@@ -412,11 +412,7 @@ export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
     return coin;
 }
 
-type PoolRewards = {
-    assetId: number;
-    rewardType: number;
-    rewards: { coinType: string; available: string }[];
-  };
+
 /**
  * Retrieves available rewards for the given address.
  *
@@ -701,6 +697,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.STSUI);
     updateSinglePrice(txb, PriceFeedConfig.SUIBTC);
     updateSinglePrice(txb, PriceFeedConfig.WSOL);
+    updateSinglePrice(txb, PriceFeedConfig.LBTC);
 }
 
 
