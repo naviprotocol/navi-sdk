@@ -137,7 +137,7 @@ describe("buildSwapPTBFromQuote test", () => {
     // Test sui to vsui swap
     const fromCoin = sui;
     const toCoin = vsui;
-    const amountIn = "1000000";
+    const amountIn = "1000000000";
     const minAmountOut = 0;
     const swapOptions = {
       dexList: [Dex.TURBOS],

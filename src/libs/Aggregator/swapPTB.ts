@@ -19,6 +19,7 @@ import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
 import { fetchCoinPrices } from "../PoolInfo";
+import { swap } from "../Bridge";
 
 export async function getCoins(
   client: SuiClient,
@@ -72,6 +73,7 @@ export async function buildSwapPTBFromQuote(
   options?: {
     serviceFee?: number;
     serviceFeeReceiver?: string;
+    swapOptions?: SwapOptions;
   }
 ): Promise<TransactionResult> {
   if (!quote.routes || quote.routes.length === 0) {
@@ -105,21 +107,6 @@ export async function buildSwapPTBFromQuote(
     options.serviceFeeReceiver &&
     options.serviceFeeReceiver !== "0x0"
   ) {
-    const swapOptions = {
-      dexList: [
-        Dex.CETUS,
-        Dex.TURBOS,
-        Dex.AFTERMATH,
-        Dex.KRIYA_V2,
-        Dex.KRIYA_V3,
-        Dex.DEEPBOOK,
-        Dex.BLUEFIN,
-      ],
-      byAmountIn: true,
-      depth: 3,
-      baseUrl: AggregatorConfig.aggregatorBaseUrl,
-    };
-
     const totalAmount = quote.amount_in;
     const serviceFeeAmount = new BigNumber(totalAmount)
       .multipliedBy(options.serviceFee)
@@ -133,7 +120,7 @@ export async function buildSwapPTBFromQuote(
 
     // get router
     const [router, serviceFeeRouter] = await Promise.all([
-      getQuote(tokenA, tokenB, newAmountIn, apiKey, swapOptions),
+      getQuote(tokenA, tokenB, newAmountIn, apiKey, options?.swapOptions),
       new Promise<Quote | null>((resolve, reject) => {
         if (serviceFeeAmount === "0") {
           resolve(null);
@@ -158,7 +145,7 @@ export async function buildSwapPTBFromQuote(
           "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
           serviceFeeAmount,
           apiKey,
-          swapOptions
+          options?.swapOptions
         )
           .then((router: Quote) => {
             resolve(router);
@@ -201,6 +188,7 @@ export async function buildSwapPTBFromQuote(
 
     if (feeCoinOut) {
       const client = new SuiClient({ url: getFullnodeUrl("mainnet") });
+      const prices = await fetchCoinPrices([router.from, router.target]);
       txb.moveCall({
         package: AggregatorConfig.aggregatorContract,
         module: "slippage",
@@ -209,20 +197,12 @@ export async function buildSwapPTBFromQuote(
           coinOut,
           feeCoinOut as any,
           txb.pure.address(options.serviceFeeReceiver),
-          txb.pure.u8(await getCoinDecimal(client, router.from)),
-          txb.pure.u8(await getCoinDecimal(client, router.target)),
+          txb.pure.u8(router.from_token?.decimals || 9),
+          txb.pure.u8(router.to_token?.decimals || 9),
           txb.pure.u8(9),
           txb.pure.u64(router.amount_in),
-          txb.pure.u64(
-            Math.floor(
-              ((await fetchCoinPrices([router.from]))?.[0]?.value || 0) * 1e9
-            )
-          ),
-          txb.pure.u64(
-            Math.floor(
-              ((await fetchCoinPrices([router.target]))?.[0]?.value || 0) * 1e9
-            )
-          ),
+          txb.pure.u64(Math.floor((router.from_token?.price || 0) * 1e9)),
+          txb.pure.u64(Math.floor((router.to_token?.price || 0) * 1e9)),
           txb.pure.u64(
             BigNumber(options.serviceFee).multipliedBy(1e4).toFixed(0)
           ),
@@ -496,6 +476,7 @@ export async function swapPTB(
       {
         serviceFee: swapOptions.feeOption.fee,
         serviceFeeReceiver: swapOptions.feeOption.receiverAddress,
+        swapOptions: swapOptions,
       }
     );
   } else {

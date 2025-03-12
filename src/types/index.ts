@@ -89,6 +89,16 @@ export type Quote = {
   from: string;
   target: string;
   dexList: Dex[];
+  from_token?: {
+    address: string;
+    decimals: number;
+    price: number;
+  };
+  to_token?: {
+    address: string;
+    decimals: number;
+    price: number;
+  };
 };
 
 export type FeeOption = {
