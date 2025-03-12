@@ -70,8 +70,8 @@ export async function buildSwapPTBFromQuote(
   ifPrint: boolean = true, // Set ifPrint to be optional with a default value
   apiKey?: string,
   options?: {
-    serviceFee: number;
-    serviceFeeReceiver: string;
+    serviceFee?: number;
+    serviceFeeReceiver?: string;
   }
 ): Promise<TransactionResult> {
   if (!quote.routes || quote.routes.length === 0) {
@@ -100,7 +100,9 @@ export async function buildSwapPTBFromQuote(
   // Calculate fee amounts if options provided
   if (
     options &&
+    options.serviceFee &&
     options.serviceFee > 0 &&
+    options.serviceFeeReceiver &&
     options.serviceFeeReceiver !== "0x0"
   ) {
     const swapOptions = {
