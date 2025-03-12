@@ -1,6 +1,5 @@
 export const AggregatorConfig = {
   aggregatorBaseUrl: "https://open-aggregator-api.naviprotocol.io/find_routes",
-  fullnodeUrl: "https://fullnode.mainnet.sui.io:443",
   aggregatorContract:
     "0x5b7d732adeb3140a2dbf2becd1e9dbe56cee0e3687379bcfe7df4357ea664313",
   cetusPackageId:
