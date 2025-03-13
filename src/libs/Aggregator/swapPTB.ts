@@ -18,7 +18,6 @@ import { generateRefId } from "./utils";
 import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
-import { fetchCoinPrices } from "../PoolInfo";
 import { swap } from "../Bridge";
 
 export async function getCoins(
@@ -187,8 +186,6 @@ export async function buildSwapPTBFromQuote(
     ]);
 
     if (feeCoinOut) {
-      const client = new SuiClient({ url: getFullnodeUrl("mainnet") });
-      const prices = await fetchCoinPrices([router.from, router.target]);
       txb.moveCall({
         package: AggregatorConfig.aggregatorContract,
         module: "slippage",
