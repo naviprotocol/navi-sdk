@@ -210,7 +210,7 @@ export async function repayDebt(txb: Transaction, _pool: PoolConfig, coinObject:
             txb.object(_pool.poolId), // pool id of the asset
             txb.pure.u8(_pool.assetId), // the id of the asset in the protocol
             coinObject, // the object id of the Coin you own.
-            txb.pure.u64(repayAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
+            amountObj, // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2), // The incentive object v2 
             txb.object(config.IncentiveV3), // The incentive object v3
         ],
