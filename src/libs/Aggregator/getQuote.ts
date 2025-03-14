@@ -19,8 +19,9 @@ export async function getQuote(
     toCoinAddress: string,
     amountIn: number | string | bigint,
     apiKey?: string,
-    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 },
+    swapOptions?: SwapOptions,
 ): Promise<Quote> {
+    swapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3, ...swapOptions }
     let baseUrl = AggregatorConfig.aggregatorBaseUrl;
     if (swapOptions.baseUrl) {
         baseUrl = swapOptions.baseUrl;

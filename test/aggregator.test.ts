@@ -62,9 +62,11 @@ describe("buildSwapPTBFromQuote test", () => {
       true, // ifPrint
       undefined,
       {
-        serviceFee: 0.5,
-        serviceFeeReceiver:
-          "0x3be8db6ca4adf33387f16c86c443737e78fd14db85a4e1c68cc8f256ac68549c", // random address
+        serviceFee: {
+          fee: 0.5,
+          receiverAddress:
+            "0x3be8db6ca4adf33387f16c86c443737e78fd14db85a4e1c68cc8f256ac68549c", // random address
+        },
       }
     );
     console.log("coinOut at aggregator", coinOut);
@@ -111,9 +113,11 @@ describe("buildSwapPTBFromQuote test", () => {
       true, // ifPrint
       undefined,
       {
-        serviceFee: 0.5,
-        serviceFeeReceiver:
-          "0x3be8db6ca4adf33387f16c86c443737e78fd14db85a4e1c68cc8f256ac68549c", // random address
+        serviceFee: {
+          fee: 0.5,
+          receiverAddress:
+            "0x3be8db6ca4adf33387f16c86c443737e78fd14db85a4e1c68cc8f256ac68549c", // random address
+        },
       }
     );
 

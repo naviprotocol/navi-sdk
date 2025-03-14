@@ -113,6 +113,7 @@ export type SwapOptions = {
   depth?: number;
   feeOption?: FeeOption;
   ifPrint?: boolean;
+  serviceFee?: FeeOption;
 };
 
 export type Chain = {
