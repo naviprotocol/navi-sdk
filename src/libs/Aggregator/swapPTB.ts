@@ -4,8 +4,7 @@ import { AggregatorConfig } from "./config";
 import { Dex, FeeOption, Quote, SwapOptions } from "../../types";
 import { returnMergedCoins } from "../PTB/commonFunctions";
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
-import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
-import { getCoinDecimal } from "../Coins";
+import { SuiClient } from "@mysten/sui/client";
 import { makeCETUSPTB } from "./Dex/cetus";
 import { makeTurbosPTB } from "./Dex/turbos";
 import { makeKriyaV3PTB } from "./Dex/kriyaV3";
@@ -13,12 +12,10 @@ import { makeAftermathPTB } from "./Dex/aftermath";
 import { makeKriyaV2PTB } from "./Dex/KriyaV2";
 import { makeDeepbookPTB } from "./Dex/deepbook";
 import { getQuote } from "./getQuote";
-import { vSui } from "../../address";
 import { generateRefId } from "./utils";
 import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
-import { swap } from "../Bridge";
 
 export async function getCoins(
   client: SuiClient,
