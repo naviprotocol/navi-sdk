@@ -442,25 +442,17 @@ export async function swapPTB(
     depth: 3,
     feeOption: { fee: 0, receiverAddress: "0x0" },
     ifPrint: true,
-  }
+  },
+  serviceFee?: number,
+  serviceFeeReceiver?: string
 ): Promise<TransactionResult> {
   let finalCoinB: TransactionResult;
   const refId = apiKey ? generateRefId(apiKey) : 0;
 
   // Get the output coin from the swap route and transfer it to the user
-  const quote = await getQuote(
-    fromCoinAddress,
-    toCoinAddress,
-    amountIn,
-    apiKey,
-    swapOptions
-  );
+  const quote = await getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions);
 
-  if (
-    swapOptions.feeOption &&
-    swapOptions.feeOption.fee > 0 &&
-    swapOptions.feeOption.receiverAddress !== "0x0"
-  ) {
+  if (swapOptions.feeOption && swapOptions.feeOption.fee > 0 && swapOptions.feeOption.receiverAddress !== "0x0") {
     finalCoinB = await buildSwapPTBFromQuote(
       address,
       txb,
@@ -473,6 +465,22 @@ export async function swapPTB(
       {
         serviceFee: swapOptions.feeOption.fee,
         serviceFeeReceiver: swapOptions.feeOption.receiverAddress,
+        swapOptions: swapOptions,
+      }
+    );
+  } else if (serviceFee && serviceFee > 0 && serviceFeeReceiver && serviceFeeReceiver !== "0x0") {
+    finalCoinB = await buildSwapPTBFromQuote(
+      address,
+      txb,
+      minAmountOut,
+      coin,
+      quote,
+      refId,
+      swapOptions.ifPrint,
+      apiKey,
+      {
+        serviceFee: serviceFee,
+        serviceFeeReceiver: serviceFeeReceiver,
         swapOptions: swapOptions,
       }
     );

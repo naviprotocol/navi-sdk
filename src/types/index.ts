@@ -101,6 +101,7 @@ export type Quote = {
   };
 };
 
+/** @deprecated */
 export type FeeOption = {
   fee: number;
   receiverAddress: string;
