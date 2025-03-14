@@ -66,7 +66,7 @@ export async function buildSwapPTBFromQuote(
   referral: number = 0,
   ifPrint: boolean = true, // Set ifPrint to be optional with a default value
   apiKey?: string,
-  options?: SwapOptions
+  swapOptions?: SwapOptions
 ): Promise<TransactionResult> {
   if (!quote.routes || quote.routes.length === 0) {
     throw new Error("No routes found in data");
@@ -91,7 +91,7 @@ export async function buildSwapPTBFromQuote(
     );
   }
 
-  const serviceFee = options?.serviceFee || options?.feeOption;
+  const serviceFee = swapOptions?.serviceFee || swapOptions?.feeOption;
 
   // Calculate fee amounts if options provided
   if (
@@ -113,7 +113,7 @@ export async function buildSwapPTBFromQuote(
 
     // get router
     const [router, serviceFeeRouter] = await Promise.all([
-      getQuote(tokenA, tokenB, newAmountIn, apiKey, options),
+      getQuote(tokenA, tokenB, newAmountIn, apiKey, swapOptions),
       new Promise<Quote | null>((resolve, reject) => {
         if (serviceFeeAmount === "0") {
           resolve(null);
@@ -138,7 +138,7 @@ export async function buildSwapPTBFromQuote(
           "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
           serviceFeeAmount,
           apiKey,
-          options
+          swapOptions
         )
           .then((router: Quote) => {
             resolve(router);
