@@ -1,8 +1,11 @@
-import { AggregatorConfig } from "./config";
-import { Dex, FeeOption, Quote, SwapOptions } from '../../types';
-import { returnMergedCoins } from "../PTB/commonFunctions";
+import BigNumber from "bignumber.js";
 
+import { AggregatorConfig } from "./config";
+import { Dex, FeeOption, Quote, SwapOptions } from "../../types";
+import { returnMergedCoins } from "../PTB/commonFunctions";
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
+import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
+import { getCoinDecimal } from "../Coins";
 import { makeCETUSPTB } from "./Dex/cetus";
 import { makeTurbosPTB } from "./Dex/turbos";
 import { makeKriyaV3PTB } from "./Dex/kriyaV3";
@@ -10,12 +13,12 @@ import { makeAftermathPTB } from "./Dex/aftermath";
 import { makeKriyaV2PTB } from "./Dex/KriyaV2";
 import { makeDeepbookPTB } from "./Dex/deepbook";
 import { getQuote } from "./getQuote";
-import { SuiClient } from "@mysten/sui/dist/cjs/client";
 import { vSui } from "../../address";
 import { generateRefId } from "./utils";
 import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
+import { swap } from "../Bridge";
 
 export async function getCoins(
   client: SuiClient,
@@ -64,7 +67,13 @@ export async function buildSwapPTBFromQuote(
   coinIn: TransactionResult,
   quote: Quote,
   referral: number = 0,
-  ifPrint: boolean = true // Set ifPrint to be optional with a default value
+  ifPrint: boolean = true, // Set ifPrint to be optional with a default value
+  apiKey?: string,
+  options?: {
+    serviceFee?: number;
+    serviceFeeReceiver?: string;
+    swapOptions?: SwapOptions;
+  }
 ): Promise<TransactionResult> {
   if (!quote.routes || quote.routes.length === 0) {
     throw new Error("No routes found in data");
@@ -87,6 +96,126 @@ export async function buildSwapPTBFromQuote(
     throw new Error(
       "Outer amount_in does not match the sum of route amount_in values"
     );
+  }
+
+  // Calculate fee amounts if options provided
+  if (
+    options &&
+    options.serviceFee &&
+    options.serviceFee > 0 &&
+    options.serviceFeeReceiver &&
+    options.serviceFeeReceiver !== "0x0"
+  ) {
+    const totalAmount = quote.amount_in;
+    const serviceFeeAmount = new BigNumber(totalAmount)
+      .multipliedBy(options.serviceFee)
+      .toFixed(0);
+    const newAmountIn = new BigNumber(totalAmount)
+      .minus(serviceFeeAmount)
+      .toFixed(0);
+
+    // split coins
+    const serviceFeeCoinIn = txb.splitCoins(coinIn, [serviceFeeAmount]);
+
+    // get router
+    const [router, serviceFeeRouter] = await Promise.all([
+      getQuote(tokenA, tokenB, newAmountIn, apiKey, options?.swapOptions),
+      new Promise<Quote | null>((resolve, reject) => {
+        if (serviceFeeAmount === "0") {
+          resolve(null);
+          return;
+        }
+        if (
+          tokenA ===
+          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT"
+        ) {
+          resolve({
+            routes: [],
+            amount_in: serviceFeeAmount,
+            amount_out: serviceFeeAmount,
+            from: tokenA,
+            target: tokenA,
+            dexList: [],
+          });
+          return;
+        }
+        getQuote(
+          tokenA,
+          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+          serviceFeeAmount,
+          apiKey,
+          options?.swapOptions
+        )
+          .then((router: Quote) => {
+            resolve(router);
+          })
+          .catch(reject);
+      }),
+    ]);
+
+    if (!router.amount_out) {
+      router.amount_out = "0";
+    }
+    if (serviceFeeRouter && !serviceFeeRouter.amount_out) {
+      serviceFeeRouter.amount_out = "0";
+    }
+
+    const [coinOut, feeCoinOut] = await Promise.all([
+      buildSwapPTBFromQuote(
+        userAddress,
+        txb,
+        minAmountOut,
+        coinIn as any,
+        router as any,
+        referral
+      ),
+      !!serviceFeeRouter && serviceFeeCoinIn
+        ? serviceFeeRouter.from === serviceFeeRouter.target
+          ? serviceFeeCoinIn
+          : buildSwapPTBFromQuote(
+              userAddress,
+              txb,
+              0,
+              serviceFeeCoinIn as any,
+              serviceFeeRouter as any,
+              referral
+            )
+        : new Promise((resolve) => {
+            resolve(null);
+          }),
+    ]);
+
+    if (feeCoinOut) {
+      txb.moveCall({
+        package: AggregatorConfig.aggregatorContract,
+        module: "slippage",
+        function: "emit_referral_event",
+        arguments: [
+          coinOut,
+          feeCoinOut as any,
+          txb.pure.address(options.serviceFeeReceiver),
+          txb.pure.u8(router.from_token?.decimals || 9),
+          txb.pure.u8(router.to_token?.decimals || 9),
+          txb.pure.u8(9),
+          txb.pure.u64(router.amount_in),
+          txb.pure.u64(Math.floor((router.from_token?.price || 0) * 1e9)),
+          txb.pure.u64(Math.floor((router.to_token?.price || 0) * 1e9)),
+          txb.pure.u64(
+            BigNumber(options.serviceFee).multipliedBy(1e4).toFixed(0)
+          ),
+          txb.pure.u64(referral),
+        ],
+        typeArguments: [
+          router.from,
+          router.target,
+          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+        ],
+      });
+
+      txb.transferObjects([feeCoinOut as any], options.serviceFeeReceiver);
+    }
+
+    return coinOut;
   }
 
   const finalCoinB = txb.moveCall({
@@ -317,92 +446,21 @@ export async function swapPTB(
 ): Promise<TransactionResult> {
   let finalCoinB: TransactionResult;
   const refId = apiKey ? generateRefId(apiKey) : 0;
+
+  // Get the output coin from the swap route and transfer it to the user
+  const quote = await getQuote(
+    fromCoinAddress,
+    toCoinAddress,
+    amountIn,
+    apiKey,
+    swapOptions
+  );
+
   if (
     swapOptions.feeOption &&
     swapOptions.feeOption.fee > 0 &&
     swapOptions.feeOption.receiverAddress !== "0x0"
   ) {
-    const feeAmount = Math.floor(
-      Number(swapOptions.feeOption.fee) * Number(amountIn)
-    );
-    const leftAmount = Number(amountIn) - Number(feeAmount);
-
-    const feeCoin = txb.splitCoins(coin, [feeAmount]);
-
-    if (fromCoinAddress === vSui.address) {
-      txb.transferObjects([feeCoin], swapOptions.feeOption.receiverAddress);
-      const quote = await getQuote(
-        fromCoinAddress,
-        toCoinAddress,
-        leftAmount,
-        apiKey,
-        swapOptions
-      );
-
-      const newMinAmountOut = Math.max(
-        0,
-        Math.floor(minAmountOut * (1 - swapOptions.feeOption.fee))
-      );
-
-      finalCoinB = await buildSwapPTBFromQuote(
-        address,
-        txb,
-        newMinAmountOut,
-        coin,
-        quote,
-        refId,
-        swapOptions.ifPrint
-      );
-    } else {
-      const [feeQuote, quote] = await Promise.all([
-        getQuote(fromCoinAddress, vSui.address, feeAmount, apiKey, swapOptions),
-        getQuote(
-          fromCoinAddress,
-          toCoinAddress,
-          leftAmount,
-          apiKey,
-          swapOptions
-        ),
-      ]);
-
-      const newMinAmountOut = Math.max(
-        0,
-        Math.floor(minAmountOut - Number(feeQuote.amount_out))
-      );
-
-      const [feeCoinB, finalCoinBResult] = await Promise.all([
-        buildSwapPTBFromQuote(
-          address,
-          txb,
-          0,
-          feeCoin,
-          feeQuote,
-          refId,
-          swapOptions.ifPrint
-        ),
-        buildSwapPTBFromQuote(
-          address,
-          txb,
-          newMinAmountOut,
-          coin,
-          quote,
-          refId,
-          swapOptions.ifPrint
-        ),
-      ]);
-
-      txb.transferObjects([feeCoinB], swapOptions.feeOption.receiverAddress);
-      finalCoinB = finalCoinBResult;
-    }
-  } else {
-    // Get the output coin from the swap route and transfer it to the user
-    const quote = await getQuote(
-      fromCoinAddress,
-      toCoinAddress,
-      amountIn,
-      apiKey,
-      swapOptions
-    );
     finalCoinB = await buildSwapPTBFromQuote(
       address,
       txb,
@@ -410,14 +468,41 @@ export async function swapPTB(
       coin,
       quote,
       refId,
-      swapOptions.ifPrint
+      swapOptions.ifPrint,
+      apiKey,
+      {
+        serviceFee: swapOptions.feeOption.fee,
+        serviceFeeReceiver: swapOptions.feeOption.receiverAddress,
+        swapOptions: swapOptions,
+      }
+    );
+  } else {
+    finalCoinB = await buildSwapPTBFromQuote(
+      address,
+      txb,
+      minAmountOut,
+      coin,
+      quote,
+      refId,
+      swapOptions.ifPrint,
+      apiKey
     );
   }
 
   return finalCoinB;
 }
 
-export async function checkIfNAVIIntegrated(digest: string, client: SuiClient): Promise<boolean> {
-    const results = await client.getTransactionBlock({ digest, options: { showEvents: true } });
-    return results.events?.some(event => event.type.includes(`${AggregatorConfig.aggregatorContract}::slippage`)) ?? false;
+export async function checkIfNAVIIntegrated(
+  digest: string,
+  client: SuiClient
+): Promise<boolean> {
+  const results = await client.getTransactionBlock({
+    digest,
+    options: { showEvents: true },
+  });
+  return (
+    results.events?.some((event) =>
+      event.type.includes(`${AggregatorConfig.aggregatorContract}::slippage`)
+    ) ?? false
+  );
 }
