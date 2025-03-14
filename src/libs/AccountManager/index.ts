@@ -804,14 +804,16 @@ export class AccountManager {
     amountIn: number | string | bigint,
     minAmountOut: number,
     apiKey?: string,
-    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 }
+    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 },
+    serviceFee?: number,
+    serviceFeeReceiver?: string
   ) {
     const txb = new Transaction();
     txb.setSender(this.address);
 
     const coinA = await getCoinPTB(this.address, fromCoinAddress, amountIn, txb, this.client);
 
-    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions);
+    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions, serviceFee, serviceFeeReceiver);
     txb.transferObjects([finalCoinB], this.address);
 
     const result = await SignAndSubmitTXB(txb, this.client, this.keypair);
@@ -824,14 +826,16 @@ export class AccountManager {
     amountIn: number | string | bigint,
     minAmountOut: number,
     apiKey?: string,
-    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 }
+    swapOptions: SwapOptions = { baseUrl: undefined, dexList: [], byAmountIn: true, depth: 3 },
+    serviceFee?: number,
+    serviceFeeReceiver?: string
   ) {
     const txb = new Transaction();
     txb.setSender(this.address);
 
     const coinA = await getCoinPTB(this.address, fromCoinAddress, amountIn, txb, this.client);
 
-    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions);
+    const finalCoinB = await swapPTB(this.address, txb, fromCoinAddress, toCoinAddress, coinA, amountIn, minAmountOut, apiKey, swapOptions, serviceFee, serviceFeeReceiver);
     txb.transferObjects([finalCoinB], this.address);
 
     const dryRunTxBytes: Uint8Array = await txb.build({

@@ -4,8 +4,7 @@ import { AggregatorConfig } from "./config";
 import { Dex, FeeOption, Quote, SwapOptions } from "../../types";
 import { returnMergedCoins } from "../PTB/commonFunctions";
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
-import { SuiClient, getFullnodeUrl } from "@mysten/sui/client";
-import { getCoinDecimal } from "../Coins";
+import { SuiClient } from "@mysten/sui/client";
 import { makeCETUSPTB } from "./Dex/cetus";
 import { makeTurbosPTB } from "./Dex/turbos";
 import { makeKriyaV3PTB } from "./Dex/kriyaV3";
@@ -13,12 +12,10 @@ import { makeAftermathPTB } from "./Dex/aftermath";
 import { makeKriyaV2PTB } from "./Dex/KriyaV2";
 import { makeDeepbookPTB } from "./Dex/deepbook";
 import { getQuote } from "./getQuote";
-import { vSui } from "../../address";
 import { generateRefId } from "./utils";
 import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
-import { swap } from "../Bridge";
 
 export async function getCoins(
   client: SuiClient,
@@ -442,25 +439,17 @@ export async function swapPTB(
     depth: 3,
     feeOption: { fee: 0, receiverAddress: "0x0" },
     ifPrint: true,
-  }
+  },
+  serviceFee?: number,
+  serviceFeeReceiver?: string
 ): Promise<TransactionResult> {
   let finalCoinB: TransactionResult;
   const refId = apiKey ? generateRefId(apiKey) : 0;
 
   // Get the output coin from the swap route and transfer it to the user
-  const quote = await getQuote(
-    fromCoinAddress,
-    toCoinAddress,
-    amountIn,
-    apiKey,
-    swapOptions
-  );
+  const quote = await getQuote(fromCoinAddress, toCoinAddress, amountIn, apiKey, swapOptions);
 
-  if (
-    swapOptions.feeOption &&
-    swapOptions.feeOption.fee > 0 &&
-    swapOptions.feeOption.receiverAddress !== "0x0"
-  ) {
+  if (swapOptions.feeOption && swapOptions.feeOption.fee > 0 && swapOptions.feeOption.receiverAddress !== "0x0") {
     finalCoinB = await buildSwapPTBFromQuote(
       address,
       txb,
@@ -473,6 +462,22 @@ export async function swapPTB(
       {
         serviceFee: swapOptions.feeOption.fee,
         serviceFeeReceiver: swapOptions.feeOption.receiverAddress,
+        swapOptions: swapOptions,
+      }
+    );
+  } else if (serviceFee && serviceFee > 0 && serviceFeeReceiver && serviceFeeReceiver !== "0x0") {
+    finalCoinB = await buildSwapPTBFromQuote(
+      address,
+      txb,
+      minAmountOut,
+      coin,
+      quote,
+      refId,
+      swapOptions.ifPrint,
+      apiKey,
+      {
+        serviceFee: serviceFee,
+        serviceFeeReceiver: serviceFeeReceiver,
         swapOptions: swapOptions,
       }
     );
