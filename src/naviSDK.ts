@@ -21,10 +21,11 @@ export class NAVISDKClient {
      * @param {string} [params.mnemonic=""] - The mnemonic for account generation. If not provided, a new one will be generated.
      * @param {string} params.networkType - The network type to connect to. Defaults to "mainnet" if not specified.
      * @param {number} [params.wordLength=12] - The word length for the mnemonic. Can be 12 or 24.
+     * @param {number} [params.accountIndex=-1] - The index of the account to generate.
      * @param {number} [params.numberOfAccounts=10] - The number of accounts to generate.
      * @param {string[]} [params.privateKeyList=[""]] - A list of private keys for account initialization.
      */
-    constructor({ mnemonic = "", networkType, wordLength = 12, numberOfAccounts = 10, privateKeyList = [""] }: initializeParams = {}) {
+    constructor({ mnemonic = "", networkType, wordLength = 12, accountIndex = -1, numberOfAccounts = 10, privateKeyList = [""] }: initializeParams = {}) {
         this.networkType = networkType || "mainnet";
 
         if (privateKeyList && privateKeyList.length > 0 && privateKeyList[0] !== "") {
@@ -34,10 +35,22 @@ export class NAVISDKClient {
             // Generate a new mnemonic if not provided
             this.mnemonic = mnemonic !== "" ? mnemonic : bip39.generateMnemonic(wordlist, wordLength === 12 ? 128 : 256);
 
-            // Generate accounts using the mnemonic
-            for (let i = 0; i < numberOfAccounts; i++) {
-                this.account = new AccountManager({ mnemonic: this.mnemonic, network: this.networkType, accountIndex: i });
+            const generateAccount = (index: number) => {
+                return new AccountManager({
+                    mnemonic: this.mnemonic,
+                    network: this.networkType,
+                    accountIndex: index
+                });
+            };
+
+            if (accountIndex >= 0) {
+                this.account = generateAccount(accountIndex);
                 this.accounts.push(this.account);
+            } else {
+                this.accounts = Array.from({ length: numberOfAccounts }, (_, i) => {
+                    this.account = generateAccount(i);
+                    return this.account;
+                });
             }
         }
 
