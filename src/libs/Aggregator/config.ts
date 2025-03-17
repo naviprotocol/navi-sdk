@@ -45,6 +45,10 @@ export const AggregatorConfig = {
     "0x3f45767c1aa95b25422f675800f02d8a813ec793a00b60667d071a77ba7178a2",
   haSuiConfigId:
     "0x47b224762220393057ebf4f70501b6e657c3e56684737568439a04f80849b2ca",
+  magmaPackageId:
+    "0x2e704d8afc1d6d7f154dee337cc14c153f6f9ce1708213e5dc04a32afe0e45f1",
+  magmaConfigId:
+    "0x4c4e1402401f72c7d8533d0ed8d5f8949da363c7a3319ccef261ffe153d32f8a",
 };
 
 export function updateConfig(newConfig: Partial<typeof AggregatorConfig>) {

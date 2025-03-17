@@ -231,4 +231,35 @@ describe("buildSwapPTBFromQuote test", () => {
     );
     expect(txResult).toEqual("success");
   }, 500000);
+
+  it("should successfully swap SUI through magma using single route", async () => {
+    const testCaseName = expect.getState().currentTestName || "test_case";
+
+    const txb = createTransaction(account);
+    const quote = await getQuote(sui, vsui, "1000000000", undefined, {
+      baseUrl: localBaseUrl,
+      dexList: [Dex.MAGMA],
+      byAmountIn: true,
+      depth: 3,
+    });
+    console.log(quote.routes[0].path);
+
+    const coinIn = txb.splitCoins(txb.gas, [1e9]);
+    const minAmountOut = 0;
+    const coinOut = await buildSwapPTBFromQuote(
+      account.address,
+      txb,
+      minAmountOut,
+      coinIn,
+      quote,
+      0, // referral
+      true // ifPrint
+    );
+
+    txb.transferObjects([coinOut], account.address);
+
+    const tsRes = await handleTransactionResult(txb, account, testCaseName);
+    console.log(tsRes);
+    expect(tsRes).toEqual("success");
+  }, 500000);
 });
