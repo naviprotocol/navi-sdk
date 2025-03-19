@@ -1,7 +1,5 @@
-import { Transaction, TransactionResult } from "@mysten/sui/transactions";
+import { Transaction } from "@mysten/sui/transactions";
 import { AggregatorConfig } from "../config";
-import { SUI_CLOCK_OBJECT_ID, normalizeSuiAddress } from "@mysten/sui/utils";
-import BigNumber from "bignumber.js";
 import { vSuiConfig } from "../../../address";
 
 export async function makeHASUIPTB(
