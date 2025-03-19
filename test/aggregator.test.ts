@@ -14,7 +14,7 @@ const coins = {
     address: "0x2::sui::SUI",
     holder: "0x447077b26d5fe138894772fea15a22e5bec45d019579d09e2a41cf05012252c7"
   },
-  vsui: {
+  vSui: {
     address: "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
     holder: "0x447077b26d5fe138894772fea15a22e5bec45d019579d09e2a41cf05012252c7"
   },
@@ -38,7 +38,7 @@ describe("swap test", () => {
     const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
     const amountIn = "1000000000";
 
-    const quote = await getQuote(coins.sui.address, coins.vsui.address, amountIn, undefined, {
+    const quote = await getQuote(coins.sui.address, coins.vSui.address, amountIn, undefined, {
       dexList: [Dex.CETUS],
       byAmountIn: true,
       depth: 3,
@@ -59,7 +59,6 @@ describe("swap test", () => {
     txb.transferObjects([coinOut], coins.sui.holder);
 
     const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
-    console.log(tsRes);
     expect(tsRes).toEqual("success");
   }, 500000);
 
@@ -76,7 +75,7 @@ describe("swap test", () => {
     const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
     const amountIn = "1000000000";
 
-    const quote = await getQuote(coins.sui.address, coins.vsui.address, amountIn, undefined, {
+    const quote = await getQuote(coins.sui.address, coins.vSui.address, amountIn, undefined, {
       baseUrl: localBaseUrl,
       dexList: [Dex.MAGMA],
       byAmountIn: true,
@@ -98,7 +97,6 @@ describe("swap test", () => {
     txb.transferObjects([coinOut], coins.sui.holder);
 
     const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
-    console.log(tsRes);
     expect(tsRes).toEqual("success");
   }, 500000);
 
@@ -137,7 +135,6 @@ describe("swap test", () => {
     txb.transferObjects([coinOut], coins.sui.holder);
 
     const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
-    console.log(tsRes);
     expect(tsRes).toEqual("success");
   }, 500000);
 
@@ -177,7 +174,6 @@ describe("swap test", () => {
     txb.transferObjects([coinOut], coins.haSui.holder);
 
     const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
-    console.log(tsRes);
     expect(tsRes).toEqual("success");
   }, 500000);
 });
@@ -196,7 +192,7 @@ describe("fee options test", () => {
     const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
     const amountIn = "1000000000";
 
-    const quote = await getQuote(coins.sui.address, coins.vsui.address, amountIn, undefined, {
+    const quote = await getQuote(coins.sui.address, coins.vSui.address, amountIn, undefined, {
       dexList: [Dex.CETUS],
       byAmountIn: true,
       depth: 3,
@@ -231,19 +227,18 @@ describe("fee options test", () => {
       true,
       true
     );
-    console.log(tsRes);
     expect(tsRes).toEqual("success");
   }, 500000);
 
   it("should successfully swap vSUI through cetus using single route with fee", async () => {
     const testCaseName = expect.getState().currentTestName || "test_case";
-    const txb = createTransaction(account, coins.vsui.holder);
+    const txb = createTransaction(account, coins.vSui.holder);
     const suiClient = new SuiClient({ url: getFullnodeUrl("mainnet") });
 
     // Get vSUI coins owned by the holder
     const coinInStruct = await suiClient.getCoins({
-      owner: coins.vsui.holder,
-      coinType: coins.vsui.address
+      owner: coins.vSui.holder,
+      coinType: coins.vSui.address
     });
     const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
     const coinInStructBalance = coinInStruct.data[0].balance;
@@ -251,7 +246,7 @@ describe("fee options test", () => {
     const coinIn = txb.splitCoins(txb.object(coinInStructObjectId), [
       coinInStructBalance,
     ]);
-    const quote = await getQuote(coins.vsui.address, coins.sui.address, coinInStructBalance, undefined, {
+    const quote = await getQuote(coins.vSui.address, coins.sui.address, coinInStructBalance, undefined, {
       dexList: [Dex.CETUS],
       byAmountIn: true,
       depth: 3,
@@ -259,7 +254,7 @@ describe("fee options test", () => {
     const minAmountOut = 0;
 
     const coinOut = await buildSwapPTBFromQuote(
-      coins.vsui.holder,
+      coins.vSui.holder,
       txb,
       minAmountOut,
       coinIn,
@@ -276,7 +271,7 @@ describe("fee options test", () => {
       }
     );
 
-    txb.transferObjects([coinOut], coins.vsui.holder);
+    txb.transferObjects([coinOut], coins.vSui.holder);
 
     const tsRes = await handleTransactionResult(
       txb,
@@ -285,7 +280,6 @@ describe("fee options test", () => {
       true,
       true
     );
-    console.log(tsRes);
     expect(tsRes).toEqual("success");
   }, 500000);
 
@@ -302,9 +296,9 @@ describe("fee options test", () => {
     const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
     const amountIn = "1000000000";
 
-    // Test sui to vsui swap
+    // Test sui to vSui swap
     const fromCoin = coins.sui.address;
-    const toCoin = coins.vsui.address;
+    const toCoin = coins.vSui.address;
     const minAmountOut = 0;
     const swapOptions = {
       dexList: [Dex.TURBOS],
@@ -359,9 +353,9 @@ describe("fee options test", () => {
     const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
     const amountIn = "1000000000";
 
-    // Test sui to vsui swap
+    // Test sui to vSui swap
     const fromCoin = coins.sui.address;
-    const toCoin = coins.vsui.address;
+    const toCoin = coins.vSui.address;
     const minAmountOut = 0;
     const swapOptions = {
       dexList: [Dex.TURBOS],
