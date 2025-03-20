@@ -12,15 +12,15 @@ const localBaseUrl = "http://localhost:8000/find_routes";
 const coins = {
   sui: {
     address: "0x2::sui::SUI",
-    holder: "0x447077b26d5fe138894772fea15a22e5bec45d019579d09e2a41cf05012252c7"
+    holder: "0x5fdfcc18e0791862c107c49ea13a5bcf4965f00ac057f56ea04034ebb5ea45ad"
   },
   vSui: {
     address: "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
-    holder: "0x447077b26d5fe138894772fea15a22e5bec45d019579d09e2a41cf05012252c7"
+    holder: "0xb2630a7cdbe44adb2844b7715c7e6c54ec67e4558249deb71ba7b2df3c85915e"
   },
   haSui: {
     address: "0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI",
-    holder: "0x447077b26d5fe138894772fea15a22e5bec45d019579d09e2a41cf05012252c7"
+    holder: "0xb2630a7cdbe44adb2844b7715c7e6c54ec67e4558249deb71ba7b2df3c85915e"
   }
 };
 
@@ -234,7 +234,7 @@ describe("swap test", () => {
       byAmountIn: true,
       depth: 3,
     });
-    console.log(quote);
+    expect(quote.routes[0].path[0].provider).toEqual(Dex.VSUI);
 
     // Use SUI coin
     const coinIn = txb.splitCoins(txb.object(coinInStructObjectId), [1e9]);
