@@ -256,6 +256,46 @@ describe("swap test", () => {
     const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
     expect(tsRes).toEqual("success");
   }, 500000);
+
+  it("should successfully swap SUI through vSui stake anyway", async () => {
+    const testCaseName = expect.getState().currentTestName || "test_case";
+    const txb = createTransaction(account, coins.sui.holder);
+    const suiClient = new SuiClient({ url: getFullnodeUrl("mainnet") });
+    
+    // Get SUI coins owned by the holder
+    const coinInStruct = await suiClient.getCoins({
+      owner: coins.sui.holder,
+      coinType: coins.sui.address
+    });
+    const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
+    const amountIn = "1000000000";
+    
+    const quote = await getQuote(coins.sui.address, coins.vSui.address, amountIn, undefined, {
+      baseUrl: localBaseUrl,
+      dexList: [Dex.VSUI, Dex.CETUS],
+      byAmountIn: true,
+      depth: 3,
+    });
+    expect(quote.routes[0].path[0].provider).toEqual(Dex.VSUI);
+
+    // Use SUI coin
+    const coinIn = txb.splitCoins(txb.object(coinInStructObjectId), [1e9]);
+    const minAmountOut = 0;
+    const coinOut = await buildSwapPTBFromQuote(
+      coins.sui.holder,
+      txb,
+      minAmountOut,
+      coinIn,
+      quote,
+      0, // referral
+      true // ifPrint
+    );
+
+    txb.transferObjects([coinOut], coins.sui.holder);
+
+    const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
+    expect(tsRes).toEqual("success");
+  }, 500000);
 });
 
 describe("fee options test", () => {
