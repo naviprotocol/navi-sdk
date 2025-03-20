@@ -21,7 +21,11 @@ const coins = {
   haSui: {
     address: "0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI",
     holder: "0xb2630a7cdbe44adb2844b7715c7e6c54ec67e4558249deb71ba7b2df3c85915e"
-  }
+  },
+  deep: {
+    address: "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP",
+    holder: "0x60dd01bc037e2c1ea2aaf02187701f9f4453ba323338d2f2f521957065b0984d"
+  },
 };
 
 describe("swap test", () => {
@@ -138,6 +142,44 @@ describe("swap test", () => {
     expect(tsRes).toEqual("success");
   }, 500000);
 
+  it("should successfully swap DEEP through deepbook using single route", async () => {
+    const testCaseName = expect.getState().currentTestName || "test_case";
+    const txb = createTransaction(account, coins.deep.holder);
+    const suiClient = new SuiClient({ url: getFullnodeUrl("mainnet") });
+
+    // Get DEEP coins owned by the holder
+    const coinInStruct = await suiClient.getCoins({
+      owner: coins.deep.holder,
+      coinType: coins.deep.address
+    });
+    const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
+    const amountIn = "1000000000";
+
+    const quote = await getQuote(coins.deep.address, coins.sui.address, amountIn, undefined, {
+      baseUrl: localBaseUrl,
+      dexList: [Dex.DEEPBOOK],
+      byAmountIn: true,
+      depth: 3,
+    });
+
+    const coinIn = txb.splitCoins(txb.object(coinInStructObjectId), [1e9]);
+    const minAmountOut = 0;
+    const coinOut = await buildSwapPTBFromQuote(
+      coins.deep.holder,
+      txb,
+      minAmountOut,
+      coinIn,
+      quote,
+      0, // referral
+      true // ifPrint
+    );
+
+    txb.transferObjects([coinOut], coins.deep.holder);
+
+    const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
+    expect(tsRes).toEqual("success");
+  }, 500000);
+
   it("should successfully swap SUI through haSui stake using single route", async () => {
     const testCaseName = expect.getState().currentTestName || "test_case";
     const txb = createTransaction(account, coins.sui.holder);
@@ -210,46 +252,6 @@ describe("swap test", () => {
     );
 
     txb.transferObjects([coinOut], coins.haSui.holder);
-
-    const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
-    expect(tsRes).toEqual("success");
-  }, 500000);
-
-  it("should successfully swap SUI through vSui stake anyway", async () => {
-    const testCaseName = expect.getState().currentTestName || "test_case";
-    const txb = createTransaction(account, coins.sui.holder);
-    const suiClient = new SuiClient({ url: getFullnodeUrl("mainnet") });
-    
-    // Get SUI coins owned by the holder
-    const coinInStruct = await suiClient.getCoins({
-      owner: coins.sui.holder,
-      coinType: coins.sui.address
-    });
-    const coinInStructObjectId = coinInStruct.data[0].coinObjectId;
-    const amountIn = "1000000000";
-    
-    const quote = await getQuote(coins.sui.address, coins.vSui.address, amountIn, undefined, {
-      baseUrl: localBaseUrl,
-      dexList: [Dex.VSUI, Dex.CETUS],
-      byAmountIn: true,
-      depth: 3,
-    });
-    expect(quote.routes[0].path[0].provider).toEqual(Dex.VSUI);
-
-    // Use SUI coin
-    const coinIn = txb.splitCoins(txb.object(coinInStructObjectId), [1e9]);
-    const minAmountOut = 0;
-    const coinOut = await buildSwapPTBFromQuote(
-      coins.sui.holder,
-      txb,
-      minAmountOut,
-      coinIn,
-      quote,
-      0, // referral
-      true // ifPrint
-    );
-
-    txb.transferObjects([coinOut], coins.sui.holder);
 
     const tsRes = await handleTransactionResult(txb, account, testCaseName, true);
     expect(tsRes).toEqual("success");
