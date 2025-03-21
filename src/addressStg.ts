@@ -65,10 +65,14 @@ export const AddressMap: Record<string, string> = {
 };
 
 export function getPackageCache(): string | undefined {
-  if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
-    return globalPackageId;
+  return globalPackageId;
+}
+
+export function isPackageCacheExpired(): boolean {
+  if (!globalPackageIdExpireAt || globalPackageIdExpireAt < Date.now()) {
+    return true;
   }
-  return undefined;
+  return false;
 }
 
 export async function setPackageCache(
@@ -83,7 +87,7 @@ export async function setPackageCache(
 }
 
 async function updateCacheIfNeeded() {
-  if (!getPackageCache() && !cacheUpdatePromise) {
+  if (isPackageCacheExpired() && !cacheUpdatePromise) {
     cacheUpdatePromise = setPackageCache();
     await cacheUpdatePromise;
     cacheUpdatePromise = null;

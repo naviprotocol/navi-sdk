@@ -57,11 +57,16 @@ export const AddressMap: Record<string, string> = {
     "LBTC",
 };
 
-export function getPackageCache(): string | undefined {
-  if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
-    return globalPackageId;
+// if the cache is not set, return the default protocol package.
+export function getPackageCache(): string {
+  return globalPackageId || defaultProtocolPackage;
+}
+
+export function isPackageCacheExpired(): boolean {
+  if (!globalPackageIdExpireAt || globalPackageIdExpireAt < Date.now()) {
+    return true;
   }
-  return undefined;
+  return false;
 }
 
 export async function setPackageCache(
@@ -76,7 +81,7 @@ export async function setPackageCache(
 }
 
 async function updateCacheIfNeeded() {
-  if (!getPackageCache() && !cacheUpdatePromise) {
+  if (isPackageCacheExpired() && !cacheUpdatePromise) {
     cacheUpdatePromise = setPackageCache();
     await cacheUpdatePromise;
     cacheUpdatePromise = null;
