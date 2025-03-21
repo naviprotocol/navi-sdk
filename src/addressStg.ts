@@ -74,7 +74,11 @@ export function getPackageCache(): string | undefined {
 export async function setPackageCache(
   expirationLength: number = 3600
 ): Promise<void> {
-  globalPackageId = await getLatestProtocolPackageId();
+  const id = await getLatestProtocolPackageId();
+  if (!id) {
+    return;
+  }
+  globalPackageId = id;
   globalPackageIdExpireAt = Date.now() + expirationLength * 1000; // Convert seconds to milliseconds
 }
 

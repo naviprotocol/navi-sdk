@@ -1,10 +1,11 @@
 import { Pool, CoinInfo, PoolConfig } from './types';
 import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
 
-const defaultProtocolPackage = "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f";
 let globalPackageId: string;
 let globalPackageIdExpireAt: number;
 let cacheUpdatePromise: Promise<void> | null = null;
+
+export const defaultProtocolPackage = "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f";
 
 export const AddressMap: Record<string, string> = {
   "0x2::sui::SUI": "Sui",
@@ -60,12 +61,16 @@ export function getPackageCache(): string | undefined {
   if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
     return globalPackageId;
   }
-  return defaultProtocolPackage;
+  return undefined;
 }
 
 export async function setPackageCache(
   expirationLength: number = 3600
 ): Promise<void> {
+  const id = await getLatestProtocolPackageId();
+  if (!id) {
+    return;
+  }
   globalPackageId = await getLatestProtocolPackageId();
   globalPackageIdExpireAt = Date.now() + expirationLength * 1000; // Convert seconds to milliseconds
 }

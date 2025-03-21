@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { pool, getConfig } from '../../address';
+import { pool, getConfig, defaultProtocolPackage, getPackageCache } from '../../address';
 import { CoinInfo, Pool, PoolConfig, PoolsResponse, PoolData } from "../../types";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 
@@ -142,6 +142,12 @@ export async function getLatestProtocolPackageId() {
         return data.packageId;
     } catch (error) {
         console.error('Failed to update ProtocolPackage:');
+        // if the cache is not set, return the default protocol package
+        if (!getPackageCache()) {
+          return defaultProtocolPackage;
+        }
+        // if the cache is set, not change the cache
+        return '';
     }
 }
 
