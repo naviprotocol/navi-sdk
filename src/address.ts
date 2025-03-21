@@ -1,7 +1,7 @@
 import { Pool, CoinInfo, PoolConfig } from './types';
 import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
 
-
+const defaultProtocolPackage = "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f";
 let globalPackageId: string;
 let globalPackageIdExpireAt: number;
 let cacheUpdatePromise: Promise<void> | null = null;
@@ -60,7 +60,7 @@ export function getPackageCache(): string | undefined {
   if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
     return globalPackageId;
   }
-  return undefined;
+  return defaultProtocolPackage;
 }
 
 export async function setPackageCache(
