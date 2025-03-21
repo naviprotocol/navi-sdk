@@ -142,6 +142,7 @@ export async function getLatestProtocolPackageId() {
         return data.packageId;
     } catch (error) {
         console.error('Failed to update ProtocolPackage:');
+        return '';
     }
 }
 

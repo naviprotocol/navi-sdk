@@ -65,21 +65,29 @@ export const AddressMap: Record<string, string> = {
 };
 
 export function getPackageCache(): string | undefined {
-  if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
-    return globalPackageId;
+  return globalPackageId;
+}
+
+export function isPackageCacheExpired(): boolean {
+  if (!globalPackageIdExpireAt || globalPackageIdExpireAt < Date.now()) {
+    return true;
   }
-  return undefined;
+  return false;
 }
 
 export async function setPackageCache(
   expirationLength: number = 3600
 ): Promise<void> {
-  globalPackageId = await getLatestProtocolPackageId();
+  const id = await getLatestProtocolPackageId();
+  if (!id) {
+    return;
+  }
+  globalPackageId = id;
   globalPackageIdExpireAt = Date.now() + expirationLength * 1000; // Convert seconds to milliseconds
 }
 
 async function updateCacheIfNeeded() {
-  if (!getPackageCache() && !cacheUpdatePromise) {
+  if (isPackageCacheExpired() && !cacheUpdatePromise) {
     cacheUpdatePromise = setPackageCache();
     await cacheUpdatePromise;
     cacheUpdatePromise = null;
