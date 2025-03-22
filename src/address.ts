@@ -1,10 +1,11 @@
 import { Pool, CoinInfo, PoolConfig } from './types';
 import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
 
-
 let globalPackageId: string;
 let globalPackageIdExpireAt: number;
 let cacheUpdatePromise: Promise<void> | null = null;
+
+export const defaultProtocolPackage = "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f";
 
 export const AddressMap: Record<string, string> = {
   "0x2::sui::SUI": "Sui",
@@ -56,22 +57,31 @@ export const AddressMap: Record<string, string> = {
     "LBTC",
 };
 
-export function getPackageCache(): string | undefined {
-  if (globalPackageId && globalPackageIdExpireAt > Date.now()) {
-    return globalPackageId;
+// if the cache is not set, return the default protocol package.
+export function getPackageCache(): string {
+  return globalPackageId || defaultProtocolPackage;
+}
+
+export function isPackageCacheExpired(): boolean {
+  if (!globalPackageIdExpireAt || globalPackageIdExpireAt < Date.now()) {
+    return true;
   }
-  return undefined;
+  return false;
 }
 
 export async function setPackageCache(
   expirationLength: number = 3600
 ): Promise<void> {
+  const id = await getLatestProtocolPackageId();
+  if (!id) {
+    return;
+  }
   globalPackageId = await getLatestProtocolPackageId();
   globalPackageIdExpireAt = Date.now() + expirationLength * 1000; // Convert seconds to milliseconds
 }
 
 async function updateCacheIfNeeded() {
-  if (!getPackageCache() && !cacheUpdatePromise) {
+  if (isPackageCacheExpired() && !cacheUpdatePromise) {
     cacheUpdatePromise = setPackageCache();
     await cacheUpdatePromise;
     cacheUpdatePromise = null;

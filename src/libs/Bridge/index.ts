@@ -81,7 +81,17 @@ export async function getQuote(
       referrerBps: options?.referrerBps,
     },
   });
-  return res.data.data;
+  // temporary fix 
+  const rtn = res.data.data;
+  rtn.routes.forEach((router: any) => {
+    if (router.from_token.chain) {
+      router.from_token.chainId = parseInt(router.from_token.chain);
+    }
+    if (router.to_token.chain) {
+      router.to_token.chainId = parseInt(router.to_token.chain);
+    }
+  })
+  return rtn
 }
 
 export async function getTransaction(hash: string) {
