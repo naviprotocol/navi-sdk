@@ -21,11 +21,11 @@ export class NAVISDKClient {
      * @param {string} [params.mnemonic=""] - The mnemonic for account generation. If not provided, a new one will be generated.
      * @param {string} params.networkType - The network type to connect to. Defaults to "mainnet" if not specified.
      * @param {number} [params.wordLength=12] - The word length for the mnemonic. Can be 12 or 24.
-     * @param {number} [params.accountIndex=-1] - The index of the account to generate.
      * @param {number} [params.numberOfAccounts=10] - The number of accounts to generate.
+     * @param {number} [params.accountIndex=-1] - The index of the account to generate. If specified, this takes precedence over numberOfAccounts and only one account will be generated.
      * @param {string[]} [params.privateKeyList=[""]] - A list of private keys for account initialization.
      */
-    constructor({ mnemonic = "", networkType, wordLength = 12, accountIndex = -1, numberOfAccounts = 10, privateKeyList = [""] }: initializeParams = {}) {
+    constructor({ mnemonic = "", networkType, wordLength = 12, numberOfAccounts = 10, accountIndex = -1, privateKeyList = [""] }: initializeParams = {}) {
         this.networkType = networkType || "mainnet";
 
         if (privateKeyList && privateKeyList.length > 0 && privateKeyList[0] !== "") {
