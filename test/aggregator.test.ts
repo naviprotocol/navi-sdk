@@ -80,7 +80,6 @@ describe("swap test", () => {
     const amountIn = "1000000000";
 
     const quote = await getQuote(coins.sui.address, coins.vSui.address, amountIn, undefined, {
-      baseUrl: localBaseUrl,
       dexList: [Dex.MAGMA],
       byAmountIn: true,
       depth: 3,
