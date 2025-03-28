@@ -1374,17 +1374,17 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     priceDiffThreshold2: 300,
     maxDurationWithinThresholds: 30000, // 30s(millisecond)
     maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
-    maximumEffectivePrice: 10000000000,
-    minimumEffectivePrice: 100000000,
+    maximumEffectivePrice: 10000000000, // 10 * 1e9 = 10000000000
+    minimumEffectivePrice: 1000000, // 0.001 * 1e9 = 1000000
     historicalPriceTTL: 300000, // 5min(millisecond)
     coinType: '0x93b6e3432bdf986099feee41910b0dcc8d1db9040e2d3c27ccf20330c18a79ca::wal_test::WAL_TEST', // TODO: test verison
     feedId: '0xc18d1471524a7666ca89b7b7fb25c0f9fa55034280b0143218e311390dbad5d8', // TODO: value
-    supraPairId: 90, // SUI_USDT -> 90, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Under%20Supervision-,SUI_USDT,-90
-    pythPriceFeedId: '0x23d7315113f5b1d3ba7a83604c44b94d79f4fd69af77f804fc7f920a6dc65744', // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
-    pythPriceInfoObject: '0x801dbc2f0053d34734814b2d6df491ce7807a725fe9a01ad74a07e9c51396c37',
+    supraPairId: 99999, // none
+    pythPriceFeedId: '0xeba0732395fae9dec4bae12e52760b35fc1c5671e2da8b449c9af4efe5d54341', // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject: '0xeb7e669f74d976c0b99b6ef9801e3a77716a95f1a15754e0f1399ce3fb60973d',
     priceDecimal: 9,
     expiration: 30,
-  },
+},
 
   HIPPO: {
     oracleId: 88,
