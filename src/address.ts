@@ -55,6 +55,8 @@ export const AddressMap: Record<string, string> = {
     "WSOL",
   "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC":
     "LBTC",
+  "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL":
+    "WAL",
 };
 
 // if the cache is not set, return the default protocol package.
@@ -453,6 +455,20 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x71b90679af894cd5f0fdefee87a228e4bdacc8a1ad444e39011476208a1eb9d4",
       rewardFundId: "",
   },
+  WAL: {
+    name: "WAL",
+    assetId: 24,
+    poolId:
+      "0xef76883525f5c2ff90cd97732940dbbdba0b391e29de839b10588cee8e4fe167",
+    type: "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
+    reserveObjectId:
+      "0xe6824edab84affecc78646e87fe85ca8fd4374335680e9daee2c981f13dce202",
+    borrowBalanceParentId:
+      "0xf8741f2550b0d7f7a3179ba2a0363c73e206ca6691d2d1ebbb95b6018359e17b",
+    supplyBalanceParentId:
+      "0xa476b12f8b45c7cb595cf1648822d48e4e82d63a47ba94304f3ad3bb19247ff9",
+      rewardFundId: "0xe65f2d9ea46cd8d44a08ec9b7728173a3b9383c7346c496eb88543574db1db51",
+  },
 };
 
 export const flashloanConfig = {
@@ -624,6 +640,13 @@ export const LBTC: CoinInfo = {
   address:
     "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
   decimal: 8,
+};
+
+export const WAL: CoinInfo = {
+  symbol: "WAL",
+  address:
+    "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
+  decimal: 9,
 };
 
 export const vSuiConfig = {
@@ -1176,7 +1199,25 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     pythPriceInfoObject: '0xeba15840ddf425dacb5ff0990334fc03d034487f4ad416280859b96bf2af89f8',
     priceDecimal: 8,
     expiration: 30,
-}
+},
+WAL: {
+  oracleId: 24,
+  maxTimestampDiff: 30000, // 30s(millisecond)
+  priceDiffThreshold1: 100,
+  priceDiffThreshold2: 300,
+  maxDurationWithinThresholds: 30000, // 30s(millisecond)
+  maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+  maximumEffectivePrice: 10000000000, // 10 * 1e9 = 10000000000
+  minimumEffectivePrice: 1000000, // 0.001 * 1e9 = 1000000
+  historicalPriceTTL: 300000, // 5min(millisecond)
+  coinType: '0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL', // Mainnet verison
+  feedId: '0x924bf9f715d857605f9f4146537fffc0414809c85845ce9d695f3645a22a5426', // TODO: value
+  supraPairId: 99999, // none
+  pythPriceFeedId: '0xeba0732395fae9dec4bae12e52760b35fc1c5671e2da8b449c9af4efe5d54341', // Crypto.WAL/USD -> https://pyth.network/developers/price-feed-ids
+  pythPriceInfoObject: '0xeb7e669f74d976c0b99b6ef9801e3a77716a95f1a15754e0f1399ce3fb60973d',
+  priceDecimal: 9,
+  expiration: 30,
+},
 };
 
 export interface IOracleProConfig {

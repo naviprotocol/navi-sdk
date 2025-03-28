@@ -38,6 +38,7 @@ export interface Pool {
   suiBTC: PoolConfig;
   WSOL: PoolConfig;
   LBTC: PoolConfig;
+  WAL: PoolConfig;
 }
 
 export interface PoolConfig {

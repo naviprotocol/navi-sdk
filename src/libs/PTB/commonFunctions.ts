@@ -431,7 +431,7 @@ export async function getAvailableRewards(
     checkAddress: string,
     contractOptionTypes: OptionType[], // Use ContractOptionType[] if you have a dedicated type
     prettyPrint = true,
-    includeV2: boolean = true // Feature flag to enable/disable V2 logic
+    includeV2: boolean = false // Feature flag to enable/disable V2 logic
   ): Promise<PoolRewards[]> {
     // Concurrently fetch rewards data for V2 (option 1 and/or 3) and V3.
     const v2Promises: Array<Promise<Record<string, any> | null>> = [];
@@ -540,7 +540,7 @@ export async function getAvailableRewards(
    */
 export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string, existingTx?: Transaction) {
     let tx = existingTx || new Transaction();
-    await V2.claimAllRewardsPTB(client, userToCheck, tx)
+    // await V2.claimAllRewardsPTB(client, userToCheck, tx)
     await V3.claimAllRewardsPTB(client, userToCheck, tx)
 
     return tx
@@ -552,7 +552,7 @@ export async function claimAllRewardsPTB(client: SuiClient, userToCheck: string,
    */
 export async function claimRewardsByAssetIdPTB(client: SuiClient, userToCheck: string, assetId: number, existingTx?: Transaction) {
     let tx = existingTx || new Transaction();
-    await V2.claimRewardsByAssetIdPTB(client, userToCheck, assetId, tx)
+    // await V2.claimRewardsByAssetIdPTB(client, userToCheck, assetId, tx)
     await V3.claimRewardsByAssetIdPTB(client, userToCheck, assetId, tx)
 
     return tx
@@ -565,7 +565,7 @@ export async function claimRewardsByAssetIdPTB(client: SuiClient, userToCheck: s
    */
 export async function claimAllRewardsResupplyPTB(client: SuiClient, userToCheck: string, existingTx?: Transaction) {
     let tx = existingTx || new Transaction();
-    await V2.claimAllRewardsResupplyPTB(client, userToCheck, tx)
+    // await V2.claimAllRewardsResupplyPTB(client, userToCheck, tx)
     await V3.claimAllRewardsResupplyPTB(client, userToCheck, tx)
 
     return tx
@@ -698,6 +698,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.SUIBTC);
     updateSinglePrice(txb, PriceFeedConfig.WSOL);
     updateSinglePrice(txb, PriceFeedConfig.LBTC);
+    updateSinglePrice(txb, PriceFeedConfig.WAL);
 }
 
 
