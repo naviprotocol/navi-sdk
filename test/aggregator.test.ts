@@ -12,7 +12,7 @@ const localBaseUrl = "http://localhost:8000/find_routes";
 const coins = {
   sui: {
     address: "0x2::sui::SUI",
-    holder: "0x5fdfcc18e0791862c107c49ea13a5bcf4965f00ac057f56ea04034ebb5ea45ad"
+    holder: "0x80841329787fd577639add61cc955ace969af60fadfb05b8ff752c2de4a8aa65"
   },
   vSui: {
     address: "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
@@ -420,7 +420,7 @@ describe("fee options test", () => {
     const toCoin = coins.vSui.address;
     const minAmountOut = 0;
     const swapOptions = {
-      dexList: [Dex.TURBOS],
+      dexList: [],
       byAmountIn: true,
       depth: 3,
       feeOption: {
@@ -477,7 +477,7 @@ describe("fee options test", () => {
     const toCoin = coins.vSui.address;
     const minAmountOut = 0;
     const swapOptions = {
-      dexList: [Dex.TURBOS],
+      dexList: [],
       byAmountIn: true,
       depth: 3,
       serviceFee: {
