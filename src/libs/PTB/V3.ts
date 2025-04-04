@@ -121,7 +121,9 @@ export async function getAvailableRewards(
   }
 
   if (rewardsList.length === 0) {
-    console.log("No v3 rewards");
+    if (prettyPrint) {
+      console.log("No v3 rewards");
+    }
     return null;
   }
 
@@ -247,7 +249,9 @@ export async function getAvailableRewardsWithoutOption(
   const rawRewards: V3Type.RewardsList = rewardsData[0];
 
   if (rawRewards.length === 0) {
-    console.log("No v3 rewards");
+    if (prettyPrint) {
+      console.log("No v3 rewards");
+    }
     return null;
   }
 
