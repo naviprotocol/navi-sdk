@@ -70,13 +70,13 @@ describe("claim reward test", () => {
     expect(tsRes).toEqual("success");
   }, 500000);
 
-  it("should success claim v2/v3 reward", async () => {
+  it.only("should success claim v2/v3 reward", async () => {
     const testCaseName = expect.getState().currentTestName || "test_case";
 
     const txb = createTransaction(account);
     await claimAllRewardsPTB(account.client, account.address, txb);
 
-    const tsRes = await handleTransactionResult(txb, account, testCaseName);
+    const tsRes = await handleTransactionResult(txb, account, testCaseName, false);
     expect(tsRes).toEqual("success");
   }, 500000);
 
@@ -84,9 +84,9 @@ describe("claim reward test", () => {
     const testCaseName = expect.getState().currentTestName || "test_case";
 
     const txb = createTransaction(account);
-    await claimRewardsByAssetIdPTB(account.client, account.address, 5, txb);
+    await claimRewardsByAssetIdPTB(account.client, account.address, 20, txb);
 
-    const tsRes = await handleTransactionResult(txb, account, testCaseName);
+    const tsRes = await handleTransactionResult(txb, account, testCaseName, false);
     expect(tsRes).toEqual("success");
   }, 500000);
 

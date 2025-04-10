@@ -411,7 +411,7 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x67bbcb4d8ef039883c568fe74016ba85839d14f158d9926d68cf930a4d16b169",
     supplyBalanceParentId:
       "0xfa30b3db35ee961f702f259ea42fb9c5524dce630187e3a7e0b0e24eb0187fef",
-    rewardFundId: "",
+    rewardFundId: "0x65a952a1f239c48d8c6fc80de1d3bb248ce6905d1c3897c2ef52948fc7df3616",
   },
   suiBTC: {
     name: "suiBTC",
