@@ -13,7 +13,7 @@ export async function makeVSUIPTB(
 
   if (a2b) {
     [coinB] = txb.moveCall({
-      target: `${AggregatorConfig.vSuiPackageId}::native_pool::stake_non_entry`,
+      target: `${AggregatorConfig.vSuiPackageId}::stake_pool::stake`,
       typeArguments: [],
       arguments: [
         txb.object(vSuiConfig.pool),
@@ -23,21 +23,22 @@ export async function makeVSUIPTB(
       ],
     });
   } else {
-    const [unstakeTicket] = txb.moveCall({
-      target: `${AggregatorConfig.vSuiPackageId}::native_pool::mint_ticket_non_entry`,
-      typeArguments: [],
+    // const [unstakeTicket] = txb.moveCall({
+    //   target: `${AggregatorConfig.vSuiPackageId}::native_pool::mint_ticket_non_entry`,
+    //   typeArguments: [],
+    //   arguments: [
+    //     txb.object(vSuiConfig.pool),
+    //     txb.object(vSuiConfig.metadata),
+    //     pathTempCoin,
+    //   ],
+    // });
+    [coinB] = txb.moveCall({
+      target: `${AggregatorConfig.vSuiPackageId}::stake_pool::unstake`,
       arguments: [
         txb.object(vSuiConfig.pool),
         txb.object(vSuiConfig.metadata),
-        pathTempCoin,
-      ],
-    });
-    [coinB] = txb.moveCall({
-      target: `${AggregatorConfig.vSuiPackageId}::native_pool::burn_ticket_non_entry`,
-      arguments: [
-        txb.object(vSuiConfig.pool),
         txb.object(vSuiConfig.wrapper),
-        unstakeTicket,
+        pathTempCoin,
       ],
       typeArguments: [],
     });

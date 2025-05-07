@@ -650,6 +650,7 @@ export const WAL: CoinInfo = {
 };
 
 export const vSuiConfig = {
+  // TODO
   ProtocolPackage:
     "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",
   pool: "0x7fa2faa111b8c65bea48a23049bfd81ca8f971a262d981dcd9a17c3825cb5baf",
