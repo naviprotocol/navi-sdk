@@ -23,15 +23,6 @@ export async function makeVSUIPTB(
       ],
     });
   } else {
-    // const [unstakeTicket] = txb.moveCall({
-    //   target: `${AggregatorConfig.vSuiPackageId}::native_pool::mint_ticket_non_entry`,
-    //   typeArguments: [],
-    //   arguments: [
-    //     txb.object(vSuiConfig.pool),
-    //     txb.object(vSuiConfig.metadata),
-    //     pathTempCoin,
-    //   ],
-    // });
     [coinB] = txb.moveCall({
       target: `${AggregatorConfig.vSuiPackageId}::stake_pool::unstake`,
       arguments: [
