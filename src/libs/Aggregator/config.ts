@@ -40,7 +40,7 @@ export const AggregatorConfig = {
   bluefinGlobalConfig:
     "0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352",
   vSuiPackageId:
-    "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55",
+    "0x68d22cf8bdbcd11ecba1e094922873e4080d4d11133e2443fddda0bfd11dae20",
   haSuiPackageId:
     "0x3f45767c1aa95b25422f675800f02d8a813ec793a00b60667d071a77ba7178a2",
   haSuiConfigId:
