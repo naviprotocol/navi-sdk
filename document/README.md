@@ -29,8 +29,8 @@ account.depositToNavi(Sui, 1e9);
 
 
 ## Detailed SDK Usage
-- [NAVI-SDK Client](./document/client.md)
-- [NAVI-SDK AccountManager](./document/accountManager.md)
+- [NAVI-SDK Client](./client.md)
+- [NAVI-SDK AccountManager](./accountManager.md)
 
 
 ## SDK Sample & Tools
