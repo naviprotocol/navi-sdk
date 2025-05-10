@@ -379,7 +379,7 @@ export async function SignAndSubmitTXB(txb: Transaction, client: any, keypair: a
 export async function stakeTovSuiPTB(txb: Transaction, suiCoinObj: any) {
 
     const [coin] = txb.moveCall({
-        target: `${vSuiConfig.ProtocolPackage}::native_pool::stake_non_entry`,
+        target: `${vSuiConfig.ProtocolPackage}::stake_pool::stake`,
         arguments: [
             txb.object(vSuiConfig.pool),
             txb.object(vSuiConfig.metadata),
@@ -400,7 +400,7 @@ export async function stakeTovSuiPTB(txb: Transaction, suiCoinObj: any) {
 export async function unstakeTovSui(txb: Transaction, vSuiCoinObj: any) {
 
     const [coin] = txb.moveCall({
-        target: `${vSuiConfig.ProtocolPackage}::native_pool::unstake`,
+        target: `${vSuiConfig.ProtocolPackage}::stake_pool::unstake`,
         arguments: [
             txb.object(vSuiConfig.pool),
             txb.object(vSuiConfig.metadata),
