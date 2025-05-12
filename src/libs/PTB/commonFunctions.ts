@@ -699,6 +699,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.WSOL);
     updateSinglePrice(txb, PriceFeedConfig.LBTC);
     updateSinglePrice(txb, PriceFeedConfig.WAL);
+    updateSinglePrice(txb, PriceFeedConfig.HAEDAL);
 }
 
 

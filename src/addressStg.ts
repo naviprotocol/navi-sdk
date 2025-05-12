@@ -64,6 +64,8 @@ export const AddressMap: Record<string, string> = {
     "LBTC",
   "0x93b6e3432bdf986099feee41910b0dcc8d1db9040e2d3c27ccf20330c18a79ca::wal_test::WAL_TEST":
     "WAL",
+  "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL":
+    "HAEDAL",
 };
 
 export function getPackageCache(): string | undefined {
@@ -517,6 +519,20 @@ export const pool: { [key: string]: PoolConfig}  = {
       "0xe185780cd3aa7ab792b7e4a032bd10351df20e4377050d3dea00de7d965c6118",
       rewardFundId: "",
   },
+  HAEDAL: {
+    name: "HAEDAL",
+    assetId: 28,
+    poolId:
+      "0x1c1a32850593c77b92eac4dcb8cefefb338118e6af030b400180f9d8d36357fb",
+    type: "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL",
+    reserveObjectId:
+      "0xe368e392a53da9ede3e4a48cd90723a7fd2160e9dfb6740ae768f6ffb15694dd",
+    borrowBalanceParentId:
+      "0x3d65233aec5f488cacdfdbcb4cd00e728e0f3f74970a2623cf6e41f5e6417fd2",
+    supplyBalanceParentId:
+      "0xd74ae98a59f5bbbe8779856b063c0344cd6cab179c78685e697fac154f0c42f2",
+      rewardFundId: "",
+  },
   HIPPO: {
     name: "HIPPO",
     assetId: 88,
@@ -736,6 +752,13 @@ export const WAL: CoinInfo = {
     "0x93b6e3432bdf986099feee41910b0dcc8d1db9040e2d3c27ccf20330c18a79ca::wal_test::WAL_TEST",
   decimal: 9,
 };
+export const HAEDAL: CoinInfo = {
+  symbol: "HAEDAL",
+  address:
+    "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL",
+  decimal: 9,
+};
+
 
 export const HIPPO: CoinInfo = {
   symbol: "HIPPO",
@@ -1384,6 +1407,24 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     pythPriceInfoObject: '0xeb7e669f74d976c0b99b6ef9801e3a77716a95f1a15754e0f1399ce3fb60973d',
     priceDecimal: 9,
     expiration: 30,
+},
+HAEDAL: {
+  oracleId: 30,
+  maxTimestampDiff: 30000, // 30s(millisecond)
+  priceDiffThreshold1: 100,
+  priceDiffThreshold2: 300,
+  maxDurationWithinThresholds: 30000, // 30s(millisecond)
+  maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+  maximumEffectivePrice: 10000000000, // 10 * 1e9 = 10000000000
+  minimumEffectivePrice: 1000000, // 0.001 * 1e9 = 1000000
+  historicalPriceTTL: 300000, // 5min(millisecond)
+  coinType: '0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL', //
+  feedId: '0xf37501b0b8e56f51af45db3e3a358ac6dcbd752aab87bcdeacc62cdcef3afb21', // TODO: value
+  supraPairId: 99999, // none
+  pythPriceFeedId: '0xe67d98cc1fbd94f569d5ba6c3c3c759eb3ffc5d2b28e64538a53ae13efad8fd1', // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
+  pythPriceInfoObject: '0xbc98681c15de1ca1b80a8e26500d43c77f7113368b024de1bf490afcb0387109',
+  priceDecimal: 9,
+  expiration: 30,
 },
 
   HIPPO: {
