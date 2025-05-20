@@ -17,6 +17,7 @@ import { makeBluefinPTB } from "./Dex/bluefin";
 import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
 import { makeMAGMAPTB } from "./Dex/magma";
+import { makeMomentumPTB } from "./Dex/momentum";
 
 export async function getCoins(
   client: SuiClient,
@@ -168,16 +169,16 @@ export async function buildSwapPTBFromQuote(
         ? serviceFeeRouter.from === serviceFeeRouter.target
           ? serviceFeeCoinIn
           : buildSwapPTBFromQuote(
-              userAddress,
-              txb,
-              0,
-              serviceFeeCoinIn as any,
-              serviceFeeRouter as any,
-              referral
-            )
+            userAddress,
+            txb,
+            0,
+            serviceFeeCoinIn as any,
+            serviceFeeRouter as any,
+            referral
+          )
         : new Promise((resolve) => {
-            resolve(null);
-          }),
+          resolve(null);
+        }),
     ]);
 
     if (feeCoinOut) {
@@ -391,14 +392,14 @@ export async function buildSwapPTBFromQuote(
           const coinA = a2b
             ? pathTempCoin
             : txb.moveCall({
-                target: "0x2::coin::zero",
-                typeArguments: [tempTokenB],
-              });
+              target: "0x2::coin::zero",
+              typeArguments: [tempTokenB],
+            });
           const coinB = a2b
             ? txb.moveCall({
-                target: "0x2::coin::zero",
-                typeArguments: [tempTokenB],
-              })
+              target: "0x2::coin::zero",
+              typeArguments: [tempTokenB],
+            })
             : pathTempCoin;
 
           const coinABs = await makeMAGMAPTB(
@@ -427,6 +428,12 @@ export async function buildSwapPTBFromQuote(
         }
         case Dex.HASUI: {
           pathTempCoin = await makeHASUIPTB(txb, pathTempCoin, a2b);
+          break;
+        }
+        case Dex.MOMENTUM: {
+          const outputCoin = await makeMomentumPTB(txb, poolId, pathTempCoin, amountInPTB, a2b, typeArguments);
+          txb.transferObjects([pathTempCoin], userAddress);
+          pathTempCoin = outputCoin;
           break;
         }
 
