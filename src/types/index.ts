@@ -84,6 +84,7 @@ export enum Dex {
   VSUI = "vSui",
   HASUI = "haSui",
   MAGMA = "magma",
+  MOMENTUM = "momentum",
 }
 
 export type Quote = {
