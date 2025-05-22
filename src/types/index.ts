@@ -39,6 +39,8 @@ export interface Pool {
   WSOL: PoolConfig;
   LBTC: PoolConfig;
   WAL: PoolConfig;
+  HAEDAL: PoolConfig;
+  XBTC: PoolConfig;
 }
 
 export interface PoolConfig {
