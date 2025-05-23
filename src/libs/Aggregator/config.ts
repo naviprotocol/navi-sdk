@@ -36,7 +36,7 @@ export const AggregatorConfig = {
   deepTokenAddress:
     "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP",
   bluefinPackageId:
-    "0x6c796c3ab3421a68158e0df18e4657b2827b1f8fed5ed4b82dba9c935988711b",
+    "0x406f52151e7dd65addd93b0bdad7989e82aec20c3ae6971954a5140f14a59e4b",
   bluefinGlobalConfig:
     "0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352",
   vSuiPackageId:
