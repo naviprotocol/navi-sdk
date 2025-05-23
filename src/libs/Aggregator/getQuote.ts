@@ -60,7 +60,7 @@ export async function getQuote(
 
         return data.data as Quote;
     } catch (error: any) {
-        console.error(`Error fetching routes from ${AggregatorConfig.aggregatorBaseUrl} with params ${JSON.stringify(params)}:`, error.message);
+        console.error(`Error fetching routes from ${baseUrl} with params ${JSON.stringify(params)}:`, error.message);
         throw error;
     }
 }
