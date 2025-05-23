@@ -1,11 +1,12 @@
-import { Pool, CoinInfo, PoolConfig } from './types';
-import { getLatestProtocolPackageId } from './libs/PoolInfo/index';
+import { Pool, CoinInfo, PoolConfig } from "./types";
+import { getLatestProtocolPackageId } from "./libs/PoolInfo/index";
 
 let globalPackageId: string;
 let globalPackageIdExpireAt: number;
 let cacheUpdatePromise: Promise<void> | null = null;
 
-export const defaultProtocolPackage = "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f";
+export const defaultProtocolPackage =
+  "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f";
 
 export const AddressMap: Record<string, string> = {
   "0x2::sui::SUI": "Sui",
@@ -59,6 +60,8 @@ export const AddressMap: Record<string, string> = {
     "WAL",
   "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL":
     "HAEDAL",
+  "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC":
+    "XBTC",
 };
 
 // if the cache is not set, return the default protocol package.
@@ -189,7 +192,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x8fa5eccbca2c4ba9aae3b87fd44aa75aa5f5b41ea2d9be4d5321379384974984",
     supplyBalanceParentId:
       "0xe6457d247b6661b1cac123351998f88f3e724ff6e9ea542127b5dcb3176b3841",
-    rewardFundId: "0x7093cf7549d5e5b35bfde2177223d1050f71655c7f676a5e610ee70eb4d93b5c",
+    rewardFundId:
+      "0x7093cf7549d5e5b35bfde2177223d1050f71655c7f676a5e610ee70eb4d93b5c",
   },
   haSui: {
     name: "HaedalSui",
@@ -217,7 +221,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xa5bf13075aa400cbdd4690a617c5f008e1fae0511dcd4f7121f09817df6c8d8b",
     supplyBalanceParentId:
       "0x59dedca8dc44e8df50b190f8b5fe673098c1273ac6168c0a4addf3613afcdee5",
-    rewardFundId: "0x1a3f9fcfdfac10e92c99220203f7c4bb502558692f0be0f2cb5f788b4e12a6b5",
+    rewardFundId:
+      "0x1a3f9fcfdfac10e92c99220203f7c4bb502558692f0be0f2cb5f788b4e12a6b5",
   },
   WBTC: {
     name: "WBTC",
@@ -287,7 +292,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xf0c6ce5cfaee96073876a5fab7426043f3a798b79502c4caeb6d9772cd35af1f",
     supplyBalanceParentId:
       "0xc0a0cb43620eb8a84d5a4a50a85650e7fa7ba81e660f9cc2863404fd84591d4b",
-    rewardFundId: "0xfb0de07cd39509ecb312464daa9442fac0eb4487d7a9b984cdfc39c1fb7d2791",
+    rewardFundId:
+      "0xfb0de07cd39509ecb312464daa9442fac0eb4487d7a9b984cdfc39c1fb7d2791",
   },
   USDY: {
     name: "USDY",
@@ -315,7 +321,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x2c7b7e6d323ca8f63908bb03191225a2ecf177bf0c4602ccd21d7ac121d52fa4",
     supplyBalanceParentId:
       "0x071dc718b1e579d476d088456979e30d142ecdde6a6eec875477b5b4786530f0",
-    rewardFundId: "0xc6b14b4eda9015ca69ec5f6a9688faa4f760259ce285dafe902ebe6700f5838f",
+    rewardFundId:
+      "0xc6b14b4eda9015ca69ec5f6a9688faa4f760259ce285dafe902ebe6700f5838f",
   },
   LorenzoBTC: {
     name: "stBTC",
@@ -343,7 +350,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xba03bb3e0167e1ec355926dfe0c130866857b062b93fb5d9cfba20824ad9f1d5",
     supplyBalanceParentId:
       "0x3fdd91f32dcea2af6e16ae66a7220f6439530ef6238deafe5a72026b3e7aa5f5",
-    rewardFundId: "0xc889d78b634f954979e80e622a2ae0fece824c0f6d9590044378a2563035f32f",
+    rewardFundId:
+      "0xc889d78b634f954979e80e622a2ae0fece824c0f6d9590044378a2563035f32f",
   },
   FDUSD: {
     name: "FDUSD",
@@ -357,7 +365,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x4a4bb401f011c104083f56e3ee154266f1a88cad10b8acc9c993d4da304ebf00",
     supplyBalanceParentId:
       "0x6dffc3d05e79b055749eae1c27e93a47b5a9999214ce8a2f6173574151d120bf",
-    rewardFundId: "0x958dd7ad70755b10f96693bcd591d7a2cb9830a6c523baf43b3b5897664aa788",
+    rewardFundId:
+      "0x958dd7ad70755b10f96693bcd591d7a2cb9830a6c523baf43b3b5897664aa788",
   },
   BLUE: {
     name: "BLUE",
@@ -413,7 +422,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x67bbcb4d8ef039883c568fe74016ba85839d14f158d9926d68cf930a4d16b169",
     supplyBalanceParentId:
       "0xfa30b3db35ee961f702f259ea42fb9c5524dce630187e3a7e0b0e24eb0187fef",
-    rewardFundId: "0x65a952a1f239c48d8c6fc80de1d3bb248ce6905d1c3897c2ef52948fc7df3616",
+    rewardFundId:
+      "0x65a952a1f239c48d8c6fc80de1d3bb248ce6905d1c3897c2ef52948fc7df3616",
   },
   suiBTC: {
     name: "suiBTC",
@@ -455,7 +465,7 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x81b4063de499c8fba76523fde33b3dc4579047e7b815ffbf2f1eb82510314daa",
     supplyBalanceParentId:
       "0x71b90679af894cd5f0fdefee87a228e4bdacc8a1ad444e39011476208a1eb9d4",
-      rewardFundId: "",
+    rewardFundId: "",
   },
   WAL: {
     name: "WAL",
@@ -469,7 +479,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xf8741f2550b0d7f7a3179ba2a0363c73e206ca6691d2d1ebbb95b6018359e17b",
     supplyBalanceParentId:
       "0xa476b12f8b45c7cb595cf1648822d48e4e82d63a47ba94304f3ad3bb19247ff9",
-      rewardFundId: "0xe65f2d9ea46cd8d44a08ec9b7728173a3b9383c7346c496eb88543574db1db51",
+    rewardFundId:
+      "0xe65f2d9ea46cd8d44a08ec9b7728173a3b9383c7346c496eb88543574db1db51",
   },
   HAEDAL: {
     name: "HAEDAL",
@@ -483,7 +494,22 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x1b16a14873c5dfdf3b3a81be095420c67225a922ace939feaf66b18c20f39569",
     supplyBalanceParentId:
       "0xf761d46deb8df8114b2e39f364716644dc84c8f2e8a82a011b899be45427bac0",
-      rewardFundId: "0xa1d5ba382609b8cb209f3be8003f73b16fd58b17b5af007c01206eaaa27ad0df",
+    rewardFundId:
+      "0xa1d5ba382609b8cb209f3be8003f73b16fd58b17b5af007c01206eaaa27ad0df",
+  },
+  XBTC: {
+    name: "XBTC",
+    assetId: 26,
+    poolId:
+      "0xd9c9a1d8a2f82d752d4f2504c1097636bbe7f0f335a89be85f65fb32dc6b1866",
+    type: "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC",
+    reserveObjectId:
+      "0x9a1a0533b157361a5cc42ed64fdee6970ab66eb4731afa6dde8e7fe27a36d24d",
+    borrowBalanceParentId:
+      "0x14f4702a6ea138b83531a640c3fa953d3e723075beb687c4db3309d067fa9792",
+    supplyBalanceParentId:
+      "0xdeec1fb37d7ea634bd329f9e02d2d564956f778a490f1d47a899865266d086cd",
+    rewardFundId: "",
   },
 };
 
@@ -670,6 +696,13 @@ export const HAEDAL: CoinInfo = {
   address:
     "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL",
   decimal: 9,
+};
+
+export const XBTC: CoinInfo = {
+  symbol: "XBTC",
+  address:
+    "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC",
+  decimal: 8,
 };
 
 export const vSuiConfig = {
@@ -1197,11 +1230,15 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     maximumEffectivePrice: 100000000000, // 1000 * 1e8 = 100000000000
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
-    coinType: '0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN',
-    feedId: '0x2611dff736233a6855e28ae95f8e5f62a6bf80653ddb118bf012fd783d530fa1',
+    coinType:
+      "0xb7844e289a8410e50fb3ca48d69eb9cf29e27d223ef90353fe1bd8e27ff8f3f8::coin::COIN",
+    feedId:
+      "0x2611dff736233a6855e28ae95f8e5f62a6bf80653ddb118bf012fd783d530fa1",
     supraPairId: 10, // SOL_USDT -> 10
-    pythPriceFeedId: '0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d', // **fixed value: Crypto.SOL/USD -> https://pyth.network/developers/price-feed-ids
-    pythPriceInfoObject: '0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469',
+    pythPriceFeedId:
+      "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d", // **fixed value: Crypto.SOL/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject:
+      "0x9d0d275efbd37d8a8855f6f2c761fa5983293dd8ce202ee5196626de8fcd4469",
     priceDecimal: 8,
     expiration: 30,
   },
@@ -1215,121 +1252,174 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     maximumEffectivePrice: 20000000000000, // 200000 = 200000 * 1e8 = 20000000000000
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
-    coinType: '0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC',
-    feedId: '0x8ee4d9d61d0bfa342cdb3ee8b7f047c91f0b586e0ff66fd6e8fc761e235e5409', // TODO: value
+    coinType:
+      "0x3e8e9423d80e1774a7ca128fccd8bf5f1f7753be658c5e645929037f7c819040::lbtc::LBTC",
+    feedId:
+      "0x8ee4d9d61d0bfa342cdb3ee8b7f047c91f0b586e0ff66fd6e8fc761e235e5409", // TODO: value
     supraPairId: 99999, // none
-    pythPriceFeedId: '0x8f257aab6e7698bb92b15511915e593d6f8eae914452f781874754b03d0c612b', // Crypto.LBTC/USD -> https://pyth.network/developers/price-feed-ids
-    pythPriceInfoObject: '0xeba15840ddf425dacb5ff0990334fc03d034487f4ad416280859b96bf2af89f8',
+    pythPriceFeedId:
+      "0x8f257aab6e7698bb92b15511915e593d6f8eae914452f781874754b03d0c612b", // Crypto.LBTC/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject:
+      "0xeba15840ddf425dacb5ff0990334fc03d034487f4ad416280859b96bf2af89f8",
     priceDecimal: 8,
     expiration: 30,
-},
-WAL: {
-  oracleId: 24,
-  maxTimestampDiff: 30000, // 30s(millisecond)
-  priceDiffThreshold1: 100,
-  priceDiffThreshold2: 300,
-  maxDurationWithinThresholds: 30000, // 30s(millisecond)
-  maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
-  maximumEffectivePrice: 10000000000, // 10 * 1e9 = 10000000000
-  minimumEffectivePrice: 1000000, // 0.001 * 1e9 = 1000000
-  historicalPriceTTL: 300000, // 5min(millisecond)
-  coinType: '0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL', // Mainnet verison
-  feedId: '0x924bf9f715d857605f9f4146537fffc0414809c85845ce9d695f3645a22a5426', // TODO: value
-  supraPairId: 99999, // none
-  pythPriceFeedId: '0xeba0732395fae9dec4bae12e52760b35fc1c5671e2da8b449c9af4efe5d54341', // Crypto.WAL/USD -> https://pyth.network/developers/price-feed-ids
-  pythPriceInfoObject: '0xeb7e669f74d976c0b99b6ef9801e3a77716a95f1a15754e0f1399ce3fb60973d',
-  priceDecimal: 9,
-  expiration: 30,
-},
-HAEDAL: {
-  oracleId: 25,
-  maxTimestampDiff: 30000, // 30s(millisecond)
-  priceDiffThreshold1: 100,
-  priceDiffThreshold2: 300,
-  maxDurationWithinThresholds: 30000, // 30s(millisecond)
-  maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
-  maximumEffectivePrice: 10000000000, // 10 * 1e9 = 10000000000
-  minimumEffectivePrice: 1000000, // 0.001 * 1e9 = 1000000
-  historicalPriceTTL: 300000, // 5min(millisecond)
-  coinType: '0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL', //
-  feedId: '0xe8a90eed4e6de66e114e6d00802852a9529054a33de0e8460ec37109f0d09d5e', // TODO: value
-  supraPairId: 99999, // none
-  pythPriceFeedId: '0xe67d98cc1fbd94f569d5ba6c3c3c759eb3ffc5d2b28e64538a53ae13efad8fd1', // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
-  pythPriceInfoObject: '0xbc98681c15de1ca1b80a8e26500d43c77f7113368b024de1bf490afcb0387109',
-  priceDecimal: 9,
-  expiration: 30,
-},
+  },
+  WAL: {
+    oracleId: 24,
+    maxTimestampDiff: 30000, // 30s(millisecond)
+    priceDiffThreshold1: 100,
+    priceDiffThreshold2: 300,
+    maxDurationWithinThresholds: 30000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 10000000000, // 10 * 1e9 = 10000000000
+    minimumEffectivePrice: 1000000, // 0.001 * 1e9 = 1000000
+    historicalPriceTTL: 300000, // 5min(millisecond)
+    coinType:
+      "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL", // Mainnet verison
+    feedId:
+      "0x924bf9f715d857605f9f4146537fffc0414809c85845ce9d695f3645a22a5426", // TODO: value
+    supraPairId: 99999, // none
+    pythPriceFeedId:
+      "0xeba0732395fae9dec4bae12e52760b35fc1c5671e2da8b449c9af4efe5d54341", // Crypto.WAL/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject:
+      "0xeb7e669f74d976c0b99b6ef9801e3a77716a95f1a15754e0f1399ce3fb60973d",
+    priceDecimal: 9,
+    expiration: 30,
+  },
+  HAEDAL: {
+    oracleId: 25,
+    maxTimestampDiff: 30000, // 30s(millisecond)
+    priceDiffThreshold1: 100,
+    priceDiffThreshold2: 300,
+    maxDurationWithinThresholds: 30000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 10000000000, // 10 * 1e9 = 10000000000
+    minimumEffectivePrice: 1000000, // 0.001 * 1e9 = 1000000
+    historicalPriceTTL: 300000, // 5min(millisecond)
+    coinType:
+      "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL", //
+    feedId:
+      "0xe8a90eed4e6de66e114e6d00802852a9529054a33de0e8460ec37109f0d09d5e", // TODO: value
+    supraPairId: 99999, // none
+    pythPriceFeedId:
+      "0xe67d98cc1fbd94f569d5ba6c3c3c759eb3ffc5d2b28e64538a53ae13efad8fd1", // **fixed value: Crypto.SUI/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject:
+      "0xbc98681c15de1ca1b80a8e26500d43c77f7113368b024de1bf490afcb0387109",
+    priceDecimal: 9,
+    expiration: 30,
+  },
+  XBTC: {
+    oracleId: 26,
+    maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
+    coinType:
+      "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC",
+    feedId:
+      "0xbe3a049bbbdc596cc6109fcff0bc2c968e7533bcc675e5718f7ecdf3c5dae506", // TODO: value
+    supraPairId: 0,
+    pythPriceFeedId:
+      "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+    pythPriceInfoObject:
+      "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
+    priceDecimal: 8,
+    expiration: 30,
+  },
 };
 
 export interface IOracleProConfig {
-  PackageId: string
-  PriceOracle: string
-  OracleAdminCap: string
+  PackageId: string;
+  PriceOracle: string;
+  OracleAdminCap: string;
 
-  OracleConfig: string
+  OracleConfig: string;
 
-  PythStateId: string
-  WormholeStateId: string
-  SupraOracleHolder: string
-  Sender: string
-  GasObject: string
+  PythStateId: string;
+  WormholeStateId: string;
+  SupraOracleHolder: string;
+  Sender: string;
+  GasObject: string;
 }
 
 export const OracleProConfig: IOracleProConfig = {
-  PackageId: '0xc2d49bf5e75d2258ee5563efa527feb6155de7ac6f6bf025a23ee88cd12d5a83', // TODO: value
-  PriceOracle: '0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef', // TODO: value
-  OracleAdminCap: '0x7204e37882baf10f31b66cd1ac78ac65b3b8ad29c265d1e474fb4b24ccd6d5b7', // TODO: value
+  PackageId:
+    "0xc2d49bf5e75d2258ee5563efa527feb6155de7ac6f6bf025a23ee88cd12d5a83", // TODO: value
+  PriceOracle:
+    "0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef", // TODO: value
+  OracleAdminCap:
+    "0x7204e37882baf10f31b66cd1ac78ac65b3b8ad29c265d1e474fb4b24ccd6d5b7", // TODO: value
 
-  OracleConfig: '0x1afe1cb83634f581606cc73c4487ddd8cc39a944b951283af23f7d69d5589478', // TODO: value
+  OracleConfig:
+    "0x1afe1cb83634f581606cc73c4487ddd8cc39a944b951283af23f7d69d5589478", // TODO: value
 
-  PythStateId: '0x1f9310238ee9298fb703c3419030b35b22bb1cc37113e3bb5007c99aec79e5b8', // **fixed value
-  WormholeStateId: '0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c', // **fixed value
-  SupraOracleHolder: '0xaa0315f0748c1f24ddb2b45f7939cff40f7a8104af5ccbc4a1d32f870c0b4105', // **fixed value
+  PythStateId:
+    "0x1f9310238ee9298fb703c3419030b35b22bb1cc37113e3bb5007c99aec79e5b8", // **fixed value
+  WormholeStateId:
+    "0xaeab97f96cf9877fee2883315d459552b2b921edc16d7ceac6eab944dd88919c", // **fixed value
+  SupraOracleHolder:
+    "0xaa0315f0748c1f24ddb2b45f7939cff40f7a8104af5ccbc4a1d32f870c0b4105", // **fixed value
 
-  Sender: '0x39c70d4ce3ce769a46f46ad80184a88bc25be9b49545751f5425796ef0c3d9ba', // TODO: value
-  GasObject: '0x1e30410559ed83708ee1bb6b21e3a1dae96f1768ce35ed8233590b130ddc0086', // TODO: value
-}
+  Sender: "0x39c70d4ce3ce769a46f46ad80184a88bc25be9b49545751f5425796ef0c3d9ba", // TODO: value
+  GasObject:
+    "0x1e30410559ed83708ee1bb6b21e3a1dae96f1768ce35ed8233590b130ddc0086", // TODO: value
+};
 
-export const ProFundsPoolInfo: Record<string, { coinType: string; oracleId: number }> = {
-  'f975bc2d4cca10e3ace8887e20afd77b46c383b4465eac694c4688344955dea4': {
-    coinType: '0x2::sui::SUI',
+export const ProFundsPoolInfo: Record<
+  string,
+  { coinType: string; oracleId: number }
+> = {
+  f975bc2d4cca10e3ace8887e20afd77b46c383b4465eac694c4688344955dea4: {
+    coinType: "0x2::sui::SUI",
     oracleId: 0,
   },
-  'e2b5ada45273676e0da8ae10f8fe079a7cec3d0f59187d3d20b1549c275b07ea': {
-    coinType: '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT',
+  e2b5ada45273676e0da8ae10f8fe079a7cec3d0f59187d3d20b1549c275b07ea: {
+    coinType:
+      "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
     oracleId: 5,
   },
-  'a20e18085ce04be8aa722fbe85423f1ad6b1ae3b1be81ffac00a30f1d6d6ab51': {
-    coinType: '0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI',
+  a20e18085ce04be8aa722fbe85423f1ad6b1ae3b1be81ffac00a30f1d6d6ab51: {
+    coinType:
+      "0xbde4ba4c2e274a60ce15c1cfff9e5c42e41654ac8b6d906a57efa4bd3c29f47d::hasui::HASUI",
     oracleId: 6,
   },
-  '9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09': {
-    coinType: '0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX',
+  "9dae0cf104a193217904f88a48ce2cf0221e8cd9073878edd05101d6b771fa09": {
+    coinType:
+      "0xa99b8952d4f7d947ea77fe0ecdcc9e5fc0bcab2841d6e2a5aa00c3044e5544b5::navx::NAVX",
     oracleId: 7,
   },
-  'bc14736bbe4ac59a4e3af6835a98765c15c5f7dbf9e7ba9b36679ce7ff00dc19': {
-    coinType: '0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS',
+  bc14736bbe4ac59a4e3af6835a98765c15c5f7dbf9e7ba9b36679ce7ff00dc19: {
+    coinType:
+      "0x5145494a5f5100e645e4b0aa950fa6b68f614e8c59e17bc5ded3495123a79178::ns::NS",
     oracleId: 13,
   },
-  '8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e': {
-    coinType: '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP',
+  "8e25210077ab957b1afec39cbe9165125c93d279daef89ee29b97856385a3f3e": {
+    coinType:
+      "0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP",
     oracleId: 15,
   },
-  '141c67c566de590788ff04f2bcc26e68798304254f6595df93a824b0f6acee2a': {
-    coinType: 'f16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD',
+  "141c67c566de590788ff04f2bcc26e68798304254f6595df93a824b0f6acee2a": {
+    coinType:
+      "f16e6b723f242ec745dfd7634ad072c42d5c1d9ac9d62a39c381303eaa57693a::fdusd::FDUSD",
     oracleId: 16,
   },
-  '523a53e4469fc1fe17791c2c5710e6582145bd50543b9fee9dafcc9aa0c0ef8e': {
-    coinType: 'e1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE',
+  "523a53e4469fc1fe17791c2c5710e6582145bd50543b9fee9dafcc9aa0c0ef8e": {
+    coinType:
+      "e1b45a0e641b9955a20aa0ad1c1f4ad86aad8afb07296d4085e349a50e90bdca::blue::BLUE",
     oracleId: 17,
   },
-  '463d80f40fc4ac625479938925594ccf1c89146f28ec8489c056879167448224': {
-    coinType: 'd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI',
+  "463d80f40fc4ac625479938925594ccf1c89146f28ec8489c056879167448224": {
+    coinType:
+      "d1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI",
     oracleId: 20,
   },
-}
+};
 export const noDepositCoinType = [
-  '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT',
-  '0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH',
-  '0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdc::USDC',
-]
+  "0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdt::USDT",
+  "0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::weth::WETH",
+  "0x0eedc3857f39f5e44b5786ebcd790317902ffca9960f44fcea5b7589cfc7a784::usdc::USDC",
+];

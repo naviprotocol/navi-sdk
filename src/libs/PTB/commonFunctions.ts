@@ -700,6 +700,7 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.LBTC);
     updateSinglePrice(txb, PriceFeedConfig.WAL);
     updateSinglePrice(txb, PriceFeedConfig.HAEDAL);
+    updateSinglePrice(txb, PriceFeedConfig.XBTC);
 }
 
 
