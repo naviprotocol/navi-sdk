@@ -25,6 +25,7 @@ import {
 import { getAddressPortfolio, getHealthFactorCall, getReservesDetail, moveInspect } from "../CallFunctions";
 import assert from 'assert';
 import { registerStructs } from '../PTB';
+import { NAVIHttpTransport } from './rpc'
 
 
 export class AccountManager {
@@ -50,7 +51,9 @@ export class AccountManager {
           url: getFullnodeUrl(network as NetworkType),
         });
       } else {
-        this.client = new SuiClient({ url: network });
+        this.client = new SuiClient({  
+          transport: new NAVIHttpTransport(network), 
+        });
       }
     }
     catch (e) {
