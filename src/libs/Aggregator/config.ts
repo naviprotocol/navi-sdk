@@ -47,11 +47,11 @@ export const AggregatorConfig = {
   haSuiConfigId:
     '0x47b224762220393057ebf4f70501b6e657c3e56684737568439a04f80849b2ca',
   magmaPackageId:
-    "0xc9f008794e70543443bb49bc9719120a6d43bb2cf6b522ec924f495a36b7e69e",
+    '0xc9f008794e70543443bb49bc9719120a6d43bb2cf6b522ec924f495a36b7e69e',
   magmaConfigId:
     '0x4c4e1402401f72c7d8533d0ed8d5f8949da363c7a3319ccef261ffe153d32f8a',
   momentumPackageId:
-    '0x9c12f3aa14a449a0a23c066589e269086f021a98939f21158cfacb16d19787c3',
+    '0x60e8683e01d5611cd13a69aca2b0c9aace7c6b559734df1b4a7ad9d6bddf007b',
   momentumVersionId:
     '0x2375a0b1ec12010aaea3b2545acfa2ad34cfbba03ce4b59f4c39e1e25eed1b2a',
   momentumSlippageCheckPackageId:
