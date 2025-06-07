@@ -37,7 +37,7 @@ export const AggregatorConfig = {
   deepTokenAddress:
     '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP',
   bluefinPackageId:
-    '0x406f52151e7dd65addd93b0bdad7989e82aec20c3ae6971954a5140f14a59e4b',
+    '0x67b34b728c4e28e704dcfecf7c5cf55c7fc593b6c65c20d1836d97c209c1928a',
   bluefinGlobalConfig:
     '0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352',
   vSuiPackageId:
@@ -47,7 +47,7 @@ export const AggregatorConfig = {
   haSuiConfigId:
     '0x47b224762220393057ebf4f70501b6e657c3e56684737568439a04f80849b2ca',
   magmaPackageId:
-    '0xc9f008794e70543443bb49bc9719120a6d43bb2cf6b522ec924f495a36b7e69e',
+    "0x183af2adf115f331105825ae63e1d7d3c848d67beb4d60bc36208a90a5e92f4b",
   magmaConfigId:
     '0x4c4e1402401f72c7d8533d0ed8d5f8949da363c7a3319ccef261ffe153d32f8a',
   momentumPackageId:
