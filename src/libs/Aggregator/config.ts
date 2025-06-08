@@ -8,7 +8,7 @@ export const AggregatorConfig = {
   cetusConfigId:
     '0xdaa46292632c3c4d8f31f23ea0f9b36a28ff3677e9684980e4438403a67a3d8f',
   turbosPackageId:
-    '0x9df4666296ee324a6f11e9f664e35e7fd6b6e8c9e9058ce6ee9ad5c5343c2f87',
+    '0xd02012c71c1a6a221e540c36c37c81e0224907fe1ee05bfe250025654ff17103',
   kriyaV3Version:
     '0xf5145a7ac345ca8736cf8c76047d00d6d378f30e81be6f6eb557184d9de93c78',
   kriyaV3PackageId:
