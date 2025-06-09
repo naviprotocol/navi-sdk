@@ -401,6 +401,7 @@ export async function buildSwapPTBFromQuote(
               typeArguments: [tempTokenB],
             })
             : pathTempCoin;
+          const amountLimit = route.info_for_ptb.amountLimit;
 
           const coinABs = await makeMAGMAPTB(
             txb,
@@ -410,7 +411,8 @@ export async function buildSwapPTBFromQuote(
             coinB,
             amountInPTB,
             a2b,
-            typeArguments
+            typeArguments,
+            amountLimit
           );
 
           if (a2b) {

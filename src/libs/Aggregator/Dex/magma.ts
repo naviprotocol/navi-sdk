@@ -9,7 +9,8 @@ export async function makeMAGMAPTB(
   coinB: any,
   amount: any,
   a2b: boolean,
-  typeArguments: any
+  typeArguments: any,
+  amountLimit: number
 ) {
   let coinTypeA = typeArguments[0];
   let coinTypeB = typeArguments[1];
@@ -18,16 +19,18 @@ export async function makeMAGMAPTB(
     a2b ? "4295048016" : "79226673515401279992447579055"
   );
 
+  const moduleName = a2b ? 'swap_a2b' : 'swap_b2a';
+
   const coinABs = txb.moveCall({
-    target: `${AggregatorConfig.magmaPackageId}::router::swap`,
+    target: `${AggregatorConfig.magmaPackageId}::pool_script_v2::${moduleName}`,
     arguments: [
       txb.object(AggregatorConfig.magmaConfigId),
       txb.object(poolId),
       coinA,
       coinB,
-      txb.pure.bool(a2b),
       txb.pure.bool(byAmountIn),
       amount,
+      txb.pure.u64(amountLimit),
       txb.pure.u128(sqrtPriceLimit),
       txb.pure.bool(false),
       txb.object(AggregatorConfig.clockAddress),

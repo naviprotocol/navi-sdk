@@ -47,7 +47,7 @@ export const AggregatorConfig = {
   haSuiConfigId:
     '0x47b224762220393057ebf4f70501b6e657c3e56684737568439a04f80849b2ca',
   magmaPackageId:
-    "0x183af2adf115f331105825ae63e1d7d3c848d67beb4d60bc36208a90a5e92f4b",
+    "0x49e9f06c58a36830fe0d83291f002012e72b00a4ec9b3a6304c40fc5712bb6e3",
   magmaConfigId:
     '0x4c4e1402401f72c7d8533d0ed8d5f8949da363c7a3319ccef261ffe153d32f8a',
   momentumPackageId:
