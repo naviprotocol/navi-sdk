@@ -9,7 +9,7 @@ export async function makeMAGMAPTB(
   coinB: any,
   amount: any,
   a2b: boolean,
-  typeArguments: any
+  typeArguments: any,
 ) {
   let coinTypeA = typeArguments[0];
   let coinTypeB = typeArguments[1];
