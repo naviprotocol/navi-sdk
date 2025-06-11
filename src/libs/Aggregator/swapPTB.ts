@@ -121,9 +121,10 @@ export async function buildSwapPTBFromQuote(
           resolve(null);
           return;
         }
+        const feeCoinType = serviceFee.coinType ||  "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT";
         if (
           tokenA ===
-          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT"
+          feeCoinType
         ) {
           resolve({
             routes: [],
@@ -137,7 +138,7 @@ export async function buildSwapPTBFromQuote(
         }
         getQuote(
           tokenA,
-          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+          feeCoinType,
           serviceFeeAmount,
           apiKey,
           swapOptions
