@@ -109,6 +109,7 @@ export type Quote = {
 export type FeeOption = {
   fee: number;
   receiverAddress: string;
+  coinType?: string;
 };
 
 export type SwapOptions = {

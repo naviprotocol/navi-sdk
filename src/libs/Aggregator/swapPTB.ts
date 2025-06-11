@@ -113,6 +113,8 @@ export async function buildSwapPTBFromQuote(
     // split coins
     const serviceFeeCoinIn = txb.splitCoins(coinIn, [serviceFeeAmount]);
 
+    const feeCoinType = serviceFee.coinType ||  "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT";
+
     // get router
     const [router, serviceFeeRouter] = await Promise.all([
       getQuote(tokenA, tokenB, newAmountIn, apiKey, swapOptions),
@@ -123,7 +125,7 @@ export async function buildSwapPTBFromQuote(
         }
         if (
           tokenA ===
-          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT"
+          feeCoinType
         ) {
           resolve({
             routes: [],
@@ -137,7 +139,7 @@ export async function buildSwapPTBFromQuote(
         }
         getQuote(
           tokenA,
-          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+          feeCoinType,
           serviceFeeAmount,
           apiKey,
           swapOptions
@@ -204,7 +206,7 @@ export async function buildSwapPTBFromQuote(
         typeArguments: [
           router.from,
           router.target,
-          "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT",
+          feeCoinType,
         ],
       });
 
