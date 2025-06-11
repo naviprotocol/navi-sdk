@@ -278,23 +278,37 @@ export async function buildSwapPTBFromQuote(
 
       switch (provider) {
         case Dex.CETUS: {
-          let toSwapBalance = txb.moveCall({
-            target: "0x2::coin::into_balance",
-            arguments: [pathTempCoin],
-            typeArguments: [tempTokenA],
-          });
-          const { receiveCoin, leftCoin } = await makeCETUSPTB(
+          const coinA = a2b
+            ? pathTempCoin
+            : txb.moveCall({
+              target: "0x2::coin::zero",
+              typeArguments: [tempTokenB],
+            });
+          const coinB = a2b
+            ? txb.moveCall({
+              target: "0x2::coin::zero",
+              typeArguments: [tempTokenB],
+            })
+            : pathTempCoin;
+
+          const coinABs = await makeCETUSPTB(
             txb,
             poolId,
             true,
-            toSwapBalance,
+            coinA,
+            coinB,
             amountInPTB,
             a2b,
-            typeArguments
+            typeArguments,
           );
 
-          txb.transferObjects([leftCoin], userAddress);
-          pathTempCoin = receiveCoin;
+          if (a2b) {
+            txb.transferObjects([coinABs[0]], userAddress);
+            pathTempCoin = coinABs[1];
+          } else {
+            txb.transferObjects([coinABs[1]], userAddress);
+            pathTempCoin = coinABs[0];
+          }
           break;
         }
         case Dex.TURBOS: {
@@ -411,7 +425,7 @@ export async function buildSwapPTBFromQuote(
             coinB,
             amountInPTB,
             a2b,
-            typeArguments
+            typeArguments,
           );
 
           if (a2b) {

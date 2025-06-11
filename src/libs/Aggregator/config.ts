@@ -4,11 +4,11 @@ export const AggregatorConfig = {
   aggregatorContract:
     '0x5b7d732adeb3140a2dbf2becd1e9dbe56cee0e3687379bcfe7df4357ea664313',
   cetusPackageId:
-    '0xc6faf3703b0e8ba9ed06b7851134bbbe7565eb35ff823fd78432baa4cbeaa12e',
+    '0xb2db7142fa83210a7d78d9c12ac49c043b3cbbd482224fea6e3da00aa5a5ae2d',
   cetusConfigId:
     '0xdaa46292632c3c4d8f31f23ea0f9b36a28ff3677e9684980e4438403a67a3d8f',
   turbosPackageId:
-    '0x9df4666296ee324a6f11e9f664e35e7fd6b6e8c9e9058ce6ee9ad5c5343c2f87',
+    '0xd02012c71c1a6a221e540c36c37c81e0224907fe1ee05bfe250025654ff17103',
   kriyaV3Version:
     '0xf5145a7ac345ca8736cf8c76047d00d6d378f30e81be6f6eb557184d9de93c78',
   kriyaV3PackageId:
@@ -37,7 +37,7 @@ export const AggregatorConfig = {
   deepTokenAddress:
     '0xdeeb7a4662eec9f2f3def03fb937a663dddaa2e215b8078a284d026b7946c270::deep::DEEP',
   bluefinPackageId:
-    '0x406f52151e7dd65addd93b0bdad7989e82aec20c3ae6971954a5140f14a59e4b',
+    '0x67b34b728c4e28e704dcfecf7c5cf55c7fc593b6c65c20d1836d97c209c1928a',
   bluefinGlobalConfig:
     '0x03db251ba509a8d5d8777b6338836082335d93eecbdd09a11e190a1cff51c352',
   vSuiPackageId:
@@ -47,11 +47,11 @@ export const AggregatorConfig = {
   haSuiConfigId:
     '0x47b224762220393057ebf4f70501b6e657c3e56684737568439a04f80849b2ca',
   magmaPackageId:
-    '0xc9f008794e70543443bb49bc9719120a6d43bb2cf6b522ec924f495a36b7e69e',
+    "0x49e9f06c58a36830fe0d83291f002012e72b00a4ec9b3a6304c40fc5712bb6e3",
   magmaConfigId:
     '0x4c4e1402401f72c7d8533d0ed8d5f8949da363c7a3319ccef261ffe153d32f8a',
   momentumPackageId:
-    '0x60e8683e01d5611cd13a69aca2b0c9aace7c6b559734df1b4a7ad9d6bddf007b',
+    '0xc84b1ef2ac2ba5c3018e2b8c956ba5d0391e0e46d1daa1926d5a99a6a42526b4',
   momentumVersionId:
     '0x2375a0b1ec12010aaea3b2545acfa2ad34cfbba03ce4b59f4c39e1e25eed1b2a',
   momentumSlippageCheckPackageId:
