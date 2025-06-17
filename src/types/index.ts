@@ -104,6 +104,7 @@ export type Quote = {
     decimals: number;
     price: number;
   };
+  is_accurate?: boolean;
 };
 
 export type FeeOption = {
