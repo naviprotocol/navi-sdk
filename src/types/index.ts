@@ -105,6 +105,7 @@ export type Quote = {
     price: number;
   };
   is_accurate?: boolean;
+  gasUsed?: number;
 };
 
 export type FeeOption = {
