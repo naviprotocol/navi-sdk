@@ -2,9 +2,10 @@ import axios from 'axios';
 import { pool, getConfig } from '../../address';
 import { CoinInfo, Pool, PoolConfig, PoolsResponse, PoolData } from "../../types";
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
+import BigNumber from 'bignumber.js';
 
 type FetchPoolDataArgs = { 
-    poolId: string, 
+    poolId: number, 
     client: SuiClient, 
     reserveParentId: string, 
     poolInfo: any
@@ -26,33 +27,50 @@ type ApiResponse = {
   };
 };
 
-export const fetchPoolData = async ({ poolId, client, reserveParentId, poolInfo }: FetchPoolDataArgs ) => {
-    const poolData = poolInfo[poolId];
-    const result: any = await client.getDynamicFieldObject({ parentId: reserveParentId, name: { type: 'u8', value: poolId } });
-    const filedsData = result.data?.content?.fields?.value?.fields;
-    const total_supply_with_index = poolData.total_supply * filedsData.current_supply_index / 1e27;
-    const total_borrow_with_index = poolData.total_borrow * filedsData.current_borrow_index / 1e27;
+export const fetchPoolData = ({ poolId, client, reserveParentId, poolInfo }: FetchPoolDataArgs) => {
+  const poolData = poolInfo.find((item: any) => item.id === poolId);
 
-    return {
-        coin_type: poolData.coin_type,
-        total_supply: total_supply_with_index,
-        total_borrow: total_borrow_with_index,
-        tokenPrice: poolData.price,
-        base_supply_rate: poolData.supply_rate,
-        base_borrow_rate: poolData.borrow_rate,
-        boosted_supply_rate: poolData.boosted,
-        boosted_borrow_rate: poolData.borrow_reward_apy,
-        supply_cap_ceiling: Number((filedsData.supply_cap_ceiling / 1e36)),
-        borrow_cap_ceiling: Number((filedsData.borrow_cap_ceiling / 1e27).toFixed(2)) * poolData.total_supply,
-        current_supply_utilization: total_supply_with_index / Number((filedsData.supply_cap_ceiling / 1e36)),
-        current_borrow_utilization: total_borrow_with_index / (Number((filedsData.borrow_cap_ceiling / 1e27).toFixed(2)) * poolData.total_supply),
-        optimal_borrow_utilization: (Number(filedsData.borrow_rate_factors?.fields?.optimal_utilization) / 1e27).toFixed(2),
-        pool: poolData.pool,
-        max_ltv: (Number(filedsData.ltv) / 1e27).toFixed(2),
-        liquidation_threshold: (Number(filedsData.liquidation_factors.fields.threshold) / 1e27).toFixed(2),
-        symbol: poolData.symbol,
-        rewardTokenAddress: poolData.rewardTokens,
-    };
+  const toFloat = (value: string, divisor: number) =>
+    new BigNumber(value).dividedBy(divisor).toNumber();
+
+  const result = {
+    coinType: poolData.token.coinType,
+    price: poolData.oracle.price,
+    currentSupplyIndex: toFloat(poolData.currentSupplyIndex, 1e27),
+    currentBorrowIndex: toFloat(poolData.currentBorrowIndex, 1e27),
+    currentSupplyRate: toFloat(poolData.currentSupplyRate, 1e27),
+    currentBorrowRate: toFloat(poolData.currentBorrowRate, 1e27),
+    totalSupply: toFloat(poolData.totalSupply, 1e9),
+    totalBorrow: toFloat(poolData.totalBorrow, 1e9),
+    supplyCapCeiling: toFloat(poolData.supplyCapCeiling, 1e27),
+    borrowCapCeiling: toFloat(poolData.borrowCapCeiling, 1e27),
+    optimalUtilization: toFloat(poolData.borrowRateFactors.fields.optimalUtilization, 1e27),
+    liquidationFactors: poolData.liquidationFactor.threshold,
+    ltv: toFloat(poolData.ltv, 1e27),
+  };
+  const total_supply_with_index = result.totalSupply * result.currentSupplyIndex;
+  const total_borrow_with_index = result.totalBorrow * result.currentBorrowIndex;
+
+  return {
+    coin_type: result.coinType,
+    total_supply: total_supply_with_index,
+    total_borrow: total_borrow_with_index,
+    tokenPrice: result.price,
+    base_borrow_rate: (result.currentBorrowRate * 100).toString(),
+    base_supply_rate: (result.currentSupplyRate * 100).toString(),
+    boosted_supply_rate: poolData.supplyIncentiveApyInfo.boostedApr,
+    boosted_borrow_rate: poolData.borrowIncentiveApyInfo.boostedApr,
+    supply_cap_ceiling: result.supplyCapCeiling,
+    borrow_cap_ceiling: result.borrowCapCeiling * result.totalSupply,
+    current_supply_utilization: total_supply_with_index / result.supplyCapCeiling,
+    current_borrow_utilization: total_borrow_with_index / (result.borrowCapCeiling * result.totalSupply),
+    optimal_borrow_utilization: result.optimalUtilization.toString(),
+    pool: `${poolData.token.symbol}-Sui`,
+    max_ltv: result.ltv.toString(),
+    liquidation_threshold: result.liquidationFactors,
+    symbol: poolData.token.symbol,
+    rewardTokenAddress: [...new Set([...poolData.borrowIncentiveApyInfo.rewardCoin, ...poolData.supplyIncentiveApyInfo.rewardCoin])],
+  };
 };
 
 export const fetchFlashloanData = async (client: SuiClient) => {
@@ -102,20 +120,24 @@ export async function getPoolInfo(coin?: CoinInfo, client?: SuiClient) {
     }
 
     try {
-        const response = await axios.get('https://api-defi.naviprotocol.io/getIndexAssetData');
-        const poolInfo = response.data;
+        const response = await axios.get('https://open-api.naviprotocol.io/api/navi/pools');
+        const poolInfo = response.data.data;
         const config = await getConfig();
         const poolResults: { [key: string]: any } = {};
 
         if (coin) {
             const pool_real: PoolConfig = pool[coin.symbol as keyof Pool];
-            const poolId = String(pool_real.assetId);
-            return await fetchPoolData({ poolId, reserveParentId: config.ReserveParentId, client, poolInfo });
+            const poolId = pool_real.assetId;
+            return fetchPoolData({ poolId, reserveParentId: config.ReserveParentId, client, poolInfo });
         } else {
-            for (const poolId in poolInfo) {
-                if (poolInfo.hasOwnProperty(poolId)) {
-                    poolResults[poolId] = await fetchPoolData({ poolId, reserveParentId: config.ReserveParentId, client, poolInfo });
-                }
+          for (const pool of poolInfo) {
+            const poolId = pool.id;
+            poolResults[poolId] = fetchPoolData({
+              poolId,
+              reserveParentId: config.ReserveParentId,
+              client,
+              poolInfo,
+            });
             }
             return poolResults;
         }
