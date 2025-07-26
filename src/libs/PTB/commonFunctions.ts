@@ -230,7 +230,7 @@ export async function getHealthFactorPTB(txb: Transaction, address: string) {
     const config = await getConfig();
 
     const balance = txb.moveCall({
-        target: `${config.ProtocolPackage}::logic::user_health_factor`,
+        target: `${config.uiGetter}::logic_getter_unchecked::user_health_factor`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.StorageId), // object id of storage
@@ -703,6 +703,23 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.XBTC);
 }
 
+export async function updateOracleByIdsPTB(client: SuiClient, txb: Transaction, oracleIds: number[]) {
+    const matchedConfigs = Object.values(PriceFeedConfig).filter((cfg) =>
+        oracleIds.includes(cfg.oracleId)
+    );
+    const pythPriceFeedIds = Array.from(
+        new Set(matchedConfigs.map((item) => item.pythPriceFeedId))
+    );
+    const stalePriceFeedIds = await getPythStalePriceFeedId(pythPriceFeedIds)
+    if (stalePriceFeedIds.length > 0) {
+        await updatePythPriceFeeds(client, txb, stalePriceFeedIds)
+        console.info(`request update pyth price feed, ids: ${stalePriceFeedIds}`)
+    }
+
+    for (const config of matchedConfigs) {
+        updateSinglePrice(txb, config);
+    }
+}
 
 
 /**

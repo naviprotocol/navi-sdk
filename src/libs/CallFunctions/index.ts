@@ -137,7 +137,7 @@ export async function getHealthFactorCall(address: string, client: SuiClient) {
     const config = await getConfig();
     const tx = new Transaction();
 
-    const result: any = await moveInspect(tx, client, address, `${config.ProtocolPackage}::logic::user_health_factor`, [
+    const result: any = await moveInspect(tx, client, address, `${config.uiGetter}::logic_getter_unchecked::user_health_factor`, [
         tx.object('0x06'), // clock object id
         tx.object(config.StorageId), // object id of storage
         tx.object(config.PriceOracle), // object id of price oracle

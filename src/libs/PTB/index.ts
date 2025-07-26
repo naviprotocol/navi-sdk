@@ -17,6 +17,7 @@ export {
   claimAllRewardsPTB,
   registerStructs,
   updateOraclePTB,
+  updateOracleByIdsPTB,
   claimAllRewardsResupplyPTB,
   claimRewardsByAssetIdPTB
 } from "./commonFunctions";
