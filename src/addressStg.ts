@@ -67,6 +67,8 @@ export const AddressMap: Record<string, string> = {
     "HAEDAL",
   "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC":
     "XBTC",
+  "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA":
+    "IKA",
 };
 
 export function getPackageCache(): string | undefined {
@@ -113,7 +115,7 @@ export const getConfig = async () => {
     IncentiveV2:
       "0x952b6726bbcc08eb14f38a3632a3f98b823f301468d7de36f1d05faaef1bdd2a",
     IncentiveV3:
-      "0x5db4063954356f37ebdc791ec30f4cfd39734feff18820ee44dc2d2de96db899",
+      "0x62982dad27fb10bb314b3384d5de8d2ac2d72ab2dbeae5d801dbdb9efa816c80",
 
     PriceOracle:
       "0x25c718f494ff63021f75642ecaaeda826f44b2d9d59859a8ad45ef0fba9626f2",
@@ -377,7 +379,7 @@ export const pool: { [key: string]: PoolConfig } = {
     assetId: 17,
     poolId:
       "0xc0dd8dc69de288c37d531cbca6098ded14d06d21e595053759435d68e12fe434",
-    type: "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::weth::WETH",
+    type: "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
     reserveObjectId:
       "0x5e89d2f1efeceed394e5feca32ccb873afa3ac494124d3d5247e706c12214870",
     borrowBalanceParentId:
@@ -552,6 +554,20 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xd1e5741f6db1f507fbbc8913ec739755b874584114ab1e33b61bdac2dbe08fae",
     supplyBalanceParentId:
       "0x0cf9f62b259ca38f95c236db4f55a84e0cb0e5bd7865ccd6ebf327da426bd8c1",
+    rewardFundId: "",
+  },
+  IKA: {
+    name: "IKA",
+    assetId: 30,
+    poolId:
+      "0xc897b53642b2e2cf0408fc9b6977330ee22f36c34ab85c87fcb9c83b68720e10",
+    type: "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
+    reserveObjectId:
+      "0x1c260cd2eb1ec482a1964b1e743c2730d744b52d2a354d36ba19c36d4b619c36",
+    borrowBalanceParentId:
+      "0xcbfd9c3c89d7078a3b6caa41600b9a9a7b58b251e7b630fef41116cd9fdaca52",
+    supplyBalanceParentId:
+      "0x4cdb2f0b2635f8651f9ab6cd769e8429dbd57e81181090cd8691a25081c1221c",
     rewardFundId: "",
   },
   HIPPO: {
@@ -784,6 +800,12 @@ export const XBTC: CoinInfo = {
   address:
     "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC",
   decimal: 8,
+};
+export const IKA: CoinInfo = {
+  symbol: "IKA",
+  address:
+    "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
+  decimal: 9,
 };
 
 export const HIPPO: CoinInfo = {
@@ -1212,7 +1234,7 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 5 * 60 * 1000, // 5min(millisecond)
     coinType:
-      "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::weth::WETH",
+      "0xd0e89b2af5e4910726fbcd8b8dd37bb79b29e5f83f7491bca830e94f7f226d29::eth::ETH",
     feedId:
       "0x9a6ffc707270286e98e8d0f654ce38f69efbc302ac98e2deb11fbad2211600f0", // TODO: value
     supraPairId: 1, // ETH_USDT -> 1, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Supra%20Premium-,ETH_USDT,-1
@@ -1490,7 +1512,28 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     priceDecimal: 8,
     expiration: 30,
   },
-
+  IKA: {
+    oracleId: 32,
+    maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 4000, // 40% = 0.4 * 10000 = 4000
+    maximumEffectivePrice: 2000000000, // 2 = 2 * 1e9 = 2000000000
+    minimumEffectivePrice: 10000000, // 0.01 = 0.01 * 1e9 = 10000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType:
+      "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
+    feedId:
+      "0xf263a09abec30287661136eb9e71d2d9cb2cf8bde57f1bed8214dd5abcb7493f", // TODO: value
+    supraPairId: 99999, // none
+    pythPriceFeedId:
+      "0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a", // **fixed value: Crypto.USDC/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject:
+      "0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab",
+    priceDecimal: 9,
+    expiration: 30,
+  },
   HIPPO: {
     oracleId: 88,
     maxTimestampDiff: 30000, // 30s(millisecond)

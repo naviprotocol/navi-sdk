@@ -41,6 +41,7 @@ export interface Pool {
   WAL: PoolConfig;
   HAEDAL: PoolConfig;
   XBTC: PoolConfig;
+  IKA: PoolConfig;
 }
 
 export interface PoolConfig {
