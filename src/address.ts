@@ -62,6 +62,8 @@ export const AddressMap: Record<string, string> = {
     "HAEDAL",
   "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC":
     "XBTC",
+  "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA":
+    "IKA",
 };
 
 // if the cache is not set, return the default protocol package.
@@ -512,6 +514,20 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xdeec1fb37d7ea634bd329f9e02d2d564956f778a490f1d47a899865266d086cd",
     rewardFundId: "",
   },
+  IKA: {
+    name: "IKA",
+    assetId: 27,
+    poolId:
+      "0x3566577feaba2f24b9e0b315a10f1afe04e7d275c2da6f28caeba095d00dee8d",
+    type: "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
+    reserveObjectId:
+      "0x96e0827599a28f7eadeaa5165a67c4a5414d21f55070c61b5b66583b2a845d6d",
+    borrowBalanceParentId:
+      "0xd7dcdf9305157638569b030e127392834d73a79ce0f64c51866a864cb7f11247",
+    supplyBalanceParentId:
+      "0x424143c7ddf4080f4f9e8eb3bcc9a6ebed10c8a3f3b99d2d32fd495067f593be",
+    rewardFundId: "0xd378384c3a93869cac01098b045dc5d9bdbe254cb0562644db473daf2090f3df",
+  },
 };
 
 export const flashloanConfig = {
@@ -704,6 +720,13 @@ export const XBTC: CoinInfo = {
   address:
     "0x876a4b7bce8aeaef60464c11f4026903e9afacab79b9b142686158aa86560b50::xbtc::XBTC",
   decimal: 8,
+};
+
+export const IKA: CoinInfo = {
+  symbol: "IKA",
+  address:
+    "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
+  decimal: 9,
 };
 
 export const vSuiConfig = {
@@ -1329,6 +1352,28 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     pythPriceInfoObject:
       "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
     priceDecimal: 8,
+    expiration: 30,
+  },
+  IKA: {
+    oracleId: 27,
+    maxTimestampDiff: 30 * 1000, // 30s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 4000, // 40% = 0.4 * 10000 = 4000
+    maximumEffectivePrice: 2000000000, // 2 = 2 * 1e9 = 2000000000
+    minimumEffectivePrice: 10000000, // 0.01 = 0.01 * 1e9 = 10000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType:
+      "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
+    feedId:
+      "0xebe4e84fd1b1e28622274640c1bce7f4d79f43e95c6f54bec3880781b88a0d92", // TODO: value
+    supraPairId: 99999, // none
+    pythPriceFeedId:
+      "0x2b529621fa6e2c8429f623ba705572aa64175d7768365ef829df6a12c9f365f4", // **fixed value: Crypto.USDC/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject:
+      "0x06c6b9e6eb87da329189e713b7fb319cc7990cf5abf192862a443f939eedc43b",
+    priceDecimal: 9,
     expiration: 30,
   },
 };
