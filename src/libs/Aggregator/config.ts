@@ -56,6 +56,8 @@ export const AggregatorConfig = {
     '0x2375a0b1ec12010aaea3b2545acfa2ad34cfbba03ce4b59f4c39e1e25eed1b2a',
   momentumSlippageCheckPackageId:
     '0x8add2f0f8bc9748687639d7eb59b2172ba09a0172d9e63c029e23a7dbdb6abe6',
+  springSuiPackageId:
+    '0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf',
 };
 
 export function updateConfig(newConfig: Partial<typeof AggregatorConfig>) {

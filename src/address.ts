@@ -14,6 +14,8 @@ export const AddressMap: Record<string, string> = {
     "NAVX",
   "0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT":
     "vSui",
+  "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI":
+    "SpringSui",
   "0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN":
     "wUSDC", //wormhole usdc
   "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN":
@@ -729,6 +731,13 @@ export const IKA: CoinInfo = {
   decimal: 9,
 };
 
+export const SpringSui: CoinInfo = {
+  symbol: "SpringSui",
+  address:
+    "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
+  decimal: 9,
+};
+
 export const vSuiConfig = {
   ProtocolPackage:
     "0x68d22cf8bdbcd11ecba1e094922873e4080d4d11133e2443fddda0bfd11dae20",
@@ -736,6 +745,12 @@ export const vSuiConfig = {
   metadata:
     "0x680cd26af32b2bde8d3361e804c53ec1d1cfe24c7f039eb7f549e8dfde389a60",
   wrapper: "0x05",
+};
+
+export const springSuiConfig = {
+  id: "0x15eda7330c8f99c30e430b4d82fd7ab2af3ead4ae17046fcb224aa9bad394f6b",
+  type: "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
+  weightHookId: "0xbbafcb2d7399c0846f8185da3f273ad5b26b3b35993050affa44cfa890f1f144",
 };
 
 export interface IPriceFeed {

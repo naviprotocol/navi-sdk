@@ -23,6 +23,7 @@
     "@mysten/sui.js": "^0.54.1",
     "@pythnetwork/pyth-sui-js": "^2.1.0",
     "@solana/web3.js": "^1.98.0",
+    "@suilend/springsui-sdk": "latest",
     "axios": "^1.7.7",
     "bignumber.js": "^9.1.2",
     "crypto-js": "^4.2.0",
