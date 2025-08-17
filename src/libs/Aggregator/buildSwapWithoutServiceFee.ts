@@ -33,7 +33,8 @@ export async function buildSwapWithoutServiceFee(
   quote: Quote,
   minAmountOut: number,
   referral: number = 0,
-  ifPrint: boolean = true
+  ifPrint: boolean = true,
+  client?: any
 ): Promise<TransactionResult> {
   const tokenA = quote.from;
   const tokenB = quote.target;
