@@ -280,7 +280,7 @@ export async function buildSwapWithoutServiceFee(
           pathTempCoin = outputCoin;
           break;
         }
-        case Dex.SPRING_SUI: {
+        case Dex.SSUI: {
           pathTempCoin = await makeSpringSuiPTB(txb, pathTempCoin, a2b);
           break;
         }
