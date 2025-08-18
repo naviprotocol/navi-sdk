@@ -702,6 +702,8 @@ export async function updateOraclePTB(client: SuiClient, txb: Transaction) {
     updateSinglePrice(txb, PriceFeedConfig.HAEDAL);
     updateSinglePrice(txb, PriceFeedConfig.XBTC);
     updateSinglePrice(txb, PriceFeedConfig.IKA);
+    updateSinglePrice(txb, PriceFeedConfig.EnzoBTC);
+    updateSinglePrice(txb, PriceFeedConfig.MBTC);
 }
 
 export async function updateOracleByIdsPTB(client: SuiClient, txb: Transaction, oracleIds: number[]) {

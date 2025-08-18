@@ -42,6 +42,8 @@ export interface Pool {
   HAEDAL: PoolConfig;
   XBTC: PoolConfig;
   IKA: PoolConfig;
+  EnzoBTC: PoolConfig;
+  MBTC: PoolConfig;
 }
 
 export interface PoolConfig {

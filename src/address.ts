@@ -66,6 +66,10 @@ export const AddressMap: Record<string, string> = {
     "XBTC",
   "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA":
     "IKA",
+  "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN":
+    "EnzoBTC",
+  "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC":
+    "MBTC",
 };
 
 // if the cache is not set, return the default protocol package.
@@ -530,6 +534,34 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x424143c7ddf4080f4f9e8eb3bcc9a6ebed10c8a3f3b99d2d32fd495067f593be",
     rewardFundId: "0xd378384c3a93869cac01098b045dc5d9bdbe254cb0562644db473daf2090f3df",
   },
+  EnzoBTC: {
+    name: "EnzoBTC",
+    assetId: 28,
+    poolId:
+      "0x35017707dfbacfc79e9cbd9d36bd7df02be9fc7fe8ad5765b20517a6971616d2",
+    type: "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN",
+    reserveObjectId:
+      "0xe10cb3da49d69a525d1dc5e6c203f09050cbecf2e36af6d7da10f954fc8cf0d5",
+    borrowBalanceParentId:
+      "0xc2b07a060e3549331d236e53c0fe0c94088e7967e58a4380f279feb9d880653e",
+    supplyBalanceParentId:
+      "0x1e0f6b432e96428c97cca7bea1af8c0c67e143456525d0224b257f724372793c",
+    rewardFundId: "",
+  },
+  MBTC: {
+    name: "MBTC",
+    assetId: 29,
+    poolId:
+      "0x1cea8c1275b3ec9d61faaf2d5bde53c0a5c8a7f939a68f7cf5ad4b9ed38b8e78",
+    type: "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC",
+    reserveObjectId:
+      "0x17665e447178ba70dd291a6b24812c0c718dc008d4bc135b1f745c6b19197156",
+    borrowBalanceParentId:
+      "0xaa3bc8cf77c8b5343d31df359bdb335f08b2737ec21d85b6524a37d91a01c3bf",
+    supplyBalanceParentId:
+      "0xc2f93d7280de7ed2fc88e59dfe271ffe696a44e6600b82be728e015a75727943",
+    rewardFundId: "",
+  },
 };
 
 export const flashloanConfig = {
@@ -729,6 +761,20 @@ export const IKA: CoinInfo = {
   address:
     "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
   decimal: 9,
+};
+
+export const EnzoBTC: CoinInfo = {
+  symbol: "EnzoBTC",
+  address:
+    "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN",
+  decimal: 8,
+};
+
+export const MBTC: CoinInfo = {
+  symbol: "MBTC",
+  address:
+    "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC",
+  decimal: 8,
 };
 
 export const SpringSui: CoinInfo = {
@@ -1390,6 +1436,42 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
       "0x06c6b9e6eb87da329189e713b7fb319cc7990cf5abf192862a443f939eedc43b",
     priceDecimal: 9,
     expiration: 30,
+  },
+  EnzoBTC: {
+    oracleId: 28,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType: '0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN',
+    feedId: '0xc7f87ba22d24e8ce5764f05f775c10f87fc04e2a411c6ad7922fc936e8f7b8e3', // TODO: value
+    supraPairId: 99999,
+    pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+    pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+    priceDecimal: 8,
+    expiration: 60,
+  },
+  MBTC: {
+    oracleId: 29,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType: '0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC',
+    feedId: '0x1d7e07f8fcc6a51d55d69f425cdc84c23807aeac6516dc5d909fe537d7c6eeb1', // TODO: value
+    supraPairId: 99999,
+    pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+    pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+    priceDecimal: 8,
+    expiration: 60,
   },
 };
 

@@ -69,6 +69,10 @@ export const AddressMap: Record<string, string> = {
     "XBTC",
   "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA":
     "IKA",
+  "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN":
+    "EnzoBTC",
+  "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC":
+    "MBTC",
 };
 
 export function getPackageCache(): string | undefined {
@@ -104,7 +108,7 @@ async function updateCacheIfNeeded() {
 }
 
 export const getConfig = async () => {
-  await updateCacheIfNeeded();
+  // await updateCacheIfNeeded();
   // const protocolPackage = getPackageCache();
   const protocolPackage =
     "0x8200ce83e1bc0894b641f0a466694b4f6e25d3f9cc3093915a887ec9e7f3395e";
@@ -115,7 +119,7 @@ export const getConfig = async () => {
     IncentiveV2:
       "0x952b6726bbcc08eb14f38a3632a3f98b823f301468d7de36f1d05faaef1bdd2a",
     IncentiveV3:
-      "0x62982dad27fb10bb314b3384d5de8d2ac2d72ab2dbeae5d801dbdb9efa816c80",
+      "0x5db4063954356f37ebdc791ec30f4cfd39734feff18820ee44dc2d2de96db899",
 
     PriceOracle:
       "0x25c718f494ff63021f75642ecaaeda826f44b2d9d59859a8ad45ef0fba9626f2",
@@ -570,6 +574,35 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x4cdb2f0b2635f8651f9ab6cd769e8429dbd57e81181090cd8691a25081c1221c",
     rewardFundId: "",
   },
+  EnzoBTC: {
+    name: "EnzoBTC",
+    assetId: 31,
+    poolId:
+      "0x62ea1762ce20b0a51686c955b609a078d6b08fb682f6f7f38944662a3d01ba1b",
+    type: "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN",
+    reserveObjectId:
+      "0x1b79ebbe34535e90ec7f17782689dbc05ab026f15c5d96be88f821a22ff94335",
+    borrowBalanceParentId:
+      "0xec94b35c2e19d8483b263cbd7091c27a5b15b0cc6ad3b5e0074e33ee1250de8e",
+    supplyBalanceParentId:
+      "0x7ef03598e17c43945fba615731ea7128b06e8779146614ee48d65c75e9ec48fa",
+    rewardFundId: "",
+  },
+  MBTC: {
+    name: "MBTC",
+    assetId: 32,
+    poolId:
+      "0x30dab9ab6ad00d3faed9c05c127e8d17caf3a3ddff17298651824056c714a0fb",
+    type: "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC",
+    reserveObjectId:
+      "0xa688befe69f9e0533550ed68a2fee88ceb24fe8276c36ef8ad7f10832b9bd4ef",
+    borrowBalanceParentId:
+      "0xc170c3897a3d74ecd9e8512af54b93c1441b227d9711b27f1e61c4b3cf90a834",
+    supplyBalanceParentId:
+      "0x7e13096c08060830411c885400db6ce537827c3307c4a63e2be288ad7433a177",
+    rewardFundId: "",
+  },
+
   HIPPO: {
     name: "HIPPO",
     assetId: 88,
@@ -806,6 +839,18 @@ export const IKA: CoinInfo = {
   address:
     "0x7262fb2f7a3a14c888c438a3cd9b912469a58cf60f367352c46584262e8299aa::ika::IKA",
   decimal: 9,
+};
+export const EnzoBTC: CoinInfo = {
+  symbol: "EnzoBTC",
+  address:
+    "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN",
+  decimal: 8,
+};
+export const MBTC: CoinInfo = {
+  symbol: "MBTC",
+  address:
+    "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC",
+  decimal: 8,
 };
 
 export const HIPPO: CoinInfo = {
@@ -1534,6 +1579,42 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     priceDecimal: 9,
     expiration: 30,
   },
+  EnzoBTC: {
+    oracleId: 33,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType: '0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN',
+    feedId: '0xf45e84ab99e5ca2c1c1476a2435f7440313197ed0d35eda63dd2bf4cf2ce4b36', // TODO: value
+    supraPairId: 99999,
+    pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+    pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+    priceDecimal: 8,
+    expiration: 60,
+},
+MBTC: {
+  oracleId: 34,
+  maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+  priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+  priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+  maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+  maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+  maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+  minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+  historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+  coinType: '0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC',
+  feedId: '0x6b1a30b11e74e15212feb2bcea9cc7139e3234f8a6947c3e3678382e9c603aa5', // TODO: value
+  supraPairId: 99999,
+  pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
+  pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+  priceDecimal: 8,
+  expiration: 60,
+},
   HIPPO: {
     oracleId: 88,
     maxTimestampDiff: 30000, // 30s(millisecond)
