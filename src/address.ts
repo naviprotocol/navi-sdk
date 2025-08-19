@@ -732,7 +732,7 @@ export const IKA: CoinInfo = {
 };
 
 export const SpringSui: CoinInfo = {
-  symbol: "SpringSui",
+  symbol: "sSui",
   address:
     "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
   decimal: 9,

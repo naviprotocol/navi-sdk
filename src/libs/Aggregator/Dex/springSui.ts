@@ -11,42 +11,28 @@ export async function makeSpringSuiPTB(
 ) {
   let coinB;
   
-  if (a2b) {
-    // Mint: SUI -> SpringSui (rSUI)
-    console.log("🔄 Building Spring Sui mint transaction (direct moveCall)...");
-    
-    // 直接调用 moveCall，与 suilend SDK 底层完全一致
+  if (a2b) {    
     const [lst] = txb.moveCall({
       target: `${springSuiConfig.id}::liquid_staking::mint`,
       typeArguments: [springSuiConfig.type],
       arguments: [
-        txb.object(springSuiConfig.id),           // self: Spring Sui合约对象
-        txb.object(SUI_SYSTEM_STATE_ID),          // systemState: Sui系统状态
-        pathTempCoin,                             // sui: 用户输入的SUI代币
+        txb.object(springSuiConfig.id),         
+        txb.object(SUI_SYSTEM_STATE_ID),         
+        pathTempCoin,                        
       ],
     });
-    
-    coinB = lst;
-    console.log("✅ Spring Sui mint transaction built successfully (direct moveCall)");
-    
-  } else {
-    // Redeem: SpringSui (rSUI) -> SUI
-    console.log("🔄 Building Spring Sui redeem transaction (direct moveCall)...");
-    
-    // 直接调用 moveCall，与 suilend SDK 底层完全一致
+    coinB = lst;    
+  } else {    
     const [sui] = txb.moveCall({
       target: `${springSuiConfig.id}::liquid_staking::redeem`,
       typeArguments: [springSuiConfig.type],
       arguments: [
-        txb.object(springSuiConfig.id),           // self: Spring Sui合约对象
-        pathTempCoin,                             // lst: 用户输入的Spring Sui代币
-        txb.object(SUI_SYSTEM_STATE_ID),          // systemState: Sui系统状态
+        txb.object(springSuiConfig.id),           
+        pathTempCoin,                             
+        txb.object(SUI_SYSTEM_STATE_ID),         
       ],
     });
-    
     coinB = sui;
-    console.log("✅ Spring Sui redeem transaction built successfully (direct moveCall)");
   }
-  
   return coinB;
 }
