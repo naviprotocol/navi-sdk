@@ -1,7 +1,6 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { springSuiConfig } from "../../../address";
 
-// 从 @suilend/springsui-sdk 源码中提取的常量
 const SUI_SYSTEM_STATE_ID = "0x0000000000000000000000000000000000000000000000000000000000000005";
 
 export async function makeSpringSuiPTB(
