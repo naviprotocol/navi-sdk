@@ -12,11 +12,11 @@ const localBaseUrl = "http://localhost:8000/find_routes";
 const coins = {
   sui: {
     address: "0x2::sui::SUI",
-    holder: "0x394482448a69618e8c73d36e086805b2a60da6faa07791966c2599f0c074d876"
+    holder: "0x80841329787fd577639add61cc955ace969af60fadfb05b8ff752c2de4a8aa65"
   },
   sSui: {
     address: "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
-    holder: "0x394482448a69618e8c73d36e086805b2a60da6faa07791966c2599f0c074d876"
+    holder: "0x80841329787fd577639add61cc955ace969af60fadfb05b8ff752c2de4a8aa65"
   },
 };
 
