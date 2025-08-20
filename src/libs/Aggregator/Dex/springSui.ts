@@ -12,7 +12,7 @@ export async function makeSpringSuiPTB(
   
   if (a2b) {    
     const [lst] = txb.moveCall({
-      target: `${springSuiConfig.id}::liquid_staking::mint`,
+      target: `${springSuiConfig.publishAt}::liquid_staking::mint`,
       typeArguments: [springSuiConfig.type],
       arguments: [
         txb.object(springSuiConfig.id),         
@@ -20,10 +20,11 @@ export async function makeSpringSuiPTB(
         pathTempCoin,                        
       ],
     });
+    
     coinB = lst;    
   } else {    
     const [sui] = txb.moveCall({
-      target: `${springSuiConfig.id}::liquid_staking::redeem`,
+      target: `${springSuiConfig.publishAt}::liquid_staking::redeem`,
       typeArguments: [springSuiConfig.type],
       arguments: [
         txb.object(springSuiConfig.id),           
