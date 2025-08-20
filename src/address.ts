@@ -68,6 +68,8 @@ export const AddressMap: Record<string, string> = {
     "EnzoBTC",
   "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC":
     "MBTC",
+  "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI":
+    "SpringSui",
 };
 
 // if the cache is not set, return the default protocol package.
@@ -775,6 +777,13 @@ export const MBTC: CoinInfo = {
   decimal: 8,
 };
 
+export const SpringSui: CoinInfo = {
+  symbol: "sSui",
+  address:
+    "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
+  decimal: 9,
+};
+
 export const vSuiConfig = {
   ProtocolPackage:
     "0x68d22cf8bdbcd11ecba1e094922873e4080d4d11133e2443fddda0bfd11dae20",
@@ -783,6 +792,14 @@ export const vSuiConfig = {
     "0x680cd26af32b2bde8d3361e804c53ec1d1cfe24c7f039eb7f549e8dfde389a60",
   wrapper: "0x05",
 };
+
+export const springSuiConfig = {
+  id: "0x15eda7330c8f99c30e430b4d82fd7ab2af3ead4ae17046fcb224aa9bad394f6b",
+  publishAt: "0xb0575765166030556a6eafd3b1b970eba8183ff748860680245b9edd41c716e7",
+  type: "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
+  weightHookId: "0xbbafcb2d7399c0846f8185da3f273ad5b26b3b35993050affa44cfa890f1f144",
+};
+
 
 export interface IPriceFeed {
   oracleId: number;

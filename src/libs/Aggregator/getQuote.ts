@@ -34,7 +34,7 @@ export async function getQuote(
         amount: (typeof amountIn === 'bigint' ? Number(amountIn) : amountIn).toString(),
         by_amount_in: swapOptions?.byAmountIn !== undefined ? swapOptions.byAmountIn.toString() : 'true',
         depth: swapOptions?.depth !== undefined ? swapOptions.depth.toString() : '3',
-        version: '9'
+        version: '10'
     }).toString();
 
     // Construct dex provider string if dexList is provided
