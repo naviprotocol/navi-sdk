@@ -44,6 +44,8 @@ export interface Pool {
   IKA: PoolConfig;
   EnzoBTC: PoolConfig;
   MBTC: PoolConfig;
+  YBTC: PoolConfig;
+  XAUM: PoolConfig;
 }
 
 export interface PoolConfig {
