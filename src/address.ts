@@ -70,6 +70,10 @@ export const AddressMap: Record<string, string> = {
     "MBTC",
   "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI":
     "SpringSui",
+  "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC":
+    "YBTC",
+  "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM":
+    "XAUM",
 };
 
 // if the cache is not set, return the default protocol package.
@@ -123,7 +127,6 @@ export const getConfig = async () => {
     ReserveParentId:
       "0xe6d4c6610b86ce7735ea754596d71d72d10c7980b5052fc3c8cdf8d09fea9b4b", // get it from storage object id. storage.reserves
     uiGetter:
-      // "0x9fc07f422912997425114d97ccdfd4ff31b7d1f1b314cd41b57f5cb3697cedab",
       "0xf56370478288b5e1838769929823efaed88bf7ad89040d8a2ac391d6bd0aa2f2",
     flashloanConfig:
       "0x3672b2bf471a60c30a03325f104f92fb195c9d337ba58072dce764fe2aa5e2dc",
@@ -532,7 +535,8 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xd7dcdf9305157638569b030e127392834d73a79ce0f64c51866a864cb7f11247",
     supplyBalanceParentId:
       "0x424143c7ddf4080f4f9e8eb3bcc9a6ebed10c8a3f3b99d2d32fd495067f593be",
-    rewardFundId: "0xd378384c3a93869cac01098b045dc5d9bdbe254cb0562644db473daf2090f3df",
+    rewardFundId:
+      "0xd378384c3a93869cac01098b045dc5d9bdbe254cb0562644db473daf2090f3df",
   },
   EnzoBTC: {
     name: "EnzoBTC",
@@ -560,6 +564,34 @@ export const pool: { [key: string]: PoolConfig } = {
       "0xaa3bc8cf77c8b5343d31df359bdb335f08b2737ec21d85b6524a37d91a01c3bf",
     supplyBalanceParentId:
       "0xc2f93d7280de7ed2fc88e59dfe271ffe696a44e6600b82be728e015a75727943",
+    rewardFundId: "",
+  },
+  YBTC: {
+    name: "YBTC",
+    assetId: 30,
+    poolId:
+      "0xadc7f434a042018d41d08c9e9efc851a6fcaeb779273755d47a5029f056206ef",
+    type: "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC",
+    reserveObjectId:
+      "0x052727f47790aff100bdd3e53aa5dbfd1c55ab632713021e7ad4722dc91d8474",
+    borrowBalanceParentId:
+      "0x73fd2ced34429783b9cba6457fde8f8608a2f7310515cd14295f54febbcd44c2",
+    supplyBalanceParentId:
+      "0xf12fa3cd399500713ace89e6154647cda48687fec3774c44b2552b9de0b4be1c",
+    rewardFundId: "",
+  },
+  XAUM: {
+    name: "XAUM",
+    assetId: 31,
+    poolId:
+      "0x33b2924f2b7e12112a134ad69d9f2b3565c316b0a756e328abe9914c8deca034",
+    type: "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM",
+    reserveObjectId:
+      "0x520aaee2b1b1172ef23e66cdca01dc35acd44a2e2ee293843ea4a4511f3f7110",
+    borrowBalanceParentId:
+      "0xbc41da647d04a24e7faa5a46be036caca1c746708a75718e44f0fbf241d42a9c",
+    supplyBalanceParentId:
+      "0x79b6e696058bd666e536d43f810c012172c8968fea5e4332dd416a495574adf5",
     rewardFundId: "",
   },
 };
@@ -784,6 +816,20 @@ export const SpringSui: CoinInfo = {
   decimal: 9,
 };
 
+export const YBTC: CoinInfo = {
+  symbol: "YBTC",
+  address:
+    "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC",
+  decimal: 8,
+};
+
+export const XAUM: CoinInfo = {
+  symbol: "XAUM",
+  address:
+    "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM",
+  decimal: 9,
+};
+
 export const vSuiConfig = {
   ProtocolPackage:
     "0x68d22cf8bdbcd11ecba1e094922873e4080d4d11133e2443fddda0bfd11dae20",
@@ -795,11 +841,12 @@ export const vSuiConfig = {
 
 export const springSuiConfig = {
   id: "0x15eda7330c8f99c30e430b4d82fd7ab2af3ead4ae17046fcb224aa9bad394f6b",
-  publishAt: "0xb0575765166030556a6eafd3b1b970eba8183ff748860680245b9edd41c716e7",
+  publishAt:
+    "0xb0575765166030556a6eafd3b1b970eba8183ff748860680245b9edd41c716e7",
   type: "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
-  weightHookId: "0xbbafcb2d7399c0846f8185da3f273ad5b26b3b35993050affa44cfa890f1f144",
+  weightHookId:
+    "0xbbafcb2d7399c0846f8185da3f273ad5b26b3b35993050affa44cfa890f1f144",
 };
-
 
 export interface IPriceFeed {
   oracleId: number;
@@ -1449,11 +1496,15 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
-    coinType: '0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN',
-    feedId: '0xc7f87ba22d24e8ce5764f05f775c10f87fc04e2a411c6ad7922fc936e8f7b8e3', // TODO: value
+    coinType:
+      "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN",
+    feedId:
+      "0xc7f87ba22d24e8ce5764f05f775c10f87fc04e2a411c6ad7922fc936e8f7b8e3", // TODO: value
     supraPairId: 99999,
-    pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
-    pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+    pythPriceFeedId:
+      "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+    pythPriceInfoObject:
+      "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
     priceDecimal: 8,
     expiration: 60,
   },
@@ -1467,12 +1518,60 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
-    coinType: '0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC',
-    feedId: '0x1d7e07f8fcc6a51d55d69f425cdc84c23807aeac6516dc5d909fe537d7c6eeb1', // TODO: value
+    coinType:
+      "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC",
+    feedId:
+      "0x1d7e07f8fcc6a51d55d69f425cdc84c23807aeac6516dc5d909fe537d7c6eeb1", // TODO: value
     supraPairId: 99999,
-    pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
-    pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+    pythPriceFeedId:
+      "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+    pythPriceInfoObject:
+      "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
     priceDecimal: 8,
+    expiration: 60,
+  },
+  YBTC: {
+    oracleId: 30,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType:
+      "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC",
+    feedId:
+      "0x9efc82d7786261800fa78fa347e1b39bf3d3808e4a3e192fb3677fa78a324928", // TODO: value
+    supraPairId: 99999,
+    pythPriceFeedId:
+      "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+    pythPriceInfoObject:
+      "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
+    priceDecimal: 8,
+    expiration: 60,
+  },
+  XAUM: {
+    oracleId: 31,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 200,
+    priceDiffThreshold2: 400,
+    maxDurationWithinThresholds: 30000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 3000, // 30% = 0.3 * 10000 = 3000
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e9 = 500000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e9 = 1000000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType:
+      "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM",
+    feedId:
+      "0x5fc8ae7618a0c1551d0e5f5879d144ae5862a070f6a87c6c21c18dae3cb0645b",
+    supraPairId: 99999,
+    pythPriceFeedId:
+      "0xd7db067954e28f51a96fd50c6d51775094025ced2d60af61ec9803e553471c88",
+    pythPriceInfoObject:
+      "0x2731a8e3e9bc69b2d6af6f4c032fcd4856c77e2c21f839134d1ebcc3a16e4b1b",
+    priceDecimal: 9,
     expiration: 60,
   },
 };
