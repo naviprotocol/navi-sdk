@@ -2,7 +2,9 @@ export const AggregatorConfig = {
   aggregatorBaseUrl:
     'https://open-aggregator-api.naviprotocol.io/find_routes',
   aggregatorContract:
-    '0x5b7d732adeb3140a2dbf2becd1e9dbe56cee0e3687379bcfe7df4357ea664313',
+    '0xdd21f177ec772046619e401c7a44eb78c233c0d53b4b2213ad83122eef4147db',
+  slippageConfig:
+    '0xd2aaed9e264080e9725992af038e882e28fe17fd9bc98a52a25e71206e5c16f5',
   cetusPackageId:
     '0xb2db7142fa83210a7d78d9c12ac49c043b3cbbd482224fea6e3da00aa5a5ae2d',
   cetusConfigId:

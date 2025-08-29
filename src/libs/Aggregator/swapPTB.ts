@@ -146,7 +146,8 @@ export async function buildSwapPTBFromQuote(
     quote,
     minAmountOut,
     referral,
-    ifPrint
+    ifPrint,
+    swapOptions?.disablePositiveSlippage ?? false
   );
 }
 
@@ -165,6 +166,7 @@ export async function swapPTB(
     byAmountIn: true,
     depth: 3,
     ifPrint: true,
+    disablePositiveSlippage: false
   }
 ): Promise<TransactionResult> {
   const refId = apiKey ? generateRefId(apiKey) : 0;

@@ -33,7 +33,8 @@ export async function buildSwapWithoutServiceFee(
   quote: Quote,
   minAmountOut: number,
   referral: number = 0,
-  ifPrint: boolean = true
+  ifPrint: boolean = true,
+  disablePositiveSlippage: boolean = false
 ): Promise<TransactionResult> {
   const tokenA = quote.from;
   const tokenB = quote.target;
@@ -293,15 +294,24 @@ export async function buildSwapWithoutServiceFee(
   }
 
   txb.transferObjects([coinIn], userAddress);
+  const amountInValue = quote.from_token
+  ? ((Number(quote.amount_in) * (quote.from_token.price ?? 0)) / quote.from_token?.decimals) * 1e9
+  : 1e15
+  const shouldEnablePositiveSlippage =
+    !disablePositiveSlippage && quote.is_accurate === true && amountInValue !== 0
 
   // Add slippage check
   txb.moveCall({
-    target: `${AggregatorConfig.aggregatorContract}::slippage::check_slippage_v2`,
+    target: `${AggregatorConfig.aggregatorContract}::slippage::check_slippage_v3`,
     arguments: [
-      finalCoinB,
-      txb.pure.u64(Math.floor(minAmountOut)),
-      txb.pure.u64(quote.amount_in),
-      txb.pure.u64(referral),
+      txb.object(AggregatorConfig.slippageConfig), //slippage config address
+      txb.pure.bool(shouldEnablePositiveSlippage), //true if enable positive slippage
+      finalCoinB, // output coin
+      txb.pure.u64(Math.floor(minAmountOut)), // negative slippage
+      txb.pure.u64(quote.amount_out), // expected amount out, the dry run swap output coin amount
+      txb.pure.u64(quote.amount_in), // amount in
+      txb.pure.u64(amountInValue), // amount in value
+      txb.pure.u64(referral) // referral
     ],
     typeArguments: [tokenA, tokenB],
   });
