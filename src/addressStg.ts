@@ -73,6 +73,12 @@ export const AddressMap: Record<string, string> = {
     "EnzoBTC",
   "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC":
     "MBTC",
+  "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI":
+    "SpringSui",
+  "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC":
+    "YBTC",
+  "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM":
+    "XAUM",
 };
 
 export function getPackageCache(): string | undefined {
@@ -602,6 +608,34 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x7e13096c08060830411c885400db6ce537827c3307c4a63e2be288ad7433a177",
     rewardFundId: "",
   },
+  YBTC: {
+    name: "YBTC",
+    assetId: 33,
+    poolId:
+      "0xa6df2a4a9d482bdf26c387ebf501b1465de90dec3ade179e9bc84a53c8645b34",
+    type: "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC",
+    reserveObjectId:
+      "0xbc5ea09319b6e6bf5e9865aa3024e092182f221255e89d138526802e3d58c607",
+    borrowBalanceParentId:
+      "0xb3bac374d2248bd12af437d17225a6ece45572638937dceaf937d021e28d0dbc",
+    supplyBalanceParentId:
+      "0xe3aeebf6cefe07077bb2e5a2e96adc876536ab3ec0d2934036666b89ed52166d",
+    rewardFundId: "",
+  },
+  XAUM: {
+    name: "XAUM",
+    assetId: 34,
+    poolId:
+      "0xa5bbef453a8349229b6b5a4cb01a0af0ded6ebe4fa9cf933f718889188520c44",
+    type: "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM",
+    reserveObjectId:
+      "0x28c89419d055cc96d13e6c2db670b33911b052e9ad5cc20d77b998c5d7a04021",
+    borrowBalanceParentId:
+      "0x7ef34fc2e265dc1ac164de5db2c3268b5d5326f06f3c3c40bd4b4a4d03311dde",
+    supplyBalanceParentId:
+      "0xf88f0e0f7dcac3b0c12412ce35ae83a039d8fce5fc69022d644bf291d48f874c",
+    rewardFundId: "",
+  },
 
   HIPPO: {
     name: "HIPPO",
@@ -852,7 +886,24 @@ export const MBTC: CoinInfo = {
     "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC",
   decimal: 8,
 };
-
+export const SpringSui: CoinInfo = {
+  symbol: "sSui",
+  address:
+    "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
+  decimal: 9,
+};
+export const YBTC: CoinInfo = {
+  symbol: "YBTC",
+  address:
+    "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC",
+  decimal: 8,
+};
+export const XAUM: CoinInfo = {
+  symbol: "XAUM",
+  address:
+    "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM",
+  decimal: 9,
+};
 export const HIPPO: CoinInfo = {
   symbol: "HIPPO",
   address:
@@ -867,6 +918,13 @@ export const vSuiConfig = {
   metadata:
     "0x680cd26af32b2bde8d3361e804c53ec1d1cfe24c7f039eb7f549e8dfde389a60",
   wrapper: "0x05",
+};
+
+export const springSuiConfig = {
+  id: "0x15eda7330c8f99c30e430b4d82fd7ab2af3ead4ae17046fcb224aa9bad394f6b",
+  publishAt: "0xb0575765166030556a6eafd3b1b970eba8183ff748860680245b9edd41c716e7",
+  type: "0x83556891f4a0f233ce7b05cfe7f957d4020492a34f5405b2cb9377d060bef4bf::spring_sui::SPRING_SUI",
+  weightHookId: "0xbbafcb2d7399c0846f8185da3f273ad5b26b3b35993050affa44cfa890f1f144",
 };
 
 export interface IPriceFeed {
@@ -1589,32 +1647,84 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
     minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
     historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
-    coinType: '0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN',
-    feedId: '0xf45e84ab99e5ca2c1c1476a2435f7440313197ed0d35eda63dd2bf4cf2ce4b36', // TODO: value
+    coinType:
+      "0x8f2b5eb696ed88b71fea398d330bccfa52f6e2a5a8e1ac6180fcb25c6de42ebc::coin::COIN",
+    feedId:
+      "0xf45e84ab99e5ca2c1c1476a2435f7440313197ed0d35eda63dd2bf4cf2ce4b36", // TODO: value
     supraPairId: 99999,
-    pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
-    pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+    pythPriceFeedId:
+      "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+    pythPriceInfoObject:
+      "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
     priceDecimal: 8,
     expiration: 60,
-},
-MBTC: {
-  oracleId: 34,
-  maxTimestampDiff: 60 * 1000, // 60s(millisecond)
-  priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
-  priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
-  maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
-  maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
-  maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
-  minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
-  historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
-  coinType: '0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC',
-  feedId: '0x6b1a30b11e74e15212feb2bcea9cc7139e3234f8a6947c3e3678382e9c603aa5', // TODO: value
-  supraPairId: 99999,
-  pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43',
-  pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
-  priceDecimal: 8,
-  expiration: 60,
-},
+  },
+  MBTC: {
+    oracleId: 34,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType:
+      "0xd1a91b46bd6d966b62686263609074ad16cfdffc63c31a4775870a2d54d20c6b::mbtc::MBTC",
+    feedId:
+      "0x6b1a30b11e74e15212feb2bcea9cc7139e3234f8a6947c3e3678382e9c603aa5", // TODO: value
+    supraPairId: 99999,
+    pythPriceFeedId:
+      "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+    pythPriceInfoObject:
+      "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
+    priceDecimal: 8,
+    expiration: 60,
+  },
+  YBTC: {
+    oracleId: 35,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e8 = 50000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType:
+      "0xa03ab7eee2c8e97111977b77374eaf6324ba617e7027382228350db08469189e::ybtc::YBTC",
+    feedId:
+      "0x5ce3dafe1235f5b4ed685124ff09b891c60da6037891691a03b343b6ecfdc236", // TODO: value
+    supraPairId: 99999,
+    pythPriceFeedId:
+      "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+    pythPriceInfoObject:
+      "0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2",
+    priceDecimal: 8,
+    expiration: 60,
+  },
+  XAUM: {
+    oracleId: 36,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 200, // x1: 0.8% = 0.008 * 10000 = 80
+    priceDiffThreshold2: 400, // x2: 1.5% = 0.015 * 10000 = 150
+    maxDurationWithinThresholds: 30000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 3000, // 30% = 0.3 * 10000 = 3000
+    maximumEffectivePrice: 50000000000000, // 500000 = 500000 * 1e9 = 500000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e9 = 1000000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType:
+      "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM",
+    feedId:
+      "0xc170e4662da1788f67552205dd587de26c5cf4eaae180d09cef4293ee3d57ce1",
+    supraPairId: 99999,
+    pythPriceFeedId:
+      "0xd7db067954e28f51a96fd50c6d51775094025ced2d60af61ec9803e553471c88",
+    pythPriceInfoObject:
+      "0x2731a8e3e9bc69b2d6af6f4c032fcd4856c77e2c21f839134d1ebcc3a16e4b1b",
+    priceDecimal: 9,
+    expiration: 60,
+  },
   HIPPO: {
     oracleId: 88,
     maxTimestampDiff: 30000, // 30s(millisecond)
