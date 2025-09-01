@@ -295,8 +295,8 @@ export async function buildSwapWithoutServiceFee(
 
   txb.transferObjects([coinIn], userAddress);
   const amountInValue = quote.from_token
-  ? ((Number(quote.amount_in) * (quote.from_token.price ?? 0)) / quote.from_token?.decimals) * 1e9
-  : 1e15
+    ? ((Number(quote.amount_in) / Math.pow(10, quote.from_token.decimals)) * (quote.from_token.price ?? 0)) * 1e9
+    : 1e15
   const shouldEnablePositiveSlippage =
     !disablePositiveSlippage && quote.is_accurate === true && amountInValue !== 0
 
@@ -308,9 +308,9 @@ export async function buildSwapWithoutServiceFee(
       txb.pure.bool(shouldEnablePositiveSlippage), //true if enable positive slippage
       finalCoinB, // output coin
       txb.pure.u64(Math.floor(minAmountOut)), // negative slippage
-      txb.pure.u64(quote.amount_out), // expected amount out, the dry run swap output coin amount
-      txb.pure.u64(quote.amount_in), // amount in
-      txb.pure.u64(amountInValue), // amount in value
+      txb.pure.u64(Math.floor(Number(quote.amount_out))), // expected amount out, the dry run swap output coin amount
+      txb.pure.u64(Math.floor(Number(quote.amount_in))), // amount in
+      txb.pure.u64(Math.floor(amountInValue)), // amount in value
       txb.pure.u64(referral) // referral
     ],
     typeArguments: [tokenA, tokenB],
