@@ -1,39 +1,53 @@
-# Welcome to NAVI Protocol
+# ⚠️ NAVI SDK (Legacy)
 
-The NAVI SDK Client provides tools for interacting with the Sui blockchain networks, designed for handling transactions, accounts, and smart contracts efficiently. This documentation covers the setup, account management, and transaction handling within the NAVI ecosystem.
+> **⚠️ Important:** This version of the NAVI SDK is **no longer actively maintained**.
+> We’ve released a **major upgrade** — faster, modular, and much easier to integrate.
+> **New users should migrate to the new SDK packages.**
 
-## Getting Started
+---
 
-### Installation
-Before you can use the NAVI SDK Client, you need to set up your project environment.
+## 🚀 The New NAVI SDK
 
-`npm i navi-sdk`
+We completely rebuilt the SDK and split it into **4 focused packages** for a better developer experience:
 
-*We highly suggest you use env to import mnemonic all the time *
+* **🔹 Lending SDK** – Deposit, borrow, repay, liquidate, claim rewards, flash loans, and oracle queries
+* **🔹 Bridge SDK** – Cross-chain bridging with real-time quotes and best routes
+* **🔹 Aggregator SDK** – DEX aggregation across Aftermath, Bluefin, Cetus, DeepBook & more
+* **🔹 Wallet Client** – Unified wallet + signing client with built-in Swap & Lending helpers
 
-`npm i dotenv` 
+📚 **Developer Resources:**
 
-[Check how to use dotenv](https://github.com/motdotla/dotenv)
+* [📖 New SDK Documentation](https://sdk.naviprotocol.io)
+* [🛠 Migration Guide](https://sdk.naviprotocol.io/navi-sdk-migration/lending)
+* [💻 Source Code](https://github.com/naviprotocol/naviprotocol-monorepo)
 
-### Quick Start
-We have prepared [starter code](https://github.com/naviprotocol/navi-sdk/tree/main/document) for NAVI SDK beginners.
+> ⏳ **Note:** The old SDK will be deprecated in 1 month — please migrate soon!
 
-## Contribute to NAVI SDK Project
-You may follow the guide from detailed [documentation](./CONTRIBUTION.md)
+---
 
-## More About NAVI
-Use the following links to learn more about NAVI Protocol:
+## 📦 Installing the Legacy SDK (if you still need it)
 
-* Learn more about the [largest lending and borrowing protocol documentation](https://naviprotocol.gitbook.io/navi-protocol-docs) on Sui.
-* Join the [NAVI community](https://discord.com/invite/R6Xkbee8Xq) on Discord and [Telegram Channel](https://t.me/navi_protocol).
-* Find out more about the [Bug Bounty Program](https://naviprotocol.gitbook.io/navi-protocol-docs/security/bug-bounty-program)
-* Review information about [NAVI Roadmap](https://naviprotocol.gitbook.io/navi-protocol-docs/dao-and-token/roadmap), [Tokenomics](https://naviprotocol.gitbook.io/navi-protocol-docs/dao-and-token/navx-tokenomics), and [Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs) on the Navi site.
+```bash
+npm i navi-sdk
+```
 
+> 💡 **Tip:** Always load your mnemonic from environment variables.
+> Install dotenv:
+>
+> ```bash
+> npm i dotenv
+> ```
+>
+> [How to use dotenv](https://github.com/motdotla/dotenv)
 
+We still provide a [starter example project](https://github.com/naviprotocol/navi-sdk/tree/main/document) for developers maintaining the legacy version.
 
+---
 
+## 👥 Join the NAVI Community
 
-
-
-
+* [NAVI Protocol Docs](https://naviprotocol.gitbook.io/navi-protocol-docs) – Learn more about the largest lending and borrowing protocol on Sui
+* [Discord](https://discord.com/invite/R6Xkbee8Xq) • [Telegram](https://t.me/navi_protocol) – Join the conversation
+* [Bug Bounty Program](https://naviprotocol.gitbook.io/navi-protocol-docs/security/bug-bounty-program) – Help keep NAVI secure
+* [Roadmap](https://naviprotocol.gitbook.io/navi-protocol-docs/dao-and-token/roadmap) • [Tokenomics](https://naviprotocol.gitbook.io/navi-protocol-docs/dao-and-token/navx-tokenomics) • [Developer Docs](https://naviprotocol.gitbook.io/navi-protocol-developer-docs)
 
