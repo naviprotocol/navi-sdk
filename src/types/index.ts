@@ -126,7 +126,6 @@ export type SwapOptions = {
   feeOption?: FeeOption;
   ifPrint?: boolean;
   serviceFee?: FeeOption;
-  disablePositiveSlippage?: boolean;
 };
 
 export type Chain = {

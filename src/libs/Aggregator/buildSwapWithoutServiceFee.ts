@@ -14,6 +14,7 @@ import { makeVSUIPTB } from "./Dex/vSui";
 import { makeHASUIPTB } from "./Dex/haSui";
 import { makeMomentumPTB } from "./Dex/momentum";
 import { makeSpringSuiPTB } from "./Dex/springSui";
+import getRemotePositiveSlippageSetting from "./getPositiveSlippageSetting";
 
 /**
  * Build a swap transaction without service fee
@@ -34,7 +35,6 @@ export async function buildSwapWithoutServiceFee(
   minAmountOut: number,
   referral: number = 0,
   ifPrint: boolean = true,
-  disablePositiveSlippage: boolean = false
 ): Promise<TransactionResult> {
   const tokenA = quote.from;
   const tokenB = quote.target;
@@ -293,12 +293,14 @@ export async function buildSwapWithoutServiceFee(
     txb.mergeCoins(finalCoinB, [pathTempCoin]);
   }
 
+  const remotePositiveSlippageSetting = await getRemotePositiveSlippageSetting()
+  
   txb.transferObjects([coinIn], userAddress);
   const amountInValue = quote.from_token
     ? ((Number(quote.amount_in) / Math.pow(10, quote.from_token.decimals)) * (quote.from_token.price ?? 0)) * 1e9
     : 1e15
   const shouldEnablePositiveSlippage =
-    !disablePositiveSlippage && quote.is_accurate === true && amountInValue !== 0
+    remotePositiveSlippageSetting && quote.is_accurate === true && amountInValue !== 0
 
   // Add slippage check
   txb.moveCall({
