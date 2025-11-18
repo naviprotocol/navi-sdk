@@ -6,7 +6,7 @@ let globalPackageIdExpireAt: number;
 let cacheUpdatePromise: Promise<void> | null = null;
 
 export const defaultProtocolPackage =
-  "0x81c408448d0d57b3e371ea94de1d40bf852784d3e225de1e74acab3e8395c18f";
+  "0xee0041239b89564ce870a7dec5ddc5d114367ab94a1137e90aa0633cb76518e0";
 
 export const AddressMap: Record<string, string> = {
   "0x2::sui::SUI": "Sui",
