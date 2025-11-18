@@ -83,7 +83,7 @@ export async function withdrawCoin(txb: Transaction, _pool: PoolConfig, amount: 
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v3::withdraw`,
+        target: `${config.ProtocolPackage}::incentive_v3::withdraw_v2`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -93,6 +93,7 @@ export async function withdrawCoin(txb: Transaction, _pool: PoolConfig, amount: 
             txb.pure.u64(amount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2),
             txb.object(config.IncentiveV3), // The incentive object v3
+            txb.object('0x05')
         ],
         typeArguments: [_pool.type]
     })
@@ -119,7 +120,7 @@ export async function withdrawCoinWithAccountCap(txb: Transaction, _pool: PoolCo
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v3::withdraw_with_account_cap`,
+        target: `${config.ProtocolPackage}::incentive_v3::withdraw_with_account_cap_v2`,
         arguments: [
             txb.sharedObjectRef({
                 objectId: '0x06',
@@ -133,7 +134,8 @@ export async function withdrawCoinWithAccountCap(txb: Transaction, _pool: PoolCo
             txb.pure.u64(withdrawAmount), // The amount you want to withdraw, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2),
             txb.object(config.IncentiveV3), // The incentive object v3
-            txb.object(account)
+            txb.object(account),
+            txb.object('0x05')
         ],
         typeArguments: [_pool.type]
     });
@@ -159,7 +161,7 @@ export async function borrowCoin(txb: Transaction, _pool: PoolConfig, borrowAmou
     const config = await getConfig();
 
     const [ret] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v3::borrow`,
+        target: `${config.ProtocolPackage}::incentive_v3::borrow_v2`,
         arguments: [
             txb.object('0x06'), // clock object id
             txb.object(config.PriceOracle), // object id of oracle
@@ -169,6 +171,7 @@ export async function borrowCoin(txb: Transaction, _pool: PoolConfig, borrowAmou
             txb.pure.u64(borrowAmount), // The amount you want to borrow, decimals must be carried, like 1 sui => 1000000000
             txb.object(config.IncentiveV2), // The incentive object v2
             txb.object(config.IncentiveV3), // The incentive object v3
+            txb.object('0x05')
         ],
         typeArguments: [_pool.type]
     })
@@ -275,11 +278,12 @@ export async function flashloan(txb: Transaction, _pool: PoolConfig, amount: num
     const config = await getConfig();
 
     const [balance, receipt] = txb.moveCall({
-        target: `${config.ProtocolPackage}::lending::flash_loan_with_ctx`,
+        target: `${config.ProtocolPackage}::lending::flash_loan_with_ctx_v2`,
         arguments: [
             txb.object(flashloanConfig.id), // clock object id
             txb.object(_pool.poolId), // pool id of the asset
             txb.pure.u64(amount), // the id of the asset in the protocol
+            txb.object('0x05')
         ],
         typeArguments: [_pool.type]
     })
@@ -329,7 +333,7 @@ export async function liquidateFunction(txb: Transaction, payCoinType: CoinInfo,
     const config = await getConfig();
 
     const [collateralBalance, remainDebtBalance] = txb.moveCall({
-        target: `${config.ProtocolPackage}::incentive_v3::liquidation`,
+        target: `${config.ProtocolPackage}::incentive_v3::liquidation_v2`,
         arguments: [
             txb.object('0x06'),
             txb.object(config.PriceOracle),
@@ -342,6 +346,7 @@ export async function liquidateFunction(txb: Transaction, payCoinType: CoinInfo,
             txb.pure.address(to_liquidate_address),
             txb.object(config.IncentiveV2),
             txb.object(config.IncentiveV3),
+            txb.object('0x05')
         ],
         typeArguments: [pool_to_pay.type, collateral_pool.type],
     })
