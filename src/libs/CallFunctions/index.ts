@@ -28,7 +28,7 @@ function inspectResultParseAndPrint(data: DevInspectResults, funName: string, pa
             return values;
         }
     } else if (data.error) {
-        console.log(`Get an error, msg: ${data.error}`);
+        throw new Error(`Inspect error: ${data.error}`);
     }
     return [];
 }
