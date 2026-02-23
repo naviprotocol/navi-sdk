@@ -6,7 +6,7 @@ let globalPackageIdExpireAt: number;
 let cacheUpdatePromise: Promise<void> | null = null;
 
 export const defaultProtocolPackage =
-  "0xee0041239b89564ce870a7dec5ddc5d114367ab94a1137e90aa0633cb76518e0";
+  "0x1e4a13a0494d5facdbe8473e74127b838c2d446ecec0ce262e2eddafa77259cb";
 
 export const AddressMap: Record<string, string> = {
   "0x2::sui::SUI": "Sui",
@@ -74,6 +74,10 @@ export const AddressMap: Record<string, string> = {
     "YBTC",
   "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM":
     "XAUM",
+  "0x0041f9f9344cac094454cd574e333c4fdb132d7bcc9379bcd4aab485b2a63942::wbtc::WBTC":
+    "LZWBTC",
+  "0x41d587e5336f1c86cad50d38a7136db99333bb9bda91cea4ba69115defeb1402::sui_usde::SUI_USDE":
+    "suiUSDe",
 };
 
 // if the cache is not set, return the default protocol package.
@@ -127,7 +131,7 @@ export const getConfig = async () => {
     ReserveParentId:
       "0xe6d4c6610b86ce7735ea754596d71d72d10c7980b5052fc3c8cdf8d09fea9b4b", // get it from storage object id. storage.reserves
     uiGetter:
-      "0xf56370478288b5e1838769929823efaed88bf7ad89040d8a2ac391d6bd0aa2f2",
+      "0xa1357e2e9c28f90e76b085abb81f7ce3e59b699100687bbc3910c7e9f27bb7c8",
     flashloanConfig:
       "0x3672b2bf471a60c30a03325f104f92fb195c9d337ba58072dce764fe2aa5e2dc",
     flashloanSupportedAssets:
@@ -594,6 +598,34 @@ export const pool: { [key: string]: PoolConfig } = {
       "0x79b6e696058bd666e536d43f810c012172c8968fea5e4332dd416a495574adf5",
     rewardFundId: "",
   },
+  LZWBTC: {
+    name: "LZWBTC",
+    assetId: 32,
+    poolId:
+      "0x88fb36f9ab1ac2a47a974c53daf5ef37862e063f4875bf54e5853e2ca1e9ddad",
+    type: "0x0041f9f9344cac094454cd574e333c4fdb132d7bcc9379bcd4aab485b2a63942::wbtc::WBTC",
+    reserveObjectId:
+      "0x06f162a30cdb712d7a68889792a0281eb67ac3d046233e42411b0a334523d178",
+    borrowBalanceParentId:
+      "0x135b58ac16c2826c0bedbedfca6b4e3fe07e571cdf3be6ebac912bcf3e26c6ab",
+    supplyBalanceParentId:
+      "0xf8af4a3a91d303b64b04b8351ce0c789a18e1c6c71de25be6c7f83cf861ad03f",
+    rewardFundId: "",
+  },
+  suiUSDe: {
+    name: "suiUSDe",
+    assetId: 33,
+    poolId:
+      "0x86d663fdba9690cb4edf0b29140c31bad8c98d43b3eac70050c237c0d1434334",
+    type: "0x41d587e5336f1c86cad50d38a7136db99333bb9bda91cea4ba69115defeb1402::sui_usde::SUI_USDE",
+    reserveObjectId:
+      "0x75a99a1fb2f7ca1af1126b0915dec1741e5b037cc18244ed1941984e1781fe61",
+    borrowBalanceParentId:
+      "0x230e2dc6bde4123154aa868ef4094dcf319747c71d178de8138b7d50180eb8c1",
+    supplyBalanceParentId:
+      "0xd65ee9f97626d8de70836eb8cf94c6f3644bd30d3acb4cd1c597b1f00acf786b",
+    rewardFundId: "",
+  },
 };
 
 export const flashloanConfig = {
@@ -828,6 +860,20 @@ export const XAUM: CoinInfo = {
   address:
     "0x9d297676e7a4b771ab023291377b2adfaa4938fb9080b8d12430e4b108b836a9::xaum::XAUM",
   decimal: 9,
+};
+
+export const LZWBTC: CoinInfo = {
+  symbol: "LZWBTC",
+  address:
+    "0x0041f9f9344cac094454cd574e333c4fdb132d7bcc9379bcd4aab485b2a63942::wbtc::WBTC",
+  decimal: 8,
+};
+
+export const suiUSDe: CoinInfo = {
+  symbol: "suiUSDe",
+  address:
+    "0x41d587e5336f1c86cad50d38a7136db99333bb9bda91cea4ba69115defeb1402::sui_usde::SUI_USDE",
+  decimal: 6,
 };
 
 export const vSuiConfig = {
@@ -1574,6 +1620,42 @@ export const PriceFeedConfig: { [key: string]: IPriceFeed } = {
     priceDecimal: 9,
     expiration: 60,
   },
+  LZWBTC: {
+      oracleId: 32,
+      maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+      priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+      priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+      maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+      maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+      maximumEffectivePrice: 20000000000000, // 200000 = 200000 * 1e8 = 20000000000000
+      minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+      historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+      coinType: '0x0041f9f9344cac094454cd574e333c4fdb132d7bcc9379bcd4aab485b2a63942::wbtc::WBTC',
+      feedId: '0xc0dddc22b53142a0b283682d9025e22c8beedf20dcac4023229d5219e8d35a43', // TODO: value
+      supraPairId: 99999, // BTC_USDT -> 0, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Pair%20Category-,BTC_USDT,-0
+      pythPriceFeedId: '0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43', // Crypto.BTC/USD -> https://pyth.network/developers/price-feed-ids
+      pythPriceInfoObject: '0x9a62b4863bdeaabdc9500fce769cf7e72d5585eeb28a6d26e4cafadc13f76ab2',
+      priceDecimal: 8,
+      expiration: 60,
+  },
+  suiUSDe: {
+    oracleId: 33,
+    maxTimestampDiff: 60 * 1000, // 60s(millisecond)
+    priceDiffThreshold1: 100, // x1: 1% = 0.01 * 10000 = 100
+    priceDiffThreshold2: 300, // x2: 3% = 0.03 * 10000 = 300
+    maxDurationWithinThresholds: 30 * 1000, // 30s(millisecond)
+    maximumAllowedSpanPercentage: 700, // 7% = 0.07 * 10000 = 700
+    maximumEffectivePrice: 20000000000000, // 200000 = 200000 * 1e8 = 20000000000000
+    minimumEffectivePrice: 100000000, // 1 = 1 * 1e8 = 100000000
+    historicalPriceTTL: 2 * 60 * 1000, // 2min(millisecond)
+    coinType: '0x41d587e5336f1c86cad50d38a7136db99333bb9bda91cea4ba69115defeb1402::sui_usde::SUI_USDE',
+    feedId: '0x70b92bcacfbd260b7564871a0a75c2cc4317fcc95aeeb041714d26e168d887be', // TODO: value
+    supraPairId: 99999, // BTC_USDT -> 0, https://supra.com/docs/data-feeds/data-feeds-index/#:~:text=Pair%20Category-,BTC_USDT,-0
+    pythPriceFeedId: '0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a', // Crypto.BTC/USD -> https://pyth.network/developers/price-feed-ids
+    pythPriceInfoObject: '0x5dec622733a204ca27f5a90d8c2fad453cc6665186fd5dff13a83d0b6c9027ab',
+    priceDecimal: 6,
+    expiration: 60,
+}
 };
 
 export interface IOracleProConfig {
@@ -1592,7 +1674,7 @@ export interface IOracleProConfig {
 
 export const OracleProConfig: IOracleProConfig = {
   PackageId:
-    "0xc2d49bf5e75d2258ee5563efa527feb6155de7ac6f6bf025a23ee88cd12d5a83", // TODO: value
+    "0x203728f46eb10d19f8f8081db849c86aa8f2a19341b7fd84d7a0e74f053f6242", // TODO: value
   PriceOracle:
     "0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef", // TODO: value
   OracleAdminCap:

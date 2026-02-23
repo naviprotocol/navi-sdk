@@ -1765,7 +1765,7 @@ export interface IOracleProConfig {
 
 export const OracleProConfig: IOracleProConfig = {
   PackageId:
-    "0xc2d49bf5e75d2258ee5563efa527feb6155de7ac6f6bf025a23ee88cd12d5a83", // TODO: value
+    "0x203728f46eb10d19f8f8081db849c86aa8f2a19341b7fd84d7a0e74f053f6242", // TODO: value
   PriceOracle:
     "0x1568865ed9a0b5ec414220e8f79b3d04c77acc82358f6e5ae4635687392ffbef", // TODO: value
   OracleAdminCap:
