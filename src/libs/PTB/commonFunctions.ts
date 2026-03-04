@@ -633,13 +633,14 @@ async function getPythStalePriceFeedId(priceIds: string[]): Promise<string[]> {
  */
 function updateSinglePrice(txb: Transaction, input: Pick<IPriceFeed, 'feedId' | 'pythPriceInfoObject'>) {
     txb.moveCall({
-        target: `${OracleProConfig.PackageId}::oracle_pro::update_single_price`,
+        target: `${OracleProConfig.PackageId}::oracle_pro::update_single_price_v2`,
         arguments: [
             txb.object('0x6'),
             txb.object(OracleProConfig.OracleConfig),
             txb.object(OracleProConfig.PriceOracle),
             txb.object(OracleProConfig.SupraOracleHolder),
             txb.object(input.pythPriceInfoObject),
+            txb.object('0x1fa7566f40f93cdbafd5a029a231e06664219444debb59beec2fe3f19ca08b7e'),
             txb.pure.address(input.feedId),
         ],
     })
